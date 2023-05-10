@@ -1,0 +1,61 @@
+basePath: /
+host: localhost:8080
+info:
+  contact: {}
+  description: Lydia Track Base API
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Lydia Track Base API
+  version: 0.0.1
+paths:
+  /users:
+    post:
+      consumes:
+      - '*/*'
+      description: create user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create user
+      tags:
+      - root
+  /users:id:
+    delete:
+      consumes:
+      - '*/*'
+      description: delete user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete user
+      tags:
+      - root
+    get:
+      consumes:
+      - '*/*'
+      description: get the status of server.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get user by ID
+      tags:
+      - root
+schemes:
+- http
+swagger: "2.0"
