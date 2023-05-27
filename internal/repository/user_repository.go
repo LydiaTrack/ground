@@ -8,6 +8,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"log"
 	"lydia-track-base/internal/domain"
+	"lydia-track-base/internal/mongodb"
 	"os"
 )
 
@@ -17,28 +18,37 @@ type UserMongoRepository struct {
 	collection *mongo.Collection
 }
 
-// NewUserMongoRepository creates a new UserMongoRepository
+// NewUserMongoRepository creates a new UserMongoRepository instance
+// which implements UserRepository
 func NewUserMongoRepository() *UserMongoRepository {
-	// Get connection string from env
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
-	}
-	uri := os.Getenv("MONGODB_URI")
-
-	// Create client
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
+	ctx := context.Background()
+	// FIXME: Burada ileride uzaktaki bir mongodb instance'ına bağlanmak gerekecek
+	container, err := mongodb.StartContainer(ctx)
 	if err != nil {
-		log.Fatal(err)
+		return nil
 	}
 
-	// Check the connection
-	err = client.Ping(context.TODO(), nil)
+	host, err := container.Host(ctx)
 	if err != nil {
-		log.Fatal(err)
+		return nil
 	}
 
-	// Get collection
-	collection := client.Database("lydia-track-base").Collection("users")
+	port, err := container.MappedPort(ctx, "27017")
+	if err != nil {
+		return nil
+	}
+
+	err = godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+host+":"+port.Port()))
+	if err != nil {
+		return nil
+	}
+
+	collection := client.Database(os.Getenv("LYDIA_DB")).Collection("users")
 
 	return &UserMongoRepository{
 		client:     client,
@@ -47,27 +57,27 @@ func NewUserMongoRepository() *UserMongoRepository {
 }
 
 // SaveUser saves a user
-func (r *UserMongoRepository) SaveUser(user domain.User) (domain.User, error) {
+func (r *UserMongoRepository) SaveUser(user domain.UserModel) (domain.UserModel, error) {
 	_, err := r.collection.InsertOne(context.Background(), user)
 	if err != nil {
-		return domain.User{}, err
+		return domain.UserModel{}, err
 	}
 	return user, nil
 }
 
 // GetUser gets a user by id
-func (r *UserMongoRepository) GetUser(id bson.ObjectId) (domain.User, error) {
-	var user domain.User
+func (r *UserMongoRepository) GetUser(id bson.ObjectId) (domain.UserModel, error) {
+	var user domain.UserModel
 	err := r.collection.FindOne(context.Background(), bson.M{"_id": id}).Decode(&user)
 	if err != nil {
-		return domain.User{}, err
+		return domain.UserModel{}, err
 	}
 	return user, nil
 }
 
 // ExistsUser checks if a user exists
 func (r *UserMongoRepository) ExistsUser(id bson.ObjectId) (bool, error) {
-	var user domain.User
+	var user domain.UserModel
 	err := r.collection.FindOne(context.Background(), bson.M{"_id": id}).Decode(&user)
 	if err != nil {
 		return false, err
@@ -82,4 +92,13 @@ func (r *UserMongoRepository) DeleteUser(id bson.ObjectId) error {
 		return err
 	}
 	return nil
+}
+
+func (r *UserMongoRepository) ExistsByUsername(username string) (bool, error) {
+	var user domain.UserModel
+	err := r.collection.FindOne(context.Background(), bson.M{"username": username}).Decode(&user)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
