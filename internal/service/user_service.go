@@ -1,8 +1,11 @@
 package service
 
 import (
+	"errors"
 	"gopkg.in/mgo.v2/bson"
 	"lydia-track-base/internal/domain"
+	"lydia-track-base/internal/domain/commands"
+	"time"
 )
 
 type UserService struct {
@@ -16,19 +19,37 @@ func NewUserService(userRepository UserRepository) UserService {
 }
 
 // CreateUser TODO: Add permission check
-func (s UserService) CreateUser(user domain.User) (domain.User, error) {
-	// TODO: These kind of operations must be done with specific requests, not by User model itself
-	user, err := s.userRepository.SaveUser(user)
+func (s UserService) CreateUser(command commands.CreateUserCommand) (domain.UserModel, error) {
+	// TODO: These kind of operations must be done with specific requests, not by UserModel model itself
+	// Validate user
+	// Map command to user
+	user := domain.NewUser(bson.NewObjectId().Hex(), command.Username,
+		command.Password, command.PersonInfo, time.Now(), 1)
+	if err := user.Validate(); err != nil {
+		return user, err
+	}
+
+	userExists, err := s.userRepository.ExistsByUsername(user.Username)
+
 	if err != nil {
-		return domain.User{}, err
+		return domain.UserModel{}, err
+	}
+
+	if userExists {
+		return domain.UserModel{}, errors.New("user already exists")
+	}
+
+	user, err = s.userRepository.SaveUser(user)
+	if err != nil {
+		return domain.UserModel{}, err
 	}
 	return user, nil
 }
 
-func (s UserService) GetUser(id string) (domain.User, error) {
+func (s UserService) GetUser(id string) (domain.UserModel, error) {
 	user, err := s.userRepository.GetUser(bson.ObjectIdHex(id))
 	if err != nil {
-		return domain.User{}, err
+		return domain.UserModel{}, err
 	}
 	return user, nil
 }
@@ -51,11 +72,13 @@ func (s UserService) DeleteUser(id string) error {
 
 type UserRepository interface {
 	// SaveUser saves a user
-	SaveUser(user domain.User) (domain.User, error)
+	SaveUser(user domain.UserModel) (domain.UserModel, error)
 	// GetUser gets a user by id
-	GetUser(id bson.ObjectId) (domain.User, error)
+	GetUser(id bson.ObjectId) (domain.UserModel, error)
 	// ExistsUser checks if a user exists
 	ExistsUser(id bson.ObjectId) (bool, error)
 	// DeleteUser deletes a user by id
 	DeleteUser(id bson.ObjectId) error
+	// ExistsByUsername checks if a user exists by username
+	ExistsByUsername(username string) (bool, error)
 }

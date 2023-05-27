@@ -41,7 +41,7 @@ func (h UserHandler) GetUser(c *gin.Context) {
 // @Success 200 {object} map[string]interface{}
 // @Router /users [post]
 func (h UserHandler) CreateUser(c *gin.Context) {
-	var user domain.User
+	var user domain.UserModel
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
