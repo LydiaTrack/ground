@@ -13,7 +13,7 @@ import (
 // TestNewUserService Create a new user service instance with UserMongoRepository
 func TestNewUserService(t *testing.T) {
 	// Initialize mongo test support
-	test_support.TestWithMongo()
+	test_support.TestWithMongo(t)
 
 	repo := repository.NewUserMongoRepository()
 
@@ -24,7 +24,7 @@ func TestNewUserService(t *testing.T) {
 // TestCreateUser Create a new user
 func TestCreateUser(t *testing.T) {
 	// Initialize mongo test support
-	test_support.TestWithMongo()
+	test_support.TestWithMongo(t)
 
 	repo := repository.NewUserMongoRepository()
 
@@ -52,46 +52,47 @@ func TestCreateUser(t *testing.T) {
 	user, err := userService.CreateUser(command)
 
 	if err != nil {
-		t.Errorf("Error creating user: %v", err)
-	}
+		t.Errorf("Error creating user test: %v", err)
+	} else {
 
-	if user.Username != "test" {
-		t.Errorf("Error creating user: %v", err)
-	}
+		if user.Username != "test" {
+			t.Errorf("Error creating user: %v", err)
+		}
 
-	if user.Password != "test123" {
-		t.Errorf("Error creating user: %v", err)
-	}
+		if user.Password != "test123" {
+			t.Errorf("Error creating user: %v", err)
+		}
 
-	if user.PersonInfo.FirstName != "TestName" {
-		t.Errorf("Error creating user: %v", err)
-	}
+		if user.PersonInfo.FirstName != "TestName" {
+			t.Errorf("Error creating user: %v", err)
+		}
 
-	if user.PersonInfo.LastName != "Test Lastname" {
-		t.Errorf("Error creating user: %v", err)
-	}
+		if user.PersonInfo.LastName != "Test Lastname" {
+			t.Errorf("Error creating user: %v", err)
+		}
 
-	if user.PersonInfo.Email != "exampletest@example.com" {
-		t.Errorf("Error creating user: %v", err)
-	}
+		if user.PersonInfo.Email != "exampletest@example.com" {
+			t.Errorf("Error creating user: %v", err)
+		}
 
-	if user.PersonInfo.Address != "Test Address" {
-		t.Errorf("Error creating user: %v", err)
-	}
+		if user.PersonInfo.Address != "Test Address" {
+			t.Errorf("Error creating user: %v", err)
+		}
 
-	if user.PersonInfo.BirthDate != birthDate {
-		t.Errorf("Error creating user: %v", err)
-	}
+		if user.PersonInfo.BirthDate != birthDate {
+			t.Errorf("Error creating user: %v", err)
+		}
 
-	if user.PersonInfo.PhoneNumber.AreaCode != "500" {
-		t.Errorf("Error creating user: %v", err)
-	}
+		if user.PersonInfo.PhoneNumber.AreaCode != "500" {
+			t.Errorf("Error creating user: %v", err)
+		}
 
-	if user.PersonInfo.PhoneNumber.Number != "5005050" {
-		t.Errorf("Error creating user: %v", err)
-	}
+		if user.PersonInfo.PhoneNumber.Number != "5005050" {
+			t.Errorf("Error creating user: %v", err)
+		}
 
-	if user.PersonInfo.PhoneNumber.CountryCode != "+90" {
-		t.Errorf("Error creating user: %v", err)
+		if user.PersonInfo.PhoneNumber.CountryCode != "+90" {
+			t.Errorf("Error creating user: %v", err)
+		}
 	}
 }
