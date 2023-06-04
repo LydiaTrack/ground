@@ -29,17 +29,13 @@ func (s UserService) CreateUser(command commands.CreateUserCommand) (domain.User
 		return user, err
 	}
 
-	userExists, err := s.userRepository.ExistsByUsername(user.Username)
-
-	if err != nil {
-		return domain.UserModel{}, err
-	}
+	userExists := s.userRepository.ExistsByUsername(user.Username)
 
 	if userExists {
 		return domain.UserModel{}, errors.New("user already exists")
 	}
 
-	user, err = s.userRepository.SaveUser(user)
+	user, err := s.userRepository.SaveUser(user)
 	if err != nil {
 		return domain.UserModel{}, err
 	}
@@ -62,8 +58,16 @@ func (s UserService) ExistsUser(id string) (bool, error) {
 	return exists, nil
 }
 
-func (s UserService) DeleteUser(id string) error {
-	err := s.userRepository.DeleteUser(bson.ObjectIdHex(id))
+func (s UserService) DeleteUser(command commands.DeleteUserCommand) error {
+	existsUser, err := s.ExistsUser(command.ID.Hex())
+	if err != nil {
+		return err
+	}
+	if !existsUser {
+		return errors.New("user does not exist")
+	}
+
+	err = s.userRepository.DeleteUser(command.ID)
 	if err != nil {
 		return err
 	}
@@ -80,5 +84,5 @@ type UserRepository interface {
 	// DeleteUser deletes a user by id
 	DeleteUser(id bson.ObjectId) error
 	// ExistsByUsername checks if a user exists by username
-	ExistsByUsername(username string) (bool, error)
+	ExistsByUsername(username string) bool
 }

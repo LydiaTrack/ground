@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
-	"lydia-track-base/internal/domain"
+	"lydia-track-base/internal/domain/commands"
 	"lydia-track-base/internal/service"
 )
 
@@ -41,12 +41,12 @@ func (h UserHandler) GetUser(c *gin.Context) {
 // @Success 200 {object} map[string]interface{}
 // @Router /users [post]
 func (h UserHandler) CreateUser(c *gin.Context) {
-	var user domain.UserModel
-	if err := c.ShouldBindJSON(&user); err != nil {
+	var createUserCommand commands.CreateUserCommand
+	if err := c.ShouldBindJSON(&createUserCommand); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-	user, err := h.userService.CreateUser(user)
+	user, err := h.userService.CreateUser(createUserCommand)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -63,8 +63,12 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 // @Success 200 {object} map[string]interface{}
 // @Router /users:id [delete]
 func (h UserHandler) DeleteUser(c *gin.Context) {
-	id := c.Param("id")
-	err := h.userService.DeleteUser(id)
+	var deleteUserCommand commands.DeleteUserCommand
+	if err := c.ShouldBindJSON(&deleteUserCommand); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	err := h.userService.DeleteUser(deleteUserCommand)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return

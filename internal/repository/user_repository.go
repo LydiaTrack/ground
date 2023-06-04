@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -28,30 +29,30 @@ func NewUserMongoRepository() *UserMongoRepository {
 		return nil
 	}
 
-	host, err := container.Host(ctx)
+	endpoint, err := container.Endpoint(ctx, "mongodb")
 	if err != nil {
-		return nil
+		log.Fatal(fmt.Errorf("failed to get endpoint: %w", err))
 	}
 
-	port, err := container.MappedPort(ctx, "27017")
+	mongoClient, err := mongo.NewClient(options.Client().ApplyURI(endpoint))
 	if err != nil {
-		return nil
+		log.Fatal(fmt.Errorf("error creating mongo client: %w", err))
 	}
 
-	err = godotenv.Load()
+	err = mongoClient.Connect(ctx)
+	if err != nil {
+		log.Fatal("Error connecting to mongo: ", err)
+	}
+
+	err = godotenv.Load("../../.env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+host+":"+port.Port()))
-	if err != nil {
-		return nil
-	}
-
-	collection := client.Database(os.Getenv("LYDIA_DB")).Collection("users")
+	collection := mongoClient.Database(os.Getenv("LYDIA_DB_NAME")).Collection("users")
 
 	return &UserMongoRepository{
-		client:     client,
+		client:     mongoClient,
 		collection: collection,
 	}
 }
@@ -94,11 +95,11 @@ func (r *UserMongoRepository) DeleteUser(id bson.ObjectId) error {
 	return nil
 }
 
-func (r *UserMongoRepository) ExistsByUsername(username string) (bool, error) {
+func (r *UserMongoRepository) ExistsByUsername(username string) bool {
 	var user domain.UserModel
 	err := r.collection.FindOne(context.Background(), bson.M{"username": username}).Decode(&user)
 	if err != nil {
-		return false, err
+		return false
 	}
-	return true, nil
+	return true
 }
