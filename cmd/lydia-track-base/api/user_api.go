@@ -9,6 +9,7 @@ import (
 
 // InitUser initializes user routes
 func InitUser(r *gin.Engine) {
+
 	userRepository := repository.NewUserMongoRepository()
 	userService := service.NewUserService(userRepository)
 
