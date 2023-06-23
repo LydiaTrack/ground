@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"lydia-track-base/cmd/lydia-track-base/api"
+	"lydia-track-base/internal/rest"
 )
 
 // @title Lydia Track Base API
@@ -28,4 +29,9 @@ func main() {
 func initializeRoutes(r *gin.Engine) {
 	api.InitUser(r)
 	api.InitSwagger(r)
+
+	wrapper := rest.InitEndpointWrapper([]gin.HandlerFunc{}, map[string][]gin.HandlerFunc{})
+	wrapper.WrapEngine(r)
 }
+
+// Client -> Server -> Wrapper -> Interceptor -> Interceptor -> API -> Service -> Repository -> DB
