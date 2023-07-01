@@ -19,9 +19,13 @@ type UserMongoRepository struct {
 	collection *mongo.Collection
 }
 
+var (
+	userRepository *UserMongoRepository
+)
+
 // NewUserMongoRepository creates a new UserMongoRepository instance
 // which implements UserRepository
-func NewUserMongoRepository() *UserMongoRepository {
+func newUserMongoRepository() *UserMongoRepository {
 	ctx := context.Background()
 	// FIXME: Burada ileride uzaktaki bir mongodb instance'ına bağlanmak gerekecek
 	container, err := mongodb.StartContainer(ctx)
@@ -44,7 +48,7 @@ func NewUserMongoRepository() *UserMongoRepository {
 		log.Fatal("Error connecting to mongo: ", err)
 	}
 
-	err = godotenv.Load("../../.env")
+	err = godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
@@ -55,6 +59,15 @@ func NewUserMongoRepository() *UserMongoRepository {
 		client:     mongoClient,
 		collection: collection,
 	}
+}
+
+// GetRepository returns a UserRepository instance if it is not initialized yet or
+// returns the existing one
+func GetRepository() *UserMongoRepository {
+	if userRepository == nil {
+		userRepository = newUserMongoRepository()
+	}
+	return userRepository
 }
 
 // SaveUser saves a user
@@ -102,4 +115,13 @@ func (r *UserMongoRepository) ExistsByUsername(username string) bool {
 		return false
 	}
 	return true
+}
+
+func (r *UserMongoRepository) GetUserByUsername(username string) (domain.UserModel, error) {
+	var user domain.UserModel
+	err := r.collection.FindOne(context.Background(), bson.M{"username": username}).Decode(&user)
+	if err != nil {
+		return domain.UserModel{}, err
+	}
+	return user, nil
 }

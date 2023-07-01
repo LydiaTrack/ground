@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"lydia-track-base/cmd/lydia-track-base/handlers"
+	"lydia-track-base/internal/middlewares"
 	"lydia-track-base/internal/repository"
 	"lydia-track-base/internal/service"
 )
@@ -10,12 +11,14 @@ import (
 // InitUser initializes user routes
 func InitUser(r *gin.Engine) {
 
-	userRepository := repository.NewUserMongoRepository()
+	userRepository := repository.GetRepository()
 	userService := service.NewUserService(userRepository)
 
 	userHandler := handlers.NewUserHandler(userService)
 
-	r.GET("/users/:id", userHandler.GetUser)
-	r.POST("/users", userHandler.CreateUser)
-	r.DELETE("/users/:id", userHandler.DeleteUser)
+	authorizedPath := r.Group("/users")
+	authorizedPath.Use(middlewares.JwtAuthMiddleware()).
+		POST("", userHandler.CreateUser).
+		GET("/:id", userHandler.GetUser).
+		DELETE("/:id", userHandler.DeleteUser)
 }
