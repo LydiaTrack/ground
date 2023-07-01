@@ -30,9 +30,9 @@ func (p PersonInfo) Validate() error {
 		}
 	}
 
-	if err := p.PhoneNumber.Validate(); err != nil {
+	/*if err := p.PhoneNumber.Validate(); err != nil {
 		return err
-	}
+	}*/
 
 	return nil
 }

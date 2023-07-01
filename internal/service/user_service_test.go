@@ -15,7 +15,7 @@ func TestNewUserService(t *testing.T) {
 	// Initialize mongo test support
 	test_support.TestWithMongo(t)
 
-	repo := repository.NewUserMongoRepository()
+	repo := repository.GetRepository()
 
 	// Create a new user service instance
 	NewUserService(repo)
@@ -26,7 +26,7 @@ func TestCreateUser(t *testing.T) {
 	// Initialize mongo test support
 	test_support.TestWithMongo(t)
 
-	repo := repository.NewUserMongoRepository()
+	repo := repository.GetRepository()
 
 	// Create a new user service instance
 	userService := NewUserService(repo)
