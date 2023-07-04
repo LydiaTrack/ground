@@ -10,7 +10,7 @@ import (
 
 // InitAuth initializes auth routes
 func InitAuth(r *gin.Engine) {
-	userRepository := repository.GetRepository()
+	userRepository := repository.GetUserRepository()
 	userService := service.NewUserService(userRepository)
 	authService := auth.NewAuthService(userService)
 
