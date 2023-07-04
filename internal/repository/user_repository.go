@@ -50,7 +50,7 @@ func newUserMongoRepository() *UserMongoRepository {
 
 	err = godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal("Error loading .env file", err)
 	}
 
 	collection := mongoClient.Database(os.Getenv("LYDIA_DB_NAME")).Collection("users")
@@ -61,9 +61,9 @@ func newUserMongoRepository() *UserMongoRepository {
 	}
 }
 
-// GetRepository returns a UserRepository instance if it is not initialized yet or
+// GetUserRepository returns a UserRepository instance if it is not initialized yet or
 // returns the existing one
-func GetRepository() *UserMongoRepository {
+func GetUserRepository() *UserMongoRepository {
 	if userRepository == nil {
 		userRepository = newUserMongoRepository()
 	}

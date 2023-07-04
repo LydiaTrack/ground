@@ -23,7 +23,7 @@ func InitializeDefaultUser() error {
 	}
 
 	_, err := service.
-		NewUserService(repository.GetRepository()).
+		NewUserService(repository.GetUserRepository()).
 		CreateUser(userCreateCmd)
 	if err != nil {
 		return err
