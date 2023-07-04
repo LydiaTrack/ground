@@ -2,6 +2,7 @@ package service
 
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/crypto/bcrypt"
 	"lydia-track-base/internal/domain"
 	"lydia-track-base/internal/domain/commands"
 	"lydia-track-base/internal/repository"
@@ -15,7 +16,7 @@ func TestNewUserService(t *testing.T) {
 	// Initialize mongo test support
 	test_support.TestWithMongo(t)
 
-	repo := repository.GetRepository()
+	repo := repository.GetUserRepository()
 
 	// Create a new user service instance
 	NewUserService(repo)
@@ -26,7 +27,7 @@ func TestCreateUser(t *testing.T) {
 	// Initialize mongo test support
 	test_support.TestWithMongo(t)
 
-	repo := repository.GetRepository()
+	repo := repository.GetUserRepository()
 
 	// Create a new user service instance
 	userService := NewUserService(repo)
@@ -59,7 +60,8 @@ func TestCreateUser(t *testing.T) {
 			t.Errorf("Error creating user: %v", err)
 		}
 
-		if user.Password != "test123" {
+		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte("test123"))
+		if err != nil {
 			t.Errorf("Error creating user: %v", err)
 		}
 

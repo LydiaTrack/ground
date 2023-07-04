@@ -11,7 +11,7 @@ import (
 // InitUser initializes user routes
 func InitUser(r *gin.Engine) {
 
-	userRepository := repository.GetRepository()
+	userRepository := repository.GetUserRepository()
 	userService := service.NewUserService(userRepository)
 
 	userHandler := handlers.NewUserHandler(userService)
