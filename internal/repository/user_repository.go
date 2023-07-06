@@ -2,14 +2,13 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/mgo.v2/bson"
-	"log"
 	"lydia-track-base/internal/domain"
 	"lydia-track-base/internal/mongodb"
+	"lydia-track-base/internal/utils"
 	"os"
 )
 
@@ -35,22 +34,22 @@ func newUserMongoRepository() *UserMongoRepository {
 
 	endpoint, err := container.Endpoint(ctx, "mongodb")
 	if err != nil {
-		log.Fatal(fmt.Errorf("failed to get endpoint: %w", err))
+		utils.LogFatal("Error getting endpoint: ", err)
 	}
 
 	mongoClient, err := mongo.NewClient(options.Client().ApplyURI(endpoint))
 	if err != nil {
-		log.Fatal(fmt.Errorf("error creating mongo client: %w", err))
+		utils.LogFatal("Error creating mongo client: ", err)
 	}
 
 	err = mongoClient.Connect(ctx)
 	if err != nil {
-		log.Fatal("Error connecting to mongo: ", err)
+		utils.LogFatal("Error connecting to mongo client: ", err)
 	}
 
 	err = godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file", err)
+		utils.LogFatal("Error loading .env file: ", err)
 	}
 
 	collection := mongoClient.Database(os.Getenv("LYDIA_DB_NAME")).Collection("users")
