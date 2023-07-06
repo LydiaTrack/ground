@@ -6,6 +6,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"lydia-track-base/internal/domain"
 	"lydia-track-base/internal/domain/commands"
+	"lydia-track-base/internal/utils"
 	"time"
 )
 
@@ -44,7 +45,6 @@ func (s UserService) CreateUser(command commands.CreateUserCommand) (domain.User
 	if err := user.Validate(); err != nil {
 		return user, err
 	}
-
 	userExists := s.userRepository.ExistsByUsername(user.Username)
 
 	if userExists {
@@ -57,12 +57,13 @@ func (s UserService) CreateUser(command commands.CreateUserCommand) (domain.User
 	if err != nil {
 		return domain.UserModel{}, err
 	}
-
 	savedUser, err = afterCreateUser(savedUser)
 	if err != nil {
 		return domain.UserModel{}, err
 	}
+
 	savedUser, _ = s.GetUser(savedUser.ID.Hex())
+	//	utils.Log("User %s created successfully", savedUser.Username)
 	return savedUser, nil
 }
 
@@ -135,6 +136,7 @@ func (s UserService) VerifyUser(username string, password string) (domain.UserMo
 	// Compare the passwords
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
+		utils.LogFatal("Error comparing passwords: " + err.Error())
 		return domain.UserModel{}, err
 	}
 
