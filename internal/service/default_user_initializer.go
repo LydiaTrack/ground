@@ -1,11 +1,11 @@
-package utils
+package service
 
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"lydia-track-base/internal/domain"
 	"lydia-track-base/internal/domain/commands"
 	"lydia-track-base/internal/repository"
-	"lydia-track-base/internal/service"
+	"lydia-track-base/internal/utils"
 	"time"
 )
 
@@ -22,12 +22,13 @@ func InitializeDefaultUser() error {
 		},
 	}
 
-	_, err := service.
-		NewUserService(repository.GetUserRepository()).
+	_, err := NewUserService(repository.GetUserRepository()).
 		CreateUser(userCreateCmd)
 	if err != nil {
 		return err
 	}
+
+	utils.Log("Default user created successfully")
 
 	return nil
 }
