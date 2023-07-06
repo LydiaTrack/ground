@@ -29,5 +29,7 @@ func InitializeDefaultUser() error {
 		return err
 	}
 
+	Log("Default user created successfully")
+
 	return nil
 }

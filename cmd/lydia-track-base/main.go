@@ -21,10 +21,11 @@ func main() {
 	initializeRoutes(r)
 	// Initialize default user
 	utils.InitializeDefaultUser()
+	// Initialize logging
+	utils.InitLogging()
 
 	// Run server on port 8080
 	r.Run(":8080")
-
 }
 
 // initializeRoutes initializes routes for each API
