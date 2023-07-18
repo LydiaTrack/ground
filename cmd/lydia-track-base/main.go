@@ -20,10 +20,10 @@ func main() {
 
 	// Initialize routes
 	initializeRoutes(r)
-	// Initialize default user
-	service.InitializeDefaultUser()
 	// Initialize logging
 	utils.InitLogging()
+	// Initialize default user
+	service.InitializeDefaultUser()
 
 	// Run server on port 8080
 	r.Run(":8080")
@@ -38,4 +38,5 @@ func initializeRoutes(r *gin.Engine) {
 	api.InitUser(r)
 	api.InitSwagger(r)
 	api.InitAuth(r)
+	api.InitHealth(r)
 }
