@@ -12,27 +12,17 @@ on:
 jobs:
 
   build:
-    # Testcontainers requires Docker to be available
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Set up Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: 1.19
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
 
-    - name: Setup docker environment for testcontainers and mongodb
-      uses: testcontainers/testcontainers-go@v0.1.0
-      with:
-          image: mongo:4.4.6
-          env: |
-            MONGO_INITDB_ROOT_USERNAME=root 
-            MONGO_INITDB_ROOT_PASSWORD=example
+      - name: Build
+        run: go build -v ./...
 
-
-    - name: Build
-      run: go build -v ./...
-
-    - name: Test
-      run: go test -v ./...
+      - name: Test
+        run: go test -v ./...
