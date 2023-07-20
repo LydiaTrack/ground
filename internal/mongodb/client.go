@@ -14,7 +14,7 @@ type mongodbContainer struct {
 // StartContainer creates an instance of the mongodb container type
 func StartContainer(ctx context.Context) (*mongodbContainer, error) {
 	req := testcontainers.ContainerRequest{
-		Image:        "mongo:latest",
+		Image:        "mongo:5.0.2",
 		ExposedPorts: []string{"27017/tcp"},
 		WaitingFor: wait.ForAll(
 			wait.ForLog("Waiting for connections"),
