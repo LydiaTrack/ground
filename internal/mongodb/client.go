@@ -2,6 +2,7 @@ package mongodb
 
 import (
 	"context"
+	"github.com/docker/docker/api/types/container"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
@@ -20,6 +21,9 @@ func StartContainer(ctx context.Context) (*mongodbContainer, error) {
 			wait.ForLog("Waiting for connections"),
 			wait.ForListeningPort("27017/tcp"),
 		),
+		HostConfigModifier: func(hc *container.HostConfig) {
+			hc.NetworkMode = "host"
+		},
 	}
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
