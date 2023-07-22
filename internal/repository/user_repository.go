@@ -108,12 +108,11 @@ func (r *UserMongoRepository) DeleteUser(id bson.ObjectId) error {
 }
 
 func (r *UserMongoRepository) ExistsByUsername(username string) bool {
-	var user domain.UserModel
-	err := r.collection.FindOne(context.Background(), bson.M{"username": username}).Decode(&user)
+	count, err := r.collection.CountDocuments(context.Background(), bson.M{"username": username})
 	if err != nil {
 		return false
 	}
-	return true
+	return count > 0
 }
 
 func (r *UserMongoRepository) GetUserByUsername(username string) (domain.UserModel, error) {
