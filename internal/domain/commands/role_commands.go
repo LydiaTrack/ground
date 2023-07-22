@@ -5,13 +5,13 @@ import (
 )
 
 type CreateRoleCommand struct {
-	RoleName    string 		  `json:"rolename"`
-	Tags        []string      `json:"tags,omitempty"`
-	RoleInfo    string        `bson:"role_info,omitempty"`
+	Name string   `json:"name"`
+	Tags []string `json:"tags,omitempty"`
+	Info string   `json:"info,omitempty"`
 }
 
 type UpdateRoleCommand struct {
-	RoleName string `json:"rolename"`
+	Name string `json:"name"`
 }
 
 type DeleteRoleCommand struct {

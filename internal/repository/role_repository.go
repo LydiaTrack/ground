@@ -50,7 +50,7 @@ func NewRoleMongoRepository() *RoleMongoRepository {
 		return nil
 	}
 
-	collection := client.Database(os.Getenv("LYDIA_DB")).Collection("roles")
+	collection := client.Database(os.Getenv("LYDIA_DB_NAME")).Collection("roles")
 
 	return &RoleMongoRepository{
 		client:     client,
@@ -97,11 +97,11 @@ func (r *RoleMongoRepository) DeleteRole(id bson.ObjectId) error {
 }
 
 // ExistsByRolename checks if a role exists by role name
-func (r *RoleMongoRepository) ExistsByRolename(rolename string) (bool, error) {
-	var role domain.RoleModel
-	err := r.collection.FindOne(context.Background(), bson.M{"rolename": rolename}).Decode(&role)
+func (r *RoleMongoRepository) ExistsByRolename(rolename string) bool {
+	// Check if role exists by name
+	count, err := r.collection.CountDocuments(context.Background(), bson.M{"name": rolename})
 	if err != nil {
-		return false, err
+		return false
 	}
-	return true, nil
+	return count > 0
 }
