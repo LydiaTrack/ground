@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
 	"lydia-track-base/cmd/lydia-track-base/api"
 	"lydia-track-base/internal/service"
 	"lydia-track-base/internal/utils"
+
+	"github.com/gin-gonic/gin"
 )
 
 // @title Lydia Track Base API
@@ -36,6 +37,7 @@ func initializeRoutes(r *gin.Engine) {
 	r.Use(globalInterceptors...)
 
 	api.InitUser(r)
+	api.InitRole(r)
 	api.InitSwagger(r)
 	api.InitAuth(r)
 	api.InitHealth(r)
