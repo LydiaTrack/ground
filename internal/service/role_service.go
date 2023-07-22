@@ -24,22 +24,18 @@ func (s RoleService) CreateRole(command commands.CreateRoleCommand) (domain.Role
 	// TODO: These kind of operations must be done with specific requests, not by RoleModel model itself
 	// Validate role
 	// Map command to role
-	role := domain.NewRole(bson.NewObjectId().Hex(), command.RoleName, command.Tags ,command.RoleInfo,time.Now(), 1)
+	role := domain.NewRole(bson.NewObjectId().Hex(), command.Name, command.Tags, command.Info, time.Now(), 1)
 	if err := role.Validate(); err != nil {
 		return role, err
 	}
 
-	roleExists, err := s.roleRepository.ExistsByRolename(role.Name)
-
-	if err != nil {
-		return domain.RoleModel{}, err
-	}
+	roleExists := s.roleRepository.ExistsByRolename(role.Name)
 
 	if roleExists {
 		return domain.RoleModel{}, errors.New("role already exists")
 	}
 
-	role, err = s.roleRepository.SaveRole(role)
+	role, err := s.roleRepository.SaveRole(role)
 	if err != nil {
 		return domain.RoleModel{}, err
 	}
@@ -80,5 +76,5 @@ type RoleRepository interface {
 	// DeleteRole deletes a role by id
 	DeleteRole(id bson.ObjectId) error
 	// ExistsByRolename checks if a role exists by rolename
-	ExistsByRolename(rolename string) (bool, error)
+	ExistsByRolename(rolename string) bool
 }
