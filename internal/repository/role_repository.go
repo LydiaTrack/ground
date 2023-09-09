@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"log"
-	"lydia-track-base/internal/domain"
+	"lydia-track-base/internal/domain/role"
 	"lydia-track-base/internal/mongodb"
 	"os"
 
@@ -58,29 +58,29 @@ func NewRoleMongoRepository() *RoleMongoRepository {
 	}
 }
 
-// Saverole saves a role
-func (r *RoleMongoRepository) SaveRole(role domain.RoleModel) (domain.RoleModel, error) {
-	_, err := r.collection.InsertOne(context.Background(), role)
+// SaveRole saves a role
+func (r *RoleMongoRepository) SaveRole(roleModel role.Model) (role.Model, error) {
+	_, err := r.collection.InsertOne(context.Background(), roleModel)
 	if err != nil {
-		return domain.RoleModel{}, err
+		return role.Model{}, err
 	}
-	return role, nil
+	return roleModel, nil
 }
 
 // GetRole gets a role by id
-func (r *RoleMongoRepository) GetRole(id bson.ObjectId) (domain.RoleModel, error) {
-	var role domain.RoleModel
-	err := r.collection.FindOne(context.Background(), bson.M{"_id": id}).Decode(&role)
+func (r *RoleMongoRepository) GetRole(id bson.ObjectId) (role.Model, error) {
+	var roleModel role.Model
+	err := r.collection.FindOne(context.Background(), bson.M{"_id": id}).Decode(&roleModel)
 	if err != nil {
-		return domain.RoleModel{}, err
+		return role.Model{}, err
 	}
-	return role, nil
+	return roleModel, nil
 }
 
 // ExistsRole checks if a role exists by role id
 func (r *RoleMongoRepository) ExistsRole(id bson.ObjectId) (bool, error) {
-	var role domain.RoleModel
-	err := r.collection.FindOne(context.Background(), bson.M{"_id": id}).Decode(&role)
+	var roleModel role.Model
+	err := r.collection.FindOne(context.Background(), bson.M{"_id": id}).Decode(&roleModel)
 	if err != nil {
 		return false, err
 	}

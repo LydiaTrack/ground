@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"lydia-track-base/internal/domain/commands"
+	"lydia-track-base/internal/domain/role/commands"
 	"lydia-track-base/internal/service"
 
 	"github.com/gin-gonic/gin"

@@ -10,7 +10,13 @@ import (
 // JwtAuthMiddleware is a middleware for JWT authentication
 func JwtAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		err := auth.IsTokenValid(c)
+		token, err := auth.ExtractTokenFromContext(c)
+		if err != nil {
+			c.String(http.StatusUnauthorized, "Unauthorized")
+			c.Abort()
+			return
+		}
+		err = auth.IsTokenValid(token)
 		if err != nil {
 			c.String(http.StatusUnauthorized, "Unauthorized")
 			c.Abort()

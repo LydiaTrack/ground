@@ -6,10 +6,10 @@ import (
 )
 
 type AuthHandler struct {
-	authService auth.AuthService
+	authService auth.Service
 }
 
-func NewAuthHandler(authService auth.AuthService) AuthHandler {
+func NewAuthHandler(authService auth.Service) AuthHandler {
 	return AuthHandler{authService: authService}
 }
 
@@ -43,7 +43,7 @@ func (h AuthHandler) Login(c *gin.Context) {
 // @Produce json
 // @Security ApiKeyAuth
 // @Success 200 {object} map[string]interface{}
-// @Router /current-user [get]
+// @Router /currentUser [get]
 func (h AuthHandler) GetCurrentUser(c *gin.Context) {
 	user, err := h.authService.GetCurrentUser(c)
 	if err != nil {
@@ -51,4 +51,22 @@ func (h AuthHandler) GetCurrentUser(c *gin.Context) {
 		return
 	}
 	c.JSON(200, user)
+}
+
+// RefreshToken godoc
+// @Summary Refresh token
+// @Description refresh token.
+// @Tags auth
+// @Accept */*
+// @Produce json
+// @Security ApiKeyAuth
+// @Success 200 {object} map[string]interface{}
+// @Router /refreshToken [get]
+func (h AuthHandler) RefreshToken(c *gin.Context) {
+	tokenPair, err := h.authService.RefreshTokenPair(c)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(200, tokenPair)
 }
