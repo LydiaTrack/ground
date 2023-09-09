@@ -2,8 +2,8 @@ package service
 
 import (
 	"errors"
-	"lydia-track-base/internal/domain"
-	"lydia-track-base/internal/domain/commands"
+	"lydia-track-base/internal/domain/role"
+	"lydia-track-base/internal/domain/role/commands"
 	"time"
 
 	"gopkg.in/mgo.v2/bson"
@@ -20,34 +20,34 @@ func NewRoleService(roleRepository RoleRepository) RoleService {
 }
 
 // CreateRole TODO: Add permission check
-func (s RoleService) CreateRole(command commands.CreateRoleCommand) (domain.RoleModel, error) {
+func (s RoleService) CreateRole(command commands.CreateRoleCommand) (role.Model, error) {
 	// TODO: These kind of operations must be done with specific requests, not by RoleModel model itself
 	// Validate role
 	// Map command to role
-	role := domain.NewRole(bson.NewObjectId().Hex(), command.Name, command.Tags, command.Info, time.Now(), 1)
-	if err := role.Validate(); err != nil {
-		return role, err
+	roleModel := role.NewRole(bson.NewObjectId().Hex(), command.Name, command.Tags, command.Info, time.Now(), 1)
+	if err := roleModel.Validate(); err != nil {
+		return roleModel, err
 	}
 
-	roleExists := s.roleRepository.ExistsByRolename(role.Name)
+	roleExists := s.roleRepository.ExistsByRolename(roleModel.Name)
 
 	if roleExists {
-		return domain.RoleModel{}, errors.New("role already exists")
+		return role.Model{}, errors.New("role already exists")
 	}
 
-	role, err := s.roleRepository.SaveRole(role)
+	roleModel, err := s.roleRepository.SaveRole(roleModel)
 	if err != nil {
-		return domain.RoleModel{}, err
+		return role.Model{}, err
 	}
-	return role, nil
+	return roleModel, nil
 }
 
-func (s RoleService) GetRole(id string) (domain.RoleModel, error) {
-	role, err := s.roleRepository.GetRole(bson.ObjectIdHex(id))
+func (s RoleService) GetRole(id string) (role.Model, error) {
+	roleModel, err := s.roleRepository.GetRole(bson.ObjectIdHex(id))
 	if err != nil {
-		return domain.RoleModel{}, err
+		return role.Model{}, err
 	}
-	return role, nil
+	return roleModel, nil
 }
 
 func (s RoleService) ExistsRole(id string) (bool, error) {
@@ -68,9 +68,9 @@ func (s RoleService) DeleteRole(id string) error {
 
 type RoleRepository interface {
 	// SaveRole saves a role
-	SaveRole(role domain.RoleModel) (domain.RoleModel, error)
+	SaveRole(role role.Model) (role.Model, error)
 	// GetRole gets a role by id
-	GetRole(id bson.ObjectId) (domain.RoleModel, error)
+	GetRole(id bson.ObjectId) (role.Model, error)
 	// ExistsRole checks if a role exists
 	ExistsRole(id bson.ObjectId) (bool, error)
 	// DeleteRole deletes a role by id

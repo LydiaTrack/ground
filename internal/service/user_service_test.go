@@ -3,8 +3,8 @@ package service
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
-	"lydia-track-base/internal/domain"
-	"lydia-track-base/internal/domain/commands"
+	"lydia-track-base/internal/domain/user"
+	"lydia-track-base/internal/domain/user/commands"
 	"lydia-track-base/internal/repository"
 	"lydia-track-base/internal/test_support"
 	"testing"
@@ -37,13 +37,13 @@ func TestCreateUser(t *testing.T) {
 	command := commands.CreateUserCommand{
 		Username: "test",
 		Password: "test123",
-		PersonInfo: domain.PersonInfo{
+		PersonInfo: user.PersonInfo{
 			FirstName: "TestName",
 			LastName:  "Test Lastname",
 			Email:     "exampletest@example.com",
 			Address:   "Test Address",
 			BirthDate: birthDate,
-			PhoneNumber: domain.PhoneNumber{
+			PhoneNumber: user.PhoneNumber{
 				AreaCode:    "500",
 				Number:      "5005050",
 				CountryCode: "+90",

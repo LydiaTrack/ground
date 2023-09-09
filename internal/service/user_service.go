@@ -4,8 +4,8 @@ import (
 	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2/bson"
-	"lydia-track-base/internal/domain"
-	"lydia-track-base/internal/domain/commands"
+	"lydia-track-base/internal/domain/user"
+	"lydia-track-base/internal/domain/user/commands"
 	"lydia-track-base/internal/utils"
 	"time"
 )
@@ -22,11 +22,11 @@ func NewUserService(userRepository UserRepository) UserService {
 
 type UserRepository interface {
 	// SaveUser saves a user
-	SaveUser(user domain.UserModel) (domain.UserModel, error)
+	SaveUser(user user.Model) (user.Model, error)
 	// GetUser gets a user by id
-	GetUser(id bson.ObjectId) (domain.UserModel, error)
+	GetUser(id bson.ObjectId) (user.Model, error)
 	// GetUserByUsername gets a user by username
-	GetUserByUsername(username string) (domain.UserModel, error)
+	GetUserByUsername(username string) (user.Model, error)
 	// ExistsUser checks if a user exists
 	ExistsUser(id bson.ObjectId) (bool, error)
 	// DeleteUser deletes a user by id
@@ -36,60 +36,66 @@ type UserRepository interface {
 }
 
 // CreateUser TODO: Add permission check
-func (s UserService) CreateUser(command commands.CreateUserCommand) (domain.UserModel, error) {
+func (s UserService) CreateUser(command commands.CreateUserCommand) (user.UserCreateResponse, error) {
 	// TODO: These kind of operations must be done with specific requests, not by UserModel model itself
 	// Validate user
 	// Map command to user
-	user := domain.NewUser(bson.NewObjectId().Hex(), command.Username,
+	userModel := user.NewUser(bson.NewObjectId().Hex(), command.Username,
 		command.Password, command.PersonInfo, time.Now(), 1)
-	if err := user.Validate(); err != nil {
-		return user, err
+	if err := userModel.Validate(); err != nil {
+		return user.UserCreateResponse{}, err
 	}
-	userExists := s.userRepository.ExistsByUsername(user.Username)
+	userExists := s.userRepository.ExistsByUsername(userModel.Username)
 
 	if userExists {
-		return domain.UserModel{}, errors.New("user already exists")
+		return user.UserCreateResponse{}, errors.New("user already exists")
 	}
 
-	user, err := beforeCreateUser(user)
+	userModel, err := beforeCreateUser(userModel)
 
-	savedUser, err := s.userRepository.SaveUser(user)
+	savedUser, err := s.userRepository.SaveUser(userModel)
 	if err != nil {
-		return domain.UserModel{}, err
+		return user.UserCreateResponse{}, err
 	}
 	savedUser, err = afterCreateUser(savedUser)
 	if err != nil {
-		return domain.UserModel{}, err
+		return user.UserCreateResponse{}, err
 	}
 
-	savedUser, _ = s.GetUser(savedUser.ID.Hex())
-	//	utils.Log("User %s created successfully", savedUser.Username)
-	return savedUser, nil
+	response := user.UserCreateResponse{
+		ID:          savedUser.ID,
+		Username:    savedUser.Username,
+		PersonInfo:  savedUser.PersonInfo,
+		CreatedDate: savedUser.CreatedDate,
+		Version:     savedUser.Version,
+	}
+	utils.Log("User %s created successfully", response.Username)
+	return response, nil
 }
 
 // beforeCreateUser is a hook that is called before creating a user
-func beforeCreateUser(user domain.UserModel) (domain.UserModel, error) {
+func beforeCreateUser(userModel user.Model) (user.Model, error) {
 	// Hash user password before saving
-	hashedPassword, err := hashPassword(user.Password)
+	hashedPassword, err := hashPassword(userModel.Password)
 	if err != nil {
-		return domain.UserModel{}, err
+		return user.Model{}, err
 	}
 
-	user.Password = hashedPassword
-	return user, nil
+	userModel.Password = hashedPassword
+	return userModel, nil
 }
 
 // afterCreateUser is a hook that is called after creating a user
-func afterCreateUser(user domain.UserModel) (domain.UserModel, error) {
+func afterCreateUser(user user.Model) (user.Model, error) {
 	return user, nil
 }
 
-func (s UserService) GetUser(id string) (domain.UserModel, error) {
-	user, err := s.userRepository.GetUser(bson.ObjectIdHex(id))
+func (s UserService) GetUser(id string) (user.Model, error) {
+	userModel, err := s.userRepository.GetUser(bson.ObjectIdHex(id))
 	if err != nil {
-		return domain.UserModel{}, err
+		return user.Model{}, err
 	}
-	return user, nil
+	return userModel, nil
 }
 
 func (s UserService) ExistsUser(id string) (bool, error) {
@@ -126,21 +132,21 @@ func hashPassword(rawPassword string) (string, error) {
 }
 
 // VerifyUser verifies a user by username and password
-func (s UserService) VerifyUser(username string, password string) (domain.UserModel, error) {
+func (s UserService) VerifyUser(username string, password string) (user.Model, error) {
 	// Get the user by username
-	user, err := s.userRepository.GetUserByUsername(username)
+	userModel, err := s.userRepository.GetUserByUsername(username)
 	if err != nil {
-		return domain.UserModel{}, err
+		return user.Model{}, err
 	}
 
 	// Compare the passwords
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(userModel.Password), []byte(password))
 	if err != nil {
 		utils.LogFatal("Error comparing passwords: " + err.Error())
-		return domain.UserModel{}, err
+		return user.Model{}, err
 	}
 
-	return user, nil
+	return userModel, nil
 }
 
 // ExistsByUsername gets a user by username
