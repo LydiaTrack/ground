@@ -12,32 +12,54 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GenerateToken generates a jwt token for a user
-func GenerateToken(userId bson.ObjectId) (string, error) {
+const (
+	UserIdKey            = "sub"
+	AuthorizedKey        = "authorized"
+	ExpKey               = "exp"
+	JwtExpirationKey     = "JWT_EXPIRES_IN_HOUR"
+	RefreshExpirationKey = "JWT_REFRESH_EXPIRES_IN_HOUR"
+	JwtSecretKey         = "JWT_SECRET"
+	AuthorizationHeader  = "Authorization"
+)
 
-	tokenLifespan, err := strconv.Atoi(os.Getenv("JWT_EXPIRES_IN_HOUR"))
+type TokenPair struct {
+	Token        string `json:"token"`
+	RefreshToken string `json:"refreshToken"`
+}
+
+// GenerateTokenPair generates a jwt and refresh token
+func GenerateTokenPair(userId bson.ObjectId) (TokenPair, error) {
+
+	tokenLifespan, err := strconv.Atoi(os.Getenv(JwtExpirationKey))
 
 	if err != nil {
-		return "", err
+		return TokenPair{}, err
 	}
 
 	claims := jwt.MapClaims{}
-	claims["authorized"] = true
-	claims["userId"] = userId.Hex()
-	claims["exp"] = time.Now().Add(time.Hour * time.Duration(tokenLifespan)).Unix()
+	claims[AuthorizedKey] = true
+	claims[UserIdKey] = userId.Hex()
+	claims[ExpKey] = time.Now().Add(time.Hour * time.Duration(tokenLifespan)).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	tokenStr, err := token.SignedString([]byte(os.Getenv(JwtSecretKey)))
+	if err != nil {
+		return TokenPair{}, err
+	}
+
+	// Refresh token is a random string
+	refreshTokenStr := bson.NewObjectId().Hex()
+
+	return TokenPair{Token: tokenStr, RefreshToken: refreshTokenStr}, nil
 }
 
 // IsTokenValid validates the token
-func IsTokenValid(c *gin.Context) error {
-	tokenString := ExtractTokenFromContext(c)
-	_, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+func IsTokenValid(token string) error {
+	_, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(os.Getenv("JWT_SECRET")), nil
+		return []byte(os.Getenv(JwtSecretKey)), nil
 	})
 
 	if err != nil {
@@ -46,35 +68,51 @@ func IsTokenValid(c *gin.Context) error {
 	return nil
 }
 
-// ExtractTokenFromContext extracts the token from the request
-func ExtractTokenFromContext(c *gin.Context) string {
+// ExtractTokenFromContext extracts the user id from the bearer token or refresh token
+func ExtractTokenFromContext(c *gin.Context) (string, error) {
+	token := extractBearerTokenFromContext(c)
+
+	if token == "" {
+		return "", fmt.Errorf("token is empty")
+	}
+
+	return token, nil
+}
+
+// extractBearerTokenFromContext extracts the token from the request
+func extractBearerTokenFromContext(c *gin.Context) string {
 	token := c.Query("token")
 	if token != "" {
 		return token
 	}
-	bearerToken := c.Request.Header.Get("Authorization")
+	bearerToken := c.Request.Header.Get(AuthorizationHeader)
 	if len(strings.Split(bearerToken, " ")) == 2 {
 		return strings.Split(bearerToken, " ")[1]
 	}
 	return ""
 }
 
-// ExtractTokenID extracts the token id from the request
-func ExtractTokenID(c *gin.Context) (string, error) {
+// ExtractUserIdFromContext extracts the token id (userId) from the request
+func ExtractUserIdFromContext(c *gin.Context) (string, error) {
 
-	tokenString := ExtractTokenFromContext(c)
+	tokenString, err := ExtractTokenFromContext(c)
+	if err != nil {
+		return "", err
+	}
+
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(os.Getenv("JWT_SECRET")), nil
+		return []byte(os.Getenv(JwtSecretKey)), nil
 	})
+
 	if err != nil {
 		return "", err
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
-		uid := claims["userId"].(string)
+		uid := claims[UserIdKey].(string)
 		return uid, nil
 	}
 	return "", nil
@@ -82,7 +120,7 @@ func ExtractTokenID(c *gin.Context) (string, error) {
 
 // Logout logs out the user
 /*func Logout(c *gin.Context) error {
-	_, err := ExtractTokenID(c)
+	_, err := ExtractUserIdFromContext(c)
 	if err != nil {
 		return err
 	}

@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
-	"lydia-track-base/internal/domain/commands"
+	"lydia-track-base/internal/domain/user/commands"
 	"lydia-track-base/internal/service"
 )
 

@@ -12,10 +12,13 @@ import (
 func InitAuth(r *gin.Engine) {
 	userRepository := repository.GetUserRepository()
 	userService := service.NewUserService(userRepository)
-	authService := auth.NewAuthService(userService)
+	sessionRepository := repository.GetSessionRepository()
+	sessionService := service.NewSessionService(sessionRepository, userService)
+	authService := auth.NewAuthService(userService, sessionService)
 
 	authHandler := handlers.NewAuthHandler(authService)
 
 	r.POST("/login", authHandler.Login)
 	r.GET("/currentUser", authHandler.GetCurrentUser)
+	r.POST("/refreshToken", authHandler.RefreshToken)
 }
