@@ -6,7 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/mgo.v2/bson"
-	"lydia-track-base/internal/domain"
+	"lydia-track-base/internal/domain/user"
 	"lydia-track-base/internal/mongodb"
 	"lydia-track-base/internal/utils"
 	"os"
@@ -70,28 +70,28 @@ func GetUserRepository() *UserMongoRepository {
 }
 
 // SaveUser saves a user
-func (r *UserMongoRepository) SaveUser(user domain.UserModel) (domain.UserModel, error) {
-	_, err := r.collection.InsertOne(context.Background(), user)
+func (r *UserMongoRepository) SaveUser(userModel user.Model) (user.Model, error) {
+	_, err := r.collection.InsertOne(context.Background(), userModel)
 	if err != nil {
-		return domain.UserModel{}, err
+		return user.Model{}, err
 	}
-	return user, nil
+	return userModel, nil
 }
 
 // GetUser gets a user by id
-func (r *UserMongoRepository) GetUser(id bson.ObjectId) (domain.UserModel, error) {
-	var user domain.UserModel
-	err := r.collection.FindOne(context.Background(), bson.M{"_id": id}).Decode(&user)
+func (r *UserMongoRepository) GetUser(id bson.ObjectId) (user.Model, error) {
+	var userModel user.Model
+	err := r.collection.FindOne(context.Background(), bson.M{"_id": id}).Decode(&userModel)
 	if err != nil {
-		return domain.UserModel{}, err
+		return user.Model{}, err
 	}
-	return user, nil
+	return userModel, nil
 }
 
 // ExistsUser checks if a user exists
 func (r *UserMongoRepository) ExistsUser(id bson.ObjectId) (bool, error) {
-	var user domain.UserModel
-	err := r.collection.FindOne(context.Background(), bson.M{"_id": id}).Decode(&user)
+	var userModel user.Model
+	err := r.collection.FindOne(context.Background(), bson.M{"_id": id}).Decode(&userModel)
 	if err != nil {
 		return false, err
 	}
@@ -115,11 +115,11 @@ func (r *UserMongoRepository) ExistsByUsername(username string) bool {
 	return count > 0
 }
 
-func (r *UserMongoRepository) GetUserByUsername(username string) (domain.UserModel, error) {
-	var user domain.UserModel
-	err := r.collection.FindOne(context.Background(), bson.M{"username": username}).Decode(&user)
+func (r *UserMongoRepository) GetUserByUsername(username string) (user.Model, error) {
+	var userModel user.Model
+	err := r.collection.FindOne(context.Background(), bson.M{"username": username}).Decode(&userModel)
 	if err != nil {
-		return domain.UserModel{}, err
+		return user.Model{}, err
 	}
-	return user, nil
+	return userModel, nil
 }

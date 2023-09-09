@@ -2,19 +2,20 @@ package service
 
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"lydia-track-base/internal/domain"
-	"lydia-track-base/internal/domain/commands"
+	"lydia-track-base/internal/domain/user"
+	"lydia-track-base/internal/domain/user/commands"
 	"lydia-track-base/internal/repository"
 	"lydia-track-base/internal/utils"
+	"os"
 	"time"
 )
 
 // InitializeDefaultUser initializes the default user with default credentials
 func InitializeDefaultUser() error {
 	userCreateCmd := commands.CreateUserCommand{
-		Username: "lydia",
-		Password: "P@ssw0rd",
-		PersonInfo: domain.PersonInfo{
+		Username: os.Getenv("DEFAULT_USER_USERNAME"),
+		Password: os.Getenv("DEFAULT_USER_PASSWORD"),
+		PersonInfo: user.PersonInfo{
 			FirstName: "Lydia",
 			LastName:  "Admin",
 			BirthDate: primitive.

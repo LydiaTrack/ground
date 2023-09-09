@@ -1,4 +1,4 @@
-package domain
+package role
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-type RoleModel struct {
+type Model struct {
 	ID          bson.ObjectId `bson:"_id"`
 	Name        string        `bson:"name"`
 	Tags        []string      `bson:"tags,omitempty"`
@@ -16,8 +16,8 @@ type RoleModel struct {
 	Version     int           `bson:"version,omitempty"`
 }
 
-func NewRole(id string, name string, tags []string, roleInfo string, createdDate time.Time, version int) RoleModel {
-	return RoleModel{
+func NewRole(id string, name string, tags []string, roleInfo string, createdDate time.Time, version int) Model {
+	return Model{
 		ID:          bson.ObjectIdHex(id),
 		Name:        name,
 		Tags:        tags,
@@ -27,7 +27,7 @@ func NewRole(id string, name string, tags []string, roleInfo string, createdDate
 	}
 }
 
-func (r RoleModel) Validate() error {
+func (r Model) Validate() error {
 
 	if len(r.Name) == 0 {
 		return errors.New("rolename is required")

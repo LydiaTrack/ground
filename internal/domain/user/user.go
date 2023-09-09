@@ -1,4 +1,4 @@
-package domain
+package user
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type UserModel struct {
+type Model struct {
 	ID          bson.ObjectId `bson:"_id"`
 	Username    string        `bson:"username"`
 	Password    string        `bson:"password"`
@@ -15,8 +15,8 @@ type UserModel struct {
 	Version     int       `bson:"version,omitempty"`
 }
 
-func NewUser(id string, username string, password string, personInfo PersonInfo, createdDate time.Time, version int) UserModel {
-	return UserModel{
+func NewUser(id string, username string, password string, personInfo PersonInfo, createdDate time.Time, version int) Model {
+	return Model{
 		ID:          bson.ObjectIdHex(id),
 		Username:    username,
 		Password:    password,
@@ -26,7 +26,7 @@ func NewUser(id string, username string, password string, personInfo PersonInfo,
 	}
 }
 
-func (u UserModel) Validate() error {
+func (u Model) Validate() error {
 
 	if len(u.Password) == 0 {
 		return errors.New("password is required")
