@@ -3,6 +3,7 @@ package handlers
 import (
 	"lydia-track-base/internal/domain/role/commands"
 	"lydia-track-base/internal/service"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,10 +28,10 @@ func (h RoleHandler) GetRole(c *gin.Context) {
 	id := c.Param("id")
 	role, err := h.roleService.GetRole(id)
 	if err != nil {
-		c.JSON(404, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(200, role)
+	c.JSON(http.StatusOK, role)
 }
 
 // CreateRole godoc
@@ -44,15 +45,15 @@ func (h RoleHandler) GetRole(c *gin.Context) {
 func (h RoleHandler) CreateRole(c *gin.Context) {
 	var role commands.CreateRoleCommand
 	if err := c.ShouldBindJSON(&role); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 	roleModel, err := h.roleService.CreateRole(role)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(200, roleModel)
+	c.JSON(http.StatusOK, roleModel)
 }
 
 // DeleteRole godoc
@@ -67,8 +68,8 @@ func (h RoleHandler) DeleteRole(c *gin.Context) {
 	id := c.Param("id")
 	err := h.roleService.DeleteRole(id)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(200, gin.H{"status": "success"})
+	c.JSON(http.StatusOK, gin.H{"status": "success"})
 }
