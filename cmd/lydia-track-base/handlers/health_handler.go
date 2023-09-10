@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"lydia-track-base/internal/service"
+	"net/http"
 )
 
 type HealthHandler struct{}
@@ -21,5 +22,5 @@ func NewHealthHandler() HealthHandler {
 // @Router /health [get]
 func (h HealthHandler) GetHealth(c *gin.Context) {
 	health := service.GetApplicationHealth()
-	c.JSON(200, health)
+	c.JSON(http.StatusOK, health)
 }

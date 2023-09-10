@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"lydia-track-base/internal/auth"
+	"net/http"
 )
 
 type AuthHandler struct {
@@ -24,15 +25,15 @@ func NewAuthHandler(authService auth.Service) AuthHandler {
 func (h AuthHandler) Login(c *gin.Context) {
 	var loginCommand auth.Request
 	if err := c.ShouldBindJSON(&loginCommand); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 	response, err := h.authService.Login(loginCommand)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(200, response)
+	c.JSON(http.StatusOK, response)
 }
 
 // GetCurrentUser godoc
@@ -47,10 +48,10 @@ func (h AuthHandler) Login(c *gin.Context) {
 func (h AuthHandler) GetCurrentUser(c *gin.Context) {
 	user, err := h.authService.GetCurrentUser(c)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(200, user)
+	c.JSON(http.StatusOK, user)
 }
 
 // RefreshToken godoc
@@ -65,8 +66,8 @@ func (h AuthHandler) GetCurrentUser(c *gin.Context) {
 func (h AuthHandler) RefreshToken(c *gin.Context) {
 	tokenPair, err := h.authService.RefreshTokenPair(c)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(200, tokenPair)
+	c.JSON(http.StatusOK, tokenPair)
 }

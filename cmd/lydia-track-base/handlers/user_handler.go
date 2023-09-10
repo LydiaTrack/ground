@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"lydia-track-base/internal/domain/user/commands"
 	"lydia-track-base/internal/service"
+	"net/http"
 )
 
 type UserHandler struct {
@@ -26,10 +27,10 @@ func (h UserHandler) GetUser(c *gin.Context) {
 	id := c.Param("id")
 	user, err := h.userService.GetUser(id)
 	if err != nil {
-		c.JSON(404, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(200, user)
+	c.JSON(http.StatusOK, user)
 }
 
 // CreateUser godoc
@@ -43,15 +44,15 @@ func (h UserHandler) GetUser(c *gin.Context) {
 func (h UserHandler) CreateUser(c *gin.Context) {
 	var createUserCommand commands.CreateUserCommand
 	if err := c.ShouldBindJSON(&createUserCommand); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	user, err := h.userService.CreateUser(createUserCommand)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(200, user)
+	c.JSON(http.StatusOK, user)
 }
 
 // DeleteUser godoc
@@ -65,13 +66,13 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 func (h UserHandler) DeleteUser(c *gin.Context) {
 	var deleteUserCommand commands.DeleteUserCommand
 	if err := c.ShouldBindJSON(&deleteUserCommand); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	err := h.userService.DeleteUser(deleteUserCommand)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(200, gin.H{"status": "success"})
+	c.JSON(http.StatusOK, gin.H{"status": "success"})
 }
