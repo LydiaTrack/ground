@@ -10,15 +10,14 @@ import (
 
 // InitAuth initializes auth routes
 func InitAuth(r *gin.Engine) {
-	userRepository := repository.GetUserRepository()
-	userService := service.NewUserService(userRepository)
-	sessionRepository := repository.GetSessionRepository()
-	sessionService := service.NewSessionService(sessionRepository, userService)
+	userService := service.NewUserService(repository.GetUserRepository())
+	sessionService := service.NewSessionService(repository.GetSessionRepository(), userService)
 	authService := auth.NewAuthService(userService, sessionService)
 
 	authHandler := handlers.NewAuthHandler(authService)
 
-	r.POST("/login", authHandler.Login)
-	r.GET("/currentUser", authHandler.GetCurrentUser)
-	r.POST("/refreshToken", authHandler.RefreshToken)
+	routeGroup := r.Group("/auth")
+	routeGroup.POST("/login", authHandler.Login)
+	routeGroup.GET("/currentUser", authHandler.GetCurrentUser)
+	routeGroup.POST("/refreshToken", authHandler.RefreshToken)
 }
