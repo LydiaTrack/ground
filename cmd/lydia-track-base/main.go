@@ -1,11 +1,10 @@
 package main
 
 import (
+	"github.com/gin-gonic/gin"
 	"lydia-track-base/cmd/lydia-track-base/api"
 	"lydia-track-base/internal/service"
 	"lydia-track-base/internal/utils"
-
-	"github.com/gin-gonic/gin"
 )
 
 // @title Lydia Track Base API
@@ -17,14 +16,16 @@ import (
 // @schemes http
 func main() {
 
+	// Initialize logging
+	utils.InitLogging()
 	r := gin.New()
 
 	// Initialize routes
 	initializeRoutes(r)
-	// Initialize logging
-	utils.InitLogging()
 	// Initialize default user
 	service.InitializeDefaultUser()
+	// Initialize default role
+	service.InitializeDefaultRole()
 
 	// Run server on port 8080
 	r.Run(":8080")

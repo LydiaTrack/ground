@@ -19,9 +19,13 @@ type RoleMongoRepository struct {
 	collection *mongo.Collection
 }
 
+var (
+	roleRepository *RoleMongoRepository
+)
+
 // NewRoleMongoRepository creates a new RoleMongoRepository instance
 // which implements RoleRepository
-func NewRoleMongoRepository() *RoleMongoRepository {
+func newRoleMongoRepository() *RoleMongoRepository {
 	ctx := context.Background()
 	// FIXME: Burada ileride uzaktaki bir mongodb instance'ına bağlanmak gerekecek
 	// FIXME: Ortaklaştırılacak
@@ -56,6 +60,14 @@ func NewRoleMongoRepository() *RoleMongoRepository {
 		client:     client,
 		collection: collection,
 	}
+}
+
+// GetRoleRepository returns a RoleRepository
+func GetRoleRepository() *RoleMongoRepository {
+	if roleRepository == nil {
+		roleRepository = newRoleMongoRepository()
+	}
+	return roleRepository
 }
 
 // SaveRole saves a role

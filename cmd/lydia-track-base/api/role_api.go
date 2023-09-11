@@ -5,16 +5,18 @@ import (
 	"lydia-track-base/cmd/lydia-track-base/handlers"
 	"lydia-track-base/internal/repository"
 	"lydia-track-base/internal/service"
+	"lydia-track-base/internal/utils"
 )
 
 // InitUser initializes role routes
 func InitRole(r *gin.Engine) {
-	roleRepository := repository.NewRoleMongoRepository()
-	roleService := service.NewRoleService(roleRepository)
+	roleService := service.NewRoleService(repository.GetRoleRepository())
 	roleHandler := handlers.NewRoleHandler(roleService)
 
-	
-	r.GET("/roles/:id", roleHandler.GetRole)
-	r.POST("/roles", roleHandler.CreateRole)
-	r.DELETE("/roles/:id", roleHandler.DeleteRole)
+	routerGroup := r.Group("/roles")
+	routerGroup.GET("/:id", roleHandler.GetRole)
+	routerGroup.POST("", roleHandler.CreateRole)
+	routerGroup.DELETE("/:id", roleHandler.DeleteRole)
+
+	utils.Log("Role routes initialized")
 }
