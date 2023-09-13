@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/mgo.v2/bson"
+	"lydia-track-base/internal/domain/role"
 	"lydia-track-base/internal/domain/user"
 	"lydia-track-base/internal/mongodb"
 	"lydia-track-base/internal/utils"
@@ -122,4 +123,29 @@ func (r *UserMongoRepository) GetUserByUsername(username string) (user.Model, er
 		return user.Model{}, err
 	}
 	return userModel, nil
+}
+
+func (r *UserMongoRepository) AddRoleToUser(userID bson.ObjectId, roleID bson.ObjectId) error {
+	_, err := r.collection.UpdateOne(context.Background(), bson.M{"_id": userID}, bson.M{"$addToSet": bson.M{"roles": roleID}})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *UserMongoRepository) RemoveRoleFromUser(userID bson.ObjectId, roleID bson.ObjectId) error {
+	_, err := r.collection.UpdateOne(context.Background(), bson.M{"_id": userID}, bson.M{"$pull": bson.M{"roles": roleID}})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *UserMongoRepository) GetUserRoles(userID bson.ObjectId) ([]role.Model, error) {
+	userModel, err := r.GetUser(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return userModel.Roles, nil
 }
