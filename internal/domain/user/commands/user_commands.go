@@ -20,3 +20,13 @@ type UpdateUserCommand struct {
 type DeleteUserCommand struct {
 	ID bson.ObjectId `json:"_id"`
 }
+
+type AddRoleToUserCommand struct {
+	UserID bson.ObjectId `json:"user_id"`
+	RoleID bson.ObjectId `json:"role_id"`
+}
+
+type RemoveRoleFromUserCommand struct {
+	UserID bson.ObjectId `json:"user_id"`
+	RoleID bson.ObjectId `json:"role_id"`
+}

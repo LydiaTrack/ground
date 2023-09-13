@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
+	"gopkg.in/mgo.v2/bson"
 	"lydia-track-base/internal/domain/user/commands"
 	"lydia-track-base/internal/service"
 	"net/http"
@@ -75,4 +76,66 @@ func (h UserHandler) DeleteUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "success"})
+}
+
+// AddRoleToUser godoc
+// @Summary Add role to user
+// @Description add role to user.
+// @Tags root
+// @Accept */*
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /users/roles [post]
+func (h UserHandler) AddRoleToUser(c *gin.Context) {
+	var addRoleToUserCommand commands.AddRoleToUserCommand
+	if err := c.ShouldBindJSON(&addRoleToUserCommand); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	err := h.userService.AddRoleToUser(addRoleToUserCommand)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "success"})
+}
+
+// RemoveRoleFromUser godoc
+// @Summary Remove role from user
+// @Description remove role from user.
+// @Tags root
+// @Accept */*
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /users/roles [delete]
+func (h UserHandler) RemoveRoleFromUser(c *gin.Context) {
+	var removeRoleFromUserCommand commands.RemoveRoleFromUserCommand
+	if err := c.ShouldBindJSON(&removeRoleFromUserCommand); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	err := h.userService.RemoveRoleFromUser(removeRoleFromUserCommand)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "success"})
+}
+
+// GetUserRoles godoc
+// @Summary Get user roles
+// @Description get user roles.
+// @Tags root
+// @Accept */*
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /users/roles:id [get]
+func (h UserHandler) GetUserRoles(c *gin.Context) {
+	id := c.Param("id")
+	roles, err := h.userService.GetUserRoles(bson.ObjectIdHex(id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, roles)
 }
