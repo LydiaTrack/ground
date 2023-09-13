@@ -4,6 +4,7 @@ import (
 	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2/bson"
+	"lydia-track-base/internal/domain/role"
 	"lydia-track-base/internal/domain/user"
 	"lydia-track-base/internal/domain/user/commands"
 	"lydia-track-base/internal/utils"
@@ -33,6 +34,12 @@ type UserRepository interface {
 	DeleteUser(id bson.ObjectId) error
 	// ExistsByUsername checks if a user exists by username
 	ExistsByUsername(username string) bool
+	// AddRoleToUser adds a role to a user
+	AddRoleToUser(userID bson.ObjectId, roleID bson.ObjectId) error
+	// RemoveRoleFromUser removes a role from a user
+	RemoveRoleFromUser(userID bson.ObjectId, roleID bson.ObjectId) error
+	// GetUserRoles gets the roles of a user
+	GetUserRoles(userID bson.ObjectId) ([]role.Model, error)
 }
 
 // CreateUser TODO: Add permission check
@@ -152,4 +159,19 @@ func (s UserService) VerifyUser(username string, password string) (user.Model, e
 // ExistsByUsername gets a user by username
 func (s UserService) ExistsByUsername(username string) bool {
 	return s.userRepository.ExistsByUsername(username)
+}
+
+// AddRoleToUser adds a role to a user
+func (s UserService) AddRoleToUser(command commands.AddRoleToUserCommand) error {
+	return s.userRepository.AddRoleToUser(command.UserID, command.RoleID)
+}
+
+// RemoveRoleFromUser removes a role from a user
+func (s UserService) RemoveRoleFromUser(command commands.RemoveRoleFromUserCommand) error {
+	return s.userRepository.RemoveRoleFromUser(command.UserID, command.RoleID)
+}
+
+// GetUserRoles gets the roles of a user
+func (s UserService) GetUserRoles(userID bson.ObjectId) ([]role.Model, error) {
+	return s.userRepository.GetUserRoles(userID)
 }
