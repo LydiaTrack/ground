@@ -11,8 +11,14 @@ type mongodbContainer struct {
 	testcontainers.Container
 }
 
-// StartContainer creates an instance of the mongodb container type
-func StartContainer(ctx context.Context) (*mongodbContainer, error) {
+var (
+	// mongodbContainerInstance is the instance of the mongodb container
+	mongodbContainerInstance *mongodbContainer
+	initilized               = false
+)
+
+// StartContainer creates an instance of the mongodb container type for testing
+func startContainer(ctx context.Context) error {
 	req := testcontainers.ContainerRequest{
 		Image:        "mongo:latest",
 		ExposedPorts: []string{"27017/tcp"},
@@ -26,8 +32,27 @@ func StartContainer(ctx context.Context) (*mongodbContainer, error) {
 		Started:          true,
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
+	mongodbContainerInstance = &mongodbContainer{container}
+	initilized = true
+	return nil
+}
 
-	return &mongodbContainer{Container: container}, nil
+// InitializeContainer initializes the mongodb container
+func InitializeContainer() error {
+	ctx := context.Background()
+	err := startContainer(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetContainer returns the mongodb container instance
+func GetContainer() *mongodbContainer {
+	if !initilized {
+		panic("Mongodb container not initialized!")
+	}
+	return mongodbContainerInstance
 }
