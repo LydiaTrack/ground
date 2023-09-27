@@ -2,7 +2,10 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"log"
 	"lydia-track-base/cmd/lydia-track-base/api"
+	"lydia-track-base/internal/auth"
 	"lydia-track-base/internal/service"
 	"lydia-track-base/internal/utils"
 )
@@ -16,16 +19,22 @@ import (
 // @schemes http
 func main() {
 
+	// Initialize environment variables
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 	// Initialize logging
 	utils.InitLogging()
 	r := gin.New()
-
 	// Initialize routes
 	initializeRoutes(r)
 	// Initialize default user
 	service.InitializeDefaultUser()
 	// Initialize default role
 	service.InitializeDefaultRole()
+	// Initialize Casbin policy enforcer
+	auth.InitializePolicyEnforcer()
 
 	// Run server on port 8080
 	r.Run(":8080")

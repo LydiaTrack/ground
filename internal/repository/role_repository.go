@@ -2,12 +2,10 @@ package repository
 
 import (
 	"context"
-	"log"
 	"lydia-track-base/internal/domain/role"
 	"lydia-track-base/internal/mongodb"
 	"os"
 
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/mgo.v2/bson"
@@ -42,11 +40,6 @@ func newRoleMongoRepository() *RoleMongoRepository {
 	port, err := container.MappedPort(ctx, "27017")
 	if err != nil {
 		return nil
-	}
-
-	err = godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
 	}
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+host+":"+port.Port()))

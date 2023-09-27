@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/mgo.v2/bson"
@@ -46,11 +45,6 @@ func newUserMongoRepository() *UserMongoRepository {
 	err = mongoClient.Connect(ctx)
 	if err != nil {
 		utils.LogFatal("Error connecting to mongo client: ", err)
-	}
-
-	err = godotenv.Load()
-	if err != nil {
-		utils.LogFatal("Error loading .env file: ", err)
 	}
 
 	collection := mongoClient.Database(os.Getenv("LYDIA_DB_NAME")).Collection("users")
