@@ -6,6 +6,7 @@ import (
 	"log"
 	"lydia-track-base/cmd/lydia-track-base/api"
 	"lydia-track-base/internal/auth"
+	"lydia-track-base/internal/mongodb"
 	"lydia-track-base/internal/service"
 	"lydia-track-base/internal/utils"
 )
@@ -27,6 +28,8 @@ func main() {
 	// Initialize logging
 	utils.InitLogging()
 	r := gin.New()
+	// Initialize database
+	mongodb.InitializeContainer()
 	// Initialize routes
 	initializeRoutes(r)
 	// Initialize default user

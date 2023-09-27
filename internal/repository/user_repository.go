@@ -8,7 +8,6 @@ import (
 	"lydia-track-base/internal/domain/role"
 	"lydia-track-base/internal/domain/user"
 	"lydia-track-base/internal/mongodb"
-	"lydia-track-base/internal/utils"
 	"os"
 )
 
@@ -27,30 +26,28 @@ var (
 func newUserMongoRepository() *UserMongoRepository {
 	ctx := context.Background()
 	// FIXME: Burada ileride uzaktaki bir mongodb instance'ına bağlanmak gerekecek
-	container, err := mongodb.StartContainer(ctx)
+	// FIXME: Ortaklaştırılacak
+	container := mongodb.GetContainer()
+
+	host, err := container.Host(ctx)
 	if err != nil {
 		return nil
 	}
 
-	endpoint, err := container.Endpoint(ctx, "mongodb")
+	port, err := container.MappedPort(ctx, "27017")
 	if err != nil {
-		utils.LogFatal("Error getting endpoint: ", err)
+		return nil
 	}
 
-	mongoClient, err := mongo.NewClient(options.Client().ApplyURI(endpoint))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+host+":"+port.Port()))
 	if err != nil {
-		utils.LogFatal("Error creating mongo client: ", err)
+		return nil
 	}
 
-	err = mongoClient.Connect(ctx)
-	if err != nil {
-		utils.LogFatal("Error connecting to mongo client: ", err)
-	}
-
-	collection := mongoClient.Database(os.Getenv("LYDIA_DB_NAME")).Collection("users")
+	collection := client.Database(os.Getenv("LYDIA_DB_NAME")).Collection("users")
 
 	return &UserMongoRepository{
-		client:     mongoClient,
+		client:     client,
 		collection: collection,
 	}
 }
