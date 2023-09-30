@@ -22,10 +22,7 @@ func newSessionMongoRepository() *SessionMongoRepository {
 	ctx := context.Background()
 	// FIXME: Burada ileride uzaktaki bir mongodb instance'ına bağlanmak gerekecek
 	// FIXME: Ortaklaştırılacak
-	container, err := mongodb.StartContainer(ctx)
-	if err != nil {
-		return nil
-	}
+	container := mongodb.GetContainer()
 
 	host, err := container.Host(ctx)
 	if err != nil {
