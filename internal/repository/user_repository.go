@@ -3,17 +3,14 @@ package repository
 import (
 	"context"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/mgo.v2/bson"
 	"lydia-track-base/internal/domain/role"
 	"lydia-track-base/internal/domain/user"
 	"lydia-track-base/internal/mongodb"
-	"os"
 )
 
 // A UserMongoRepository that implements UserRepository
 type UserMongoRepository struct {
-	client     *mongo.Client
 	collection *mongo.Collection
 }
 
@@ -26,28 +23,10 @@ var (
 func newUserMongoRepository() *UserMongoRepository {
 	ctx := context.Background()
 	// FIXME: Burada ileride uzaktaki bir mongodb instance'ına bağlanmak gerekecek
-	// FIXME: Ortaklaştırılacak
-	container := mongodb.GetContainer()
 
-	host, err := container.Host(ctx)
-	if err != nil {
-		return nil
-	}
-
-	port, err := container.MappedPort(ctx, "27017")
-	if err != nil {
-		return nil
-	}
-
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+host+":"+port.Port()))
-	if err != nil {
-		return nil
-	}
-
-	collection := client.Database(os.Getenv("LYDIA_DB_NAME")).Collection("users")
+	collection := mongodb.GetCollection("users", ctx)
 
 	return &UserMongoRepository{
-		client:     client,
 		collection: collection,
 	}
 }

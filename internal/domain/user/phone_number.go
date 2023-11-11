@@ -3,9 +3,9 @@ package user
 import "errors"
 
 type PhoneNumber struct {
-	AreaCode    string `bson:"area_code"`
-	Number      string `bson:"number"`
-	CountryCode string `bson:"country_code"`
+	AreaCode    string `json:"area_code"`
+	Number      string `json:"number"`
+	CountryCode string `json:"country_code"`
 }
 
 // Validate validates a phone number
