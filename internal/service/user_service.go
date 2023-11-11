@@ -4,7 +4,9 @@ import (
 	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2/bson"
+	"lydia-track-base/internal/auth"
 	"lydia-track-base/internal/domain/role"
+	"lydia-track-base/internal/domain/session"
 	"lydia-track-base/internal/domain/user"
 	"lydia-track-base/internal/domain/user/commands"
 	"lydia-track-base/internal/utils"
@@ -42,8 +44,12 @@ type UserRepository interface {
 	GetUserRoles(userID bson.ObjectId) ([]role.Model, error)
 }
 
-// CreateUser TODO: Add permission check
-func (s UserService) CreateUser(command commands.CreateUserCommand) (user.UserCreateResponse, error) {
+func (s UserService) CreateUser(command commands.CreateUserCommand, session session.UserSession) (user.UserCreateResponse, error) {
+	permitted := auth.CheckPermission(session.Permissions, commands.CreatePermission)
+	if !permitted {
+		return user.UserCreateResponse{}, errors.New("not permitted")
+	}
+
 	// TODO: These kind of operations must be done with specific requests, not by UserModel model itself
 	// Validate user
 	// Map command to user
@@ -174,4 +180,19 @@ func (s UserService) RemoveRoleFromUser(command commands.RemoveRoleFromUserComma
 // GetUserRoles gets the roles of a user
 func (s UserService) GetUserRoles(userID bson.ObjectId) ([]role.Model, error) {
 	return s.userRepository.GetUserRoles(userID)
+}
+
+// GetUserPermissions gets the permissions of a user
+func (s UserService) GetUserPermissions(userID bson.ObjectId) ([]auth.Permission, error) {
+	userRoles, err := s.GetUserRoles(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	var permissions []auth.Permission
+	for _, userRole := range userRoles {
+		permissions = append(permissions, userRole.Permissions...)
+	}
+
+	return permissions, nil
 }
