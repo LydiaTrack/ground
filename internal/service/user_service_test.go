@@ -1,11 +1,10 @@
-package test
+package service
 
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"lydia-track-base/internal/domain/user"
 	"lydia-track-base/internal/domain/user/commands"
 	"lydia-track-base/internal/repository"
-	"lydia-track-base/internal/service"
 	"lydia-track-base/internal/test_support"
 	"testing"
 	"time"
@@ -17,7 +16,7 @@ func TestNewUserService(t *testing.T) {
 	repo := repository.GetUserRepository()
 
 	// Create a new user service instance
-	service.NewUserService(repo)
+	NewUserService(repo)
 }
 
 // TestCreateUser Create a new user
@@ -25,7 +24,7 @@ func TestCreateUser(t *testing.T) {
 	test_support.TestWithMongo()
 
 	// Create a new userModel service instance
-	userService := service.NewUserService(repository.GetUserRepository())
+	userService := NewUserService(repository.GetUserRepository())
 
 	birthDate := primitive.NewDateTimeFromTime(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC))
 	// Create a new userModel

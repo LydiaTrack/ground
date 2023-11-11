@@ -2,12 +2,10 @@ package auth
 
 import (
 	"context"
-	"embed"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/persist"
 	mongodbadapter "github.com/casbin/mongodb-adapter/v3"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"lydia-track-base/internal/domain/auth"
 	"lydia-track-base/internal/mongodb"
 	"lydia-track-base/internal/utils"
 	"os"
@@ -23,8 +21,12 @@ var (
 	policyEnforcer = &PolicyEnforcer{}
 )
 
-//go:embed configuration/rbac_model.conf
-var content embed.FS
+func GetPolicyEnforcer() *PolicyEnforcer {
+	if !initialised {
+		panic("Policy enforcer not initialized!")
+	}
+	return policyEnforcer
+}
 
 func InitializePolicyEnforcer() {
 	ctx := context.Background()
@@ -61,20 +63,12 @@ func InitializePolicyEnforcer() {
 
 	policyEnforcer.adapter = a
 	policyEnforcer.enforcer = *e
-	initialised = true
 	utils.Log("Policy enforcer initialized")
 }
 
-func GetPolicyEnforcer() *PolicyEnforcer {
-	if !initialised {
-		panic("Policy enforcer not initialized!")
-	}
-	return policyEnforcer
-}
-
 // Enforce decides whether a "subject" can access a "object" with the operation "action",
-func (pe *PolicyEnforcer) Enforce(policy auth.SecurityPolicy) bool {
-	result, err := pe.enforcer.Enforce(policy.Subject, policy.Object, policy.Action)
+func (pe *PolicyEnforcer) Enforce(sub, obj, act string) bool {
+	result, err := pe.enforcer.Enforce(sub, obj, act)
 	if err != nil {
 		panic(err)
 	}
@@ -82,8 +76,8 @@ func (pe *PolicyEnforcer) Enforce(policy auth.SecurityPolicy) bool {
 }
 
 // AddPolicy adds a policy rule to the current policy.
-func (pe *PolicyEnforcer) AddPolicy(policy auth.SecurityPolicy) bool {
-	result, err := pe.enforcer.AddPolicy(policy.Subject, policy.Object, policy.Action)
+func (pe *PolicyEnforcer) AddPolicy(sub, obj, act string) bool {
+	result, err := pe.enforcer.AddPolicy(sub, obj, act)
 	if err != nil {
 		panic(err)
 	}
@@ -91,8 +85,8 @@ func (pe *PolicyEnforcer) AddPolicy(policy auth.SecurityPolicy) bool {
 }
 
 // RemovePolicy removes a policy rule from the current policy.
-func (pe *PolicyEnforcer) RemovePolicy(policy auth.SecurityPolicy) bool {
-	result, err := pe.enforcer.RemovePolicy(policy.Subject, policy.Object, policy.Action)
+func (pe *PolicyEnforcer) RemovePolicy(sub, obj, act string) bool {
+	result, err := pe.enforcer.RemovePolicy(sub, obj, act)
 	if err != nil {
 		panic(err)
 	}
