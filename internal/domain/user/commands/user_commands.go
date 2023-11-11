@@ -2,6 +2,7 @@ package commands
 
 import (
 	"gopkg.in/mgo.v2/bson"
+	"lydia-track-base/internal/auth"
 	"lydia-track-base/internal/domain/user"
 )
 
@@ -29,4 +30,9 @@ type AddRoleToUserCommand struct {
 type RemoveRoleFromUserCommand struct {
 	UserID bson.ObjectId `json:"user_id"`
 	RoleID bson.ObjectId `json:"role_id"`
+}
+
+var CreatePermission = auth.Permission{
+	Domain: "user",
+	Action: "CREATE",
 }

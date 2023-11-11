@@ -153,3 +153,41 @@ func (s Service) RefreshTokenPair(c *gin.Context) (TokenPair, error) {
 
 	return tokenPair, nil
 }
+
+// CheckPermission is a function that checks if Permissions contains Permission
+// It checks for the following cases:
+// 1. */*
+// 2. */Action
+// 3. Domain/*
+// 4. Domain/Action
+func CheckPermission(Permissions []Permission, Permission Permission) bool {
+	// Check if there is a */*
+	for _, permission := range Permissions {
+		if permission.Domain == "*" && permission.Action == "*" {
+			return true
+		}
+	}
+
+	// Check if there is a */Action
+	for _, permission := range Permissions {
+		if permission.Domain == "*" && permission.Action == Permission.Action {
+			return true
+		}
+	}
+
+	// Check if there is a Domain/*
+	for _, permission := range Permissions {
+		if permission.Domain == Permission.Domain && permission.Action == "*" {
+			return true
+		}
+	}
+
+	// Check if there is a Domain/Action
+	for _, permission := range Permissions {
+		if permission.Domain == Permission.Domain && permission.Action == Permission.Action {
+			return true
+		}
+	}
+
+	return false
+}
