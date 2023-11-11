@@ -7,11 +7,11 @@ import (
 )
 
 type PersonInfo struct {
-	FirstName   string             `bson:"first_name"`
-	LastName    string             `bson:"last_name"`
-	Email       string             `bson:"email,omitempty"`
-	BirthDate   primitive.DateTime `bson:"birth_date,omitempty"`
-	Address     string             `bson:"address,omitempty"`
+	FirstName   string             `json:"first_name"`
+	LastName    string             `json:"last_name"`
+	Email       string             `json:"email,omitempty"`
+	BirthDate   primitive.DateTime `json:"birth_date,omitempty"`
+	Address     string             `json:"address,omitempty"`
 	PhoneNumber `bson:"phone_number,omitempty"`
 }
 
