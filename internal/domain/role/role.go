@@ -11,8 +11,8 @@ type Model struct {
 	ID          bson.ObjectId `bson:"_id"`
 	Name        string        `bson:"name"`
 	Tags        []string      `bson:"tags,omitempty"`
-	RoleInfo    string        `bson:"role_info,omitempty"`
-	CreatedDate time.Time     `bson:"created_date,omitempty"`
+	RoleInfo    string        `bson:"roleInfo,omitempty"`
+	CreatedDate time.Time     `bson:"createdDate,omitempty"`
 	Version     int           `bson:"version,omitempty"`
 }
 

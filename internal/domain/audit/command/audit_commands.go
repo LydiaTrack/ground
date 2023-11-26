@@ -8,8 +8,8 @@ import (
 type CreateAuditCommand struct {
 	Source           string                 `json:"source"`
 	Operation        string                 `json:"operation"`
-	AdditionalData   map[string]interface{} `json:"additional_data,omitempty"`
-	RelatedPrincipal string                 `json:"related_principal,omitempty"`
+	AdditionalData   map[string]interface{} `json:"additionalData,omitempty"`
+	RelatedPrincipal string                 `json:"relatedPrincipal,omitempty"`
 }
 
 type DeleteAuditCommand struct {

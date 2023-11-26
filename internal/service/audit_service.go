@@ -21,13 +21,11 @@ type AuditRepository interface {
 	// SaveAudit saves an audit
 	SaveAudit(audit audit.Model) (audit.Model, error)
 	// GetAudit gets an audit by id
-	GetAudit(id string) (audit.Model, error)
+	GetAudit(id bson.ObjectId) (audit.Model, error)
 	// ExistsAudit checks if an audit exists
-	ExistsAudit(id string) (bool, error)
+	ExistsAudit(id bson.ObjectId) (bool, error)
 	// GetAudits gets all audits
 	GetAudits() ([]audit.Model, error)
-	// DeleteAudit deletes an audit by id
-	DeleteAudit(id string) error
 	// DeleteOlderThan deletes all audits older than a date
 	DeleteOlderThan(date time.Time) error
 	// DeleteInterval deletes all audits between two dates
@@ -43,8 +41,14 @@ func (s AuditService) CreateAudit(command command.CreateAuditCommand) (audit.Mod
 
 // GetAudit TODO: Add permission check
 func (s AuditService) GetAudit(id string) (audit.Model, error) {
-	auditModel, error := s.auditRepository.GetAudit(id)
+	auditModel, error := s.auditRepository.GetAudit(bson.ObjectIdHex(id))
 	return auditModel, error
+}
+
+// ExistsAudit TODO: Add permission check
+func (s AuditService) ExistsAudit(id string) (bool, error) {
+	exists, error := s.auditRepository.ExistsAudit(bson.ObjectIdHex(id))
+	return exists, error
 }
 
 // GetAudits TODO: Add permission check
@@ -52,12 +56,6 @@ func (s AuditService) GetAudits() ([]audit.Model, error) {
 	audits, error := s.auditRepository.GetAudits()
 	return audits, error
 }
-
-// DeleteAudit TODO: Add permission check
-/*func (s AuditService) DeleteAudit(command command.DeleteAuditCommand) error {
-	error := s.auditRepository.DeleteAudit(command.ID)
-	return error
-}*/
 
 // DeleteOlderThan TODO: Add permission check
 func (s AuditService) DeleteOlderThan(command command.DeleteOlderThanAuditCommand) error {

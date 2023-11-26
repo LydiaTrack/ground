@@ -13,8 +13,8 @@ type Model struct {
 	// This field should be a struct, but I don't know how to do it yet.
 	Operation        string                 `bson:"operation"`
 	Instant          time.Time              `bson:"instant"`
-	AdditionalData   map[string]interface{} `bson:"additional_data,omitempty"`
-	RelatedPrincipal string                 `bson:"related_principal,omitempty"`
+	AdditionalData   map[string]interface{} `bson:"additionalData,omitempty"`
+	RelatedPrincipal string                 `bson:"relatedPrincipal,omitempty"`
 }
 
 /**
