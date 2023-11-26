@@ -1,14 +1,8 @@
 package auth
 
 import (
-	"context"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/persist"
-	mongodbadapter "github.com/casbin/mongodb-adapter/v3"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"lydia-track-base/internal/mongodb"
-	"lydia-track-base/internal/utils"
-	"os"
 )
 
 type PolicyEnforcer struct {
@@ -28,43 +22,26 @@ func GetPolicyEnforcer() *PolicyEnforcer {
 	return policyEnforcer
 }
 
-func InitializePolicyEnforcer() {
-	ctx := context.Background()
-	container := mongodb.GetContainer()
-
-	host, err := container.Host(ctx)
-	if err != nil {
-		panic(err)
-	}
-
-	port, err := container.MappedPort(ctx, "27017")
-	if err != nil {
-		panic(err)
-	}
-
-	mongoClientOption := options.Client().ApplyURI("mongodb://" + host + ":" + port.Port())
-	databaseName := os.Getenv("LYDIA_DB_NAME")
-
-	a, err := mongodbadapter.NewAdapterWithCollectionName(mongoClientOption, databaseName, "casbin_rules")
-	if err != nil {
-		panic(err)
-	}
-
-	e, err := casbin.NewEnforcer("internal/auth/configuration/rbac_model.conf", a)
-	if err != nil {
-		panic(err)
-	}
-
-	// Load the policy from DB.
-	err = e.LoadPolicy()
-	if err != nil {
-		panic(err)
-	}
-
-	policyEnforcer.adapter = a
-	policyEnforcer.enforcer = *e
-	utils.Log("Policy enforcer initialized")
-}
+//func InitializePolicyEnforcer() {
+//	ctx := context.Background()
+//
+//	a := mongodb.GetCollection("casbin_rules", ctx)
+//
+//	e, err := casbin.NewEnforcer("internal/auth/configuration/rbac_model.conf", a)
+//	if err != nil {
+//		panic(err)
+//	}
+//
+//	// Load the policy from DB.
+//	err = e.LoadPolicy()
+//	if err != nil {
+//		panic(err)
+//	}
+//
+//	policyEnforcer.adapter = a
+//	policyEnforcer.enforcer = *e
+//	utils.Log("Policy enforcer initialized")
+//}
 
 // Enforce decides whether a "subject" can access a "object" with the operation "action",
 func (pe *PolicyEnforcer) Enforce(sub, obj, act string) bool {

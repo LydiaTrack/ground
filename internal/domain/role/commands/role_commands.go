@@ -15,5 +15,5 @@ type UpdateRoleCommand struct {
 }
 
 type DeleteRoleCommand struct {
-	ID bson.ObjectId `json:"_id"`
+	ID bson.ObjectId `bson:"_id"`
 }

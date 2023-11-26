@@ -7,12 +7,12 @@ import (
 )
 
 type PersonInfo struct {
-	FirstName   string             `json:"first_name"`
-	LastName    string             `json:"last_name"`
+	FirstName   string             `json:"firstName"`
+	LastName    string             `json:"lastName"`
 	Email       string             `json:"email,omitempty"`
-	BirthDate   primitive.DateTime `json:"birth_date,omitempty"`
+	BirthDate   primitive.DateTime `json:"birthDate,omitempty"`
 	Address     string             `json:"address,omitempty"`
-	PhoneNumber `bson:"phone_number,omitempty"`
+	PhoneNumber `json:"phoneNumber,omitempty"`
 }
 
 func (p PersonInfo) Validate() error {

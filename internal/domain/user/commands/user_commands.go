@@ -8,25 +8,25 @@ import (
 type CreateUserCommand struct {
 	Username        string `json:"username"`
 	Password        string `json:"password"`
-	user.PersonInfo `json:"person_info"`
+	user.PersonInfo `json:"personInfo"`
 }
 
 type UpdateUserCommand struct {
 	Username        string `json:"username"`
 	Password        string `json:"password"`
-	user.PersonInfo `json:"person_info"`
+	user.PersonInfo `json:"personInfo"`
 }
 
 type DeleteUserCommand struct {
-	ID bson.ObjectId `json:"_id"`
+	ID bson.ObjectId `bson:"_id"`
 }
 
 type AddRoleToUserCommand struct {
-	UserID bson.ObjectId `json:"user_id"`
-	RoleID bson.ObjectId `json:"role_id"`
+	UserID bson.ObjectId `json:"userId"`
+	RoleID bson.ObjectId `json:"roleId"`
 }
 
 type RemoveRoleFromUserCommand struct {
-	UserID bson.ObjectId `json:"user_id"`
-	RoleID bson.ObjectId `json:"role_id"`
+	UserID bson.ObjectId `json:"userId"`
+	RoleID bson.ObjectId `json:"roleId"`
 }

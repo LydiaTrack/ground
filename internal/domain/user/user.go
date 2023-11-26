@@ -8,11 +8,11 @@ import (
 )
 
 type Model struct {
-	ID          bson.ObjectId `json:"_id"`
+	ID          bson.ObjectId `bson:"_id"`
 	Username    string        `json:"username"`
 	Password    string        `json:"password"`
-	PersonInfo  `json:"person_info"`
-	CreatedDate time.Time    `json:"created_date,omitempty"`
+	PersonInfo  `json:"personInfo"`
+	CreatedDate time.Time    `json:"createdDate,omitempty"`
 	Version     int          `json:"version,omitempty"`
 	Roles       []role.Model `json:"roles,omitempty"`
 }
