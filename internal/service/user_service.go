@@ -4,9 +4,8 @@ import (
 	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2/bson"
-	"lydia-track-base/internal/auth"
+	"lydia-track-base/internal/domain/auth"
 	"lydia-track-base/internal/domain/role"
-	"lydia-track-base/internal/domain/session"
 	"lydia-track-base/internal/domain/user"
 	"lydia-track-base/internal/domain/user/commands"
 	"lydia-track-base/internal/utils"
@@ -44,8 +43,8 @@ type UserRepository interface {
 	GetUserRoles(userID bson.ObjectId) ([]role.Model, error)
 }
 
-func (s UserService) CreateUser(command commands.CreateUserCommand, session session.UserSession) (user.UserCreateResponse, error) {
-	permitted := auth.CheckPermission(session.Permissions, commands.CreatePermission)
+func (s UserService) CreateUser(command commands.CreateUserCommand, permissions []auth.Permission) (user.UserCreateResponse, error) {
+	permitted := CheckPermission(permissions, commands.CreatePermission)
 	if !permitted {
 		return user.UserCreateResponse{}, errors.New("not permitted")
 	}

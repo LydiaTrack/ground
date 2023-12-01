@@ -5,7 +5,6 @@ import (
 	"github.com/joho/godotenv"
 	"log"
 	"lydia-track-base/cmd/lydia-track-base/api"
-	"lydia-track-base/internal/auth"
 	"lydia-track-base/internal/mongodb"
 	"lydia-track-base/internal/service"
 	"lydia-track-base/internal/utils"
@@ -36,8 +35,6 @@ func main() {
 	service.InitializeDefaultUser()
 	// Initialize default role
 	service.InitializeDefaultRole()
-	// Initialize Casbin policy enforcer
-	auth.InitializePolicyEnforcer()
 
 	// Run server on port 8080
 	r.Run(":8080")
