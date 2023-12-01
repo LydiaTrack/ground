@@ -44,8 +44,7 @@ type UserRepository interface {
 }
 
 func (s UserService) CreateUser(command commands.CreateUserCommand, permissions []auth.Permission) (user.UserCreateResponse, error) {
-	permitted := CheckPermission(permissions, commands.CreatePermission)
-	if !permitted {
+	if !CheckPermission(permissions, commands.CreatePermission) {
 		return user.UserCreateResponse{}, errors.New("not permitted")
 	}
 
