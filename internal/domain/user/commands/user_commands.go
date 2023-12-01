@@ -2,7 +2,7 @@ package commands
 
 import (
 	"gopkg.in/mgo.v2/bson"
-	"lydia-track-base/internal/auth"
+	"lydia-track-base/internal/domain/auth"
 	"lydia-track-base/internal/domain/user"
 )
 

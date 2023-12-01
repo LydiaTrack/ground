@@ -1,9 +1,6 @@
 package session
 
-import (
-	"gopkg.in/mgo.v2/bson"
-	"lydia-track-base/internal/auth"
-)
+import "gopkg.in/mgo.v2/bson"
 
 // InfoModel is a struct that contains the session information and maps to the userId
 type InfoModel struct {
@@ -11,10 +8,4 @@ type InfoModel struct {
 	UserId       bson.ObjectId `bson:"userId"`
 	ExpireTime   int64         `bson:"expireTime"`
 	RefreshToken string        `bson:"refreshToken"`
-}
-
-// UserSession is a struct that contains the user specific session information.
-// It is calculating when user sends any request to the server.
-type UserSession struct {
-	Permissions []auth.Permission
 }

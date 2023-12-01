@@ -2,6 +2,7 @@ package test
 
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"lydia-track-base/internal/domain/auth"
 	"lydia-track-base/internal/domain/user"
 	"lydia-track-base/internal/domain/user/commands"
 	"lydia-track-base/internal/repository"
@@ -45,7 +46,7 @@ func TestCreateUser(t *testing.T) {
 			},
 		},
 	}
-	userModel, err := userService.CreateUser(command)
+	userModel, err := userService.CreateUser(command, []auth.Permission{auth.AdminPermission})
 
 	if err != nil {
 		t.Errorf("Error creating userModel test: %v", err)

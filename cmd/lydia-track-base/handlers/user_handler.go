@@ -3,8 +3,6 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"gopkg.in/mgo.v2/bson"
-	"lydia-track-base/internal/auth"
-	"lydia-track-base/internal/domain/session"
 	"lydia-track-base/internal/domain/user/commands"
 	"lydia-track-base/internal/service"
 	"net/http"
@@ -12,7 +10,7 @@ import (
 
 type UserHandler struct {
 	userService service.UserService
-	authService auth.Service
+	authService service.Service
 }
 
 func NewUserHandler(userService service.UserService) UserHandler {
@@ -55,16 +53,13 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 	// TODO: Extract to a function
 	currentUser, _ := h.authService.GetCurrentUser(c)
 	currentUserPermissions, _ := h.userService.GetUserPermissions(currentUser.ID)
-	userSession := session.UserSession{
-		Permissions: currentUserPermissions,
-	}
 
-	user, err := h.userService.CreateUser(createUserCommand, userSession)
+	createdUser, err := h.userService.CreateUser(createUserCommand, currentUserPermissions)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, createdUser)
 }
 
 // DeleteUser godoc
