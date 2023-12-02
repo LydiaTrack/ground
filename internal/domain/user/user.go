@@ -7,20 +7,18 @@ import (
 	"time"
 )
 
-type Option func(m Model) Model
-
 type Model struct {
-	ID          bson.ObjectId `bson:"_id"`
-	Username    string        `bson:"username"`
-	Password    string        `bson:"password"`
-	PersonInfo  `bson:"person_info"`
-	CreatedDate time.Time    `bson:"created_date,omitempty"`
-	Version     int          `bson:"version,omitempty"`
-	Roles       []role.Model `bson:"roles,omitempty"`
+	ID          bson.ObjectId `json:"id" bson:"_id"`
+	Username    string        `json:"username" bson:"username"`
+	Password    string        `json:"-" bson:"password"`
+	PersonInfo  `json:"personInfo" bson:"personInfo"`
+	CreatedDate time.Time    `json:"createdDate" bson:"createdDate"`
+	Version     int          `json:"version" bson:"version"`
+	Roles       []role.Model `json:"roles,omitempty" bson:"roles,omitempty"`
 }
 
-func NewUser(id string, username string, password string, personInfo PersonInfo, createdDate time.Time, version int, option ...Option) Model {
-	m := Model{
+func NewUser(id string, username string, password string, personInfo PersonInfo, createdDate time.Time, version int) Model {
+	return Model{
 		ID:          bson.ObjectIdHex(id),
 		Username:    username,
 		Password:    password,
@@ -29,11 +27,6 @@ func NewUser(id string, username string, password string, personInfo PersonInfo,
 		Version:     version,
 	}
 
-	for _, opt := range option {
-		m = opt(m)
-	}
-
-	return m
 }
 
 func (u Model) Validate() error {
