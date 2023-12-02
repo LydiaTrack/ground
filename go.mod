@@ -3,7 +3,6 @@ module lydia-track-base
 go 1.19
 
 require (
-	github.com/casbin/casbin/v2 v2.77.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.9.0
 	github.com/joho/godotenv v1.5.1
