@@ -3,6 +3,7 @@ module lydia-track-base
 go 1.19
 
 require (
+	github.com/casbin/casbin/v2 v2.77.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.9.0
 	github.com/joho/godotenv v1.5.1
@@ -23,8 +24,6 @@ require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/bytedance/sonic v1.8.0 // indirect
-	github.com/casbin/casbin/v2 v2.77.2 // indirect
-	github.com/casbin/mongodb-adapter/v3 v3.5.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/containerd/containerd v1.6.19 // indirect

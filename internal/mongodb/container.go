@@ -4,6 +4,9 @@ import (
 	"context"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"os"
 )
 
 // mongodbContainer represents the mongodb container type used in the module
@@ -50,9 +53,30 @@ func InitializeContainer() error {
 }
 
 // GetContainer returns the mongodb container instance
-func GetContainer() *mongodbContainer {
+func getContainer() *mongodbContainer {
 	if !initilized {
 		panic("Mongodb container not initialized!")
 	}
 	return mongodbContainerInstance
+}
+
+// GetCollection returns the mongodb collection
+func GetCollection(collectionName string, ctx context.Context) *mongo.Collection {
+	container := getContainer()
+	host, err := container.Host(ctx)
+	if err != nil {
+		return nil
+	}
+
+	port, err := container.MappedPort(ctx, "27017")
+	if err != nil {
+		return nil
+	}
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+host+":"+port.Port()))
+	if err != nil {
+		return nil
+	}
+
+	return client.Database(os.Getenv("LYDIA_DB_NAME")).Collection(collectionName)
 }
