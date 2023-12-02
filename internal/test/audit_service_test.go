@@ -1,6 +1,7 @@
 package test
 
 import (
+	"lydia-track-base/internal/domain/audit"
 	"lydia-track-base/internal/domain/audit/command"
 	"lydia-track-base/internal/repository"
 	"lydia-track-base/internal/service"
@@ -24,11 +25,15 @@ func TestCreateAudit(t *testing.T) {
 
 	// Create a new Audit service instance
 	auditService := service.NewAuditService(repository.GetAuditRepository())
+	operation := audit.Operation{
+		Domain:  "testDomain",
+		Command: "CREATE",
+	}
 
 	// Create a new Audit
 	createAuditCmd := command.CreateAuditCommand{
 		Source:    "test",
-		Operation: "test123",
+		Operation: operation,
 		AdditionalData: map[string]interface{}{
 			"testStr": "test",
 		},
@@ -44,7 +49,7 @@ func TestCreateAudit(t *testing.T) {
 			t.Errorf("Error creating Audit: %v", err)
 		}
 
-		if auditModel.Operation != "test123" {
+		if auditModel.Operation != operation {
 			t.Errorf("Error creating Audit: %v", err)
 		}
 
@@ -64,11 +69,15 @@ func TestGetAudit(t *testing.T) {
 
 	// Create a new Audit service instance
 	auditService := service.NewAuditService(repository.GetAuditRepository())
+	operation := audit.Operation{
+		Domain:  "testDomain",
+		Command: "CREATE",
+	}
 
 	// Create a new Audit
 	createAuditCmd := command.CreateAuditCommand{
 		Source:    "test",
-		Operation: "test123",
+		Operation: operation,
 		AdditionalData: map[string]interface{}{
 			"testStr": "test",
 		},
@@ -84,7 +93,7 @@ func TestGetAudit(t *testing.T) {
 			t.Errorf("Error creating Audit: %v", err)
 		}
 
-		if auditModel.Operation != "test123" {
+		if auditModel.Operation != operation {
 			t.Errorf("Error creating Audit: %v", err)
 		}
 
@@ -108,7 +117,7 @@ func TestGetAudit(t *testing.T) {
 			t.Errorf("Error getting Audit: %v", err)
 		}
 
-		if audit.Operation != "test123" {
+		if audit.Operation != operation {
 			t.Errorf("Error getting Audit: %v", err)
 		}
 
@@ -128,11 +137,15 @@ func TestExistsAudit(t *testing.T) {
 
 	// Create a new Audit service instance
 	auditService := service.NewAuditService(repository.GetAuditRepository())
+	operation := audit.Operation{
+		Domain:  "testDomain",
+		Command: "CREATE",
+	}
 
 	// Create a new Audit
 	createAuditCmd := command.CreateAuditCommand{
 		Source:    "test",
-		Operation: "test123",
+		Operation: operation,
 		AdditionalData: map[string]interface{}{
 			"testStr": "test",
 		},
@@ -148,7 +161,7 @@ func TestExistsAudit(t *testing.T) {
 			t.Errorf("Error creating Audit: %v", err)
 		}
 
-		if auditModel.Operation != "test123" {
+		if auditModel.Operation != operation {
 			t.Errorf("Error creating Audit: %v", err)
 		}
 
@@ -180,11 +193,15 @@ func TestGetAudits(t *testing.T) {
 
 	// Create a new Audit service instance
 	auditService := service.NewAuditService(repository.GetAuditRepository())
+	operation := audit.Operation{
+		Domain:  "testDomain",
+		Command: "CREATE",
+	}
 
 	// Create a new Audit
 	createAuditCmd := command.CreateAuditCommand{
 		Source:    "test",
-		Operation: "test123",
+		Operation: operation,
 		AdditionalData: map[string]interface{}{
 			"testStr": "test",
 		},
@@ -215,6 +232,10 @@ func TestDeleteOlderThan(t *testing.T) {
 
 	// Create a new Audit service instance
 	auditService := service.NewAuditService(repository.GetAuditRepository())
+	operation := audit.Operation{
+		Domain:  "testDomain",
+		Command: "CREATE",
+	}
 
 	// Get all Audits
 	audits, err := auditService.GetAudits()
@@ -227,7 +248,7 @@ func TestDeleteOlderThan(t *testing.T) {
 	// Create a new Audit
 	createAuditCmd := command.CreateAuditCommand{
 		Source:    "test",
-		Operation: "test123",
+		Operation: operation,
 		AdditionalData: map[string]interface{}{
 			"testStr": "test",
 		},
@@ -242,7 +263,7 @@ func TestDeleteOlderThan(t *testing.T) {
 	// Create a new Audit
 	createAuditCmd = command.CreateAuditCommand{
 		Source:    "test2",
-		Operation: "test123",
+		Operation: operation,
 		AdditionalData: map[string]interface{}{
 			"testStr": "test",
 		},
@@ -289,6 +310,10 @@ func TestDeleteInterval(t *testing.T) {
 
 	// Create a new Audit service instance
 	auditService := service.NewAuditService(repository.GetAuditRepository())
+	operation := audit.Operation{
+		Domain:  "testDomain",
+		Command: "CREATE",
+	}
 
 	// Get all Audits
 	audits, err := auditService.GetAudits()
@@ -301,7 +326,7 @@ func TestDeleteInterval(t *testing.T) {
 	// Create a new Audit
 	createAuditCmd := command.CreateAuditCommand{
 		Source:    "test",
-		Operation: "test123",
+		Operation: operation,
 		AdditionalData: map[string]interface{}{
 			"testStr": "test",
 		},
@@ -316,7 +341,7 @@ func TestDeleteInterval(t *testing.T) {
 	// Create a new Audit
 	createAuditCmd = command.CreateAuditCommand{
 		Source:    "test2",
-		Operation: "test123",
+		Operation: operation,
 		AdditionalData: map[string]interface{}{
 			"testStr": "test",
 		},

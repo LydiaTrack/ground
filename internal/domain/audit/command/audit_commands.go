@@ -2,18 +2,19 @@ package command
 
 import (
 	"errors"
+	"lydia-track-base/internal/domain/audit"
 	"time"
 )
 
 type CreateAuditCommand struct {
-	Source           string                 `json:"source"`
-	Operation        string                 `json:"operation"`
+	Source           string `json:"source"`
+	audit.Operation  `json:"operation"`
 	AdditionalData   map[string]interface{} `json:"additionalData,omitempty"`
 	RelatedPrincipal string                 `json:"relatedPrincipal,omitempty"`
 }
 
 type DeleteAuditCommand struct {
-	ID string `json:"id"`
+	ID string `json:"id" bson:"_id"`
 }
 
 type DeleteOlderThanAuditCommand struct {
