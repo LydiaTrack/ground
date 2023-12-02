@@ -8,20 +8,24 @@ import (
 type Option func(m Model) Model
 
 type Model struct {
-	ID     bson.ObjectId `bson:"_id"`
-	Source string        `bson:"source"`
-	// This field should be a struct, but I don't know how to do it yet.
-	Operation        string                 `bson:"operation"`
-	Instant          time.Time              `bson:"instant"`
-	AdditionalData   map[string]interface{} `bson:"additionalData,omitempty"`
-	RelatedPrincipal string                 `bson:"relatedPrincipal,omitempty"`
+	ID               bson.ObjectId `json:"id" bson:"_id"`
+	Source           string        `json:"source" bson:"source"`
+	Operation        `json:"operation" bson:"operation"`
+	Instant          time.Time              `json:"instant" bson:"instant"`
+	AdditionalData   map[string]interface{} `json:"additionalData,omitempty" bson:"additionalData,omitempty"`
+	RelatedPrincipal string                 `json:"relatedPrincipal,omitempty" bson:"relatedPrincipal,omitempty"`
+}
+
+type Operation struct {
+	Domain  string `json:"domain" bson:"domain"`
+	Command string `json:"command" bson:"command"`
 }
 
 /**
  * NewAudit creates a new audit with the given parameters and returns it. It also accepts a variadic number of options
  * to customize the audit. (functional options pattern)
  */
-func NewAudit(id string, source string, operation string, instant time.Time, opts ...Option) Model {
+func NewAudit(id string, source string, operation Operation, instant time.Time, opts ...Option) Model {
 	m := Model{
 		ID:        bson.ObjectIdHex(id),
 		Source:    source,

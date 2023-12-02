@@ -84,17 +84,6 @@ func (r AuditMongoRepository) GetAudits() ([]audit.Model, error) {
 	return audits, nil
 }
 
-// DeleteAudit deletes an audit by id
-// TODO: Are you sure you want to delete an audit by id?
-/*func (r AuditMongoRepository) DeleteAudit(id bson.ObjectId) error {
-	_, err := r.collection.DeleteOne(context.Background(), bson.M{"_id": id})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}*/
-
 // DeleteOlderThan deletes all audits older than a date
 func (r AuditMongoRepository) DeleteOlderThan(date time.Time) error {
 	_, err := r.collection.DeleteMany(context.Background(), bson.M{"instant": bson.M{"$lt": date}})
