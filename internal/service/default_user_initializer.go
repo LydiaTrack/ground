@@ -19,8 +19,7 @@ func InitializeDefaultUser() error {
 		PersonInfo: user.PersonInfo{
 			FirstName: "Lydia",
 			LastName:  "Admin",
-			BirthDate: primitive.
-				DateTime(time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC).UnixNano() / int64(time.Millisecond)),
+			BirthDate: primitive.NewDateTimeFromTime(time.Now()),
 		},
 	}
 

@@ -7,7 +7,7 @@ import (
 type CreateRoleCommand struct {
 	Name string   `json:"name"`
 	Tags []string `json:"tags,omitempty"`
-	Info string   `json:"info,omitempty"`
+	Info string   `json:"roleInfo,omitempty"`
 }
 
 type UpdateRoleCommand struct {
@@ -15,5 +15,5 @@ type UpdateRoleCommand struct {
 }
 
 type DeleteRoleCommand struct {
-	ID bson.ObjectId `json:"_id"`
+	ID bson.ObjectId `json:"id" bson:"_id"`
 }
