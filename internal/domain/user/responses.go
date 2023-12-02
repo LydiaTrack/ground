@@ -6,9 +6,9 @@ import (
 )
 
 type UserCreateResponse struct {
-	ID          bson.ObjectId `bson:"_id"`
-	Username    string        `json:"username"`
+	ID          bson.ObjectId `json:"id" bson:"_id"`
+	Username    string        `json:"username" bson:"username"`
 	PersonInfo  `json:"personInfo"`
-	CreatedDate time.Time `json:"createdDate,omitempty"`
-	Version     int       `json:"version,omitempty"`
+	CreatedDate time.Time `json:"createdDate" bson:"createdDate"`
+	Version     int       `json:"version" bson:"version"`
 }
