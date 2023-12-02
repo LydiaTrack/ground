@@ -9,13 +9,13 @@ import (
 )
 
 type Model struct {
-	ID          bson.ObjectId     `bson:"_id"`
-	Name        string            `bson:"name"`
-	Permissions []auth.Permission `bson:"permissions"`
-	Tags        []string          `bson:"tags,omitempty"`
-	RoleInfo    string            `bson:"role_info,omitempty"`
-	CreatedDate time.Time         `bson:"created_date,omitempty"`
-	Version     int               `bson:"version,omitempty"`
+	ID          bson.ObjectId     `json:"id" bson:"_id"`
+	Name        string            `json:"name" bson:"name"`
+  Permissions []auth.Permission `json:"permissions" bson:"permissions"`
+	Tags        []string          `json:"tags,omitempty" bson:"tags,omitempty"`
+	RoleInfo    string            `json:"roleInfo,omitempty" bson:"roleInfo,omitempty"`
+	CreatedDate time.Time         `json:"createdDate" bson:"createdDate"`
+	Version     int               `json:"version" bson:"version"`
 }
 
 func NewRole(id string, name string, tags []string, roleInfo string, createdDate time.Time, version int) Model {
