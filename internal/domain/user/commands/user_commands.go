@@ -36,3 +36,18 @@ var CreatePermission = auth.Permission{
 	Domain: "user",
 	Action: "CREATE",
 }
+
+var UpdatePermission = auth.Permission{
+	Domain: "user",
+	Action: "UPDATE",
+}
+
+var DeletePermission = auth.Permission{
+	Domain: "user",
+	Action: "DELETE",
+}
+
+var ReadPermission = auth.Permission{
+	Domain: "user",
+	Action: "READ",
+}

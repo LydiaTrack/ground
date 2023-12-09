@@ -40,13 +40,16 @@ func NewAuthService(userService UserService, sessionService SessionService) Serv
 // Login is a function that handles the login process
 func (s Service) Login(request Request) (Response, error) {
 	// Check if user exists
-	exists := s.userService.ExistsByUsername(request.Username)
+	exists, err := s.userService.ExistsByUsername(request.Username, []auth.Permission{auth.AdminPermission})
+	if err != nil {
+		return Response{}, err
+	}
 	if !exists {
 		return Response{}, errors.New("user does not exist")
 	}
 
 	// Check if password is correct
-	userModel, err := s.userService.VerifyUser(request.Username, request.Password)
+	userModel, err := s.userService.VerifyUser(request.Username, request.Password, []auth.Permission{auth.AdminPermission})
 	if err != nil {
 		return Response{}, err
 	}
@@ -102,7 +105,7 @@ func (s Service) GetCurrentUser(c *gin.Context) (user.Model, error) {
 		return user.Model{}, err
 	}
 
-	userModel, err := s.userService.GetUser(userId)
+	userModel, err := s.userService.GetUser(userId, []auth.Permission{auth.AdminPermission})
 	if err != nil {
 		return user.Model{}, err
 	}
