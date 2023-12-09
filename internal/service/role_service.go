@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"lydia-track-base/internal/domain/auth"
 	"lydia-track-base/internal/domain/role"
 	"lydia-track-base/internal/domain/role/commands"
 	"time"
@@ -19,8 +20,11 @@ func NewRoleService(roleRepository RoleRepository) RoleService {
 	}
 }
 
-// CreateRole TODO: Add permission check
-func (s RoleService) CreateRole(command commands.CreateRoleCommand) (role.Model, error) {
+func (s RoleService) CreateRole(command commands.CreateRoleCommand, permissions []auth.Permission) (role.Model, error) {
+	if !CheckPermission(permissions, commands.CreatePermission) {
+		return role.Model{}, errors.New("not permitted")
+	}
+
 	// TODO: These kind of operations must be done with specific requests, not by RoleModel model itself
 	// Validate role
 	// Map command to role
@@ -42,7 +46,11 @@ func (s RoleService) CreateRole(command commands.CreateRoleCommand) (role.Model,
 	return roleModel, nil
 }
 
-func (s RoleService) GetRole(id string) (role.Model, error) {
+func (s RoleService) GetRole(id string, permissions []auth.Permission) (role.Model, error) {
+	if !CheckPermission(permissions, commands.ReadPermission) {
+		return role.Model{}, errors.New("not permitted")
+	}
+
 	roleModel, err := s.roleRepository.GetRole(bson.ObjectIdHex(id))
 	if err != nil {
 		return role.Model{}, err
@@ -50,7 +58,11 @@ func (s RoleService) GetRole(id string) (role.Model, error) {
 	return roleModel, nil
 }
 
-func (s RoleService) ExistsRole(id string) (bool, error) {
+func (s RoleService) ExistsRole(id string, permissions []auth.Permission) (bool, error) {
+	if !CheckPermission(permissions, commands.ReadPermission) {
+		return false, errors.New("not permitted")
+	}
+
 	exists, err := s.roleRepository.ExistsRole(bson.ObjectIdHex(id))
 	if err != nil {
 		return false, err
@@ -58,7 +70,11 @@ func (s RoleService) ExistsRole(id string) (bool, error) {
 	return exists, nil
 }
 
-func (s RoleService) DeleteRole(id string) error {
+func (s RoleService) DeleteRole(id string, permissions []auth.Permission) error {
+	if !CheckPermission(permissions, commands.DeletePermission) {
+		return errors.New("not permitted")
+	}
+
 	err := s.roleRepository.DeleteRole(bson.ObjectIdHex(id))
 	if err != nil {
 		return err

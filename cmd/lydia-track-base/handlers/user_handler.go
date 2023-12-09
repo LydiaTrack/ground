@@ -15,8 +15,11 @@ type UserHandler struct {
 	authService service.Service
 }
 
-func NewUserHandler(userService service.UserService) UserHandler {
-	return UserHandler{userService: userService}
+func NewUserHandler(userService service.UserService, authService service.Service) UserHandler {
+	return UserHandler{
+		userService: userService,
+		authService: authService,
+	}
 }
 
 // GetUser godoc

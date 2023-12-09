@@ -1,6 +1,7 @@
 package service
 
 import (
+	"lydia-track-base/internal/domain/auth"
 	"lydia-track-base/internal/domain/role/commands"
 	"lydia-track-base/internal/repository"
 	"lydia-track-base/internal/utils"
@@ -14,7 +15,7 @@ func InitializeDefaultRole() error {
 		Info: os.Getenv("DEFAULT_ROLE_INFO"),
 	}
 
-	_, err := NewRoleService(repository.GetRoleRepository()).CreateRole(roleCreateCmd)
+	_, err := NewRoleService(repository.GetRoleRepository()).CreateRole(roleCreateCmd, []auth.Permission{auth.AdminPermission})
 	if err != nil {
 		return err
 	}

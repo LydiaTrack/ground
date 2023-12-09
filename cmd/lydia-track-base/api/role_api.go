@@ -11,7 +11,11 @@ import (
 // InitUser initializes role routes
 func InitRole(r *gin.Engine) {
 	roleService := service.NewRoleService(repository.GetRoleRepository())
-	roleHandler := handlers.NewRoleHandler(roleService)
+	userService := service.NewUserService(repository.GetUserRepository())
+	sessionService := service.NewSessionService(repository.GetSessionRepository(), userService)
+	authService := service.NewAuthService(userService, sessionService)
+
+	roleHandler := handlers.NewRoleHandler(roleService, authService, userService)
 
 	routerGroup := r.Group("/roles")
 	routerGroup.GET("/:id", roleHandler.GetRole)
