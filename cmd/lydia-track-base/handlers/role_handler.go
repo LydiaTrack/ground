@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"lydia-track-base/internal/domain/auth"
 	"lydia-track-base/internal/domain/role/commands"
 	"lydia-track-base/internal/service"
 	"net/http"
@@ -10,10 +11,16 @@ import (
 
 type RoleHandler struct {
 	roleService service.RoleService
+	authService service.Service
+	userService service.UserService
 }
 
-func NewRoleHandler(roleService service.RoleService) RoleHandler {
-	return RoleHandler{roleService: roleService}
+func NewRoleHandler(roleService service.RoleService, authService service.Service, userService service.UserService) RoleHandler {
+	return RoleHandler{
+		roleService: roleService,
+		authService: authService,
+		userService: userService,
+	}
 }
 
 // GetRole godoc
@@ -26,7 +33,19 @@ func NewRoleHandler(roleService service.RoleService) RoleHandler {
 // @Router /roles:id [get]
 func (h RoleHandler) GetRole(c *gin.Context) {
 	id := c.Param("id")
-	role, err := h.roleService.GetRole(id)
+
+	currentUser, err := h.authService.GetCurrentUser(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID, []auth.Permission{auth.AdminPermission})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	role, err := h.roleService.GetRole(id, currentUserPermissions)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -48,7 +67,19 @@ func (h RoleHandler) CreateRole(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	roleModel, err := h.roleService.CreateRole(role)
+
+	currentUser, err := h.authService.GetCurrentUser(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID, []auth.Permission{auth.AdminPermission})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	roleModel, err := h.roleService.CreateRole(role, currentUserPermissions)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -66,7 +97,19 @@ func (h RoleHandler) CreateRole(c *gin.Context) {
 // @Router /roles:id [delete]
 func (h RoleHandler) DeleteRole(c *gin.Context) {
 	id := c.Param("id")
-	err := h.roleService.DeleteRole(id)
+
+	currentUser, err := h.authService.GetCurrentUser(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID, []auth.Permission{auth.AdminPermission})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = h.roleService.DeleteRole(id, currentUserPermissions)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
