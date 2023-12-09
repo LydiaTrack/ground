@@ -2,10 +2,12 @@ package service
 
 import (
 	"errors"
-	"gopkg.in/mgo.v2/bson"
+	"lydia-track-base/internal/domain/auth"
 	"lydia-track-base/internal/domain/session"
 	"lydia-track-base/internal/domain/session/commands"
 	"time"
+
+	"gopkg.in/mgo.v2/bson"
 )
 
 // SessionService is an interface that contains the methods for the session service
@@ -36,7 +38,7 @@ func NewSessionService(sessionRepository SessionRepository, userService UserServ
 // CreateSession is a function that creates a session
 func (s SessionService) CreateSession(cmd commands.CreateSessionCommand) (session.InfoModel, error) {
 	// Check if user exists
-	exists, err := s.UserService.ExistsUser(cmd.UserId)
+	exists, err := s.UserService.ExistsUser(cmd.UserId, []auth.Permission{auth.AdminPermission})
 	if err != nil {
 		return session.InfoModel{}, err
 	}
@@ -56,7 +58,7 @@ func (s SessionService) CreateSession(cmd commands.CreateSessionCommand) (sessio
 // GetUserSession is a function that gets a user session
 func (s SessionService) GetUserSession(id string) (session.InfoModel, error) {
 	// Check if user exists
-	exists, err := s.UserService.ExistsUser(id)
+	exists, err := s.UserService.ExistsUser(id, []auth.Permission{auth.AdminPermission})
 	if err != nil {
 		return session.InfoModel{}, err
 	}
@@ -86,9 +88,5 @@ func (s SessionService) IsUserHasActiveSession(userId string) bool {
 
 	// Check if session still valid by comparing the expire time with the current time
 	currentTime := time.Now().Unix()
-	if session.ExpireTime < currentTime {
-		return false
-	}
-
-	return true
+	return session.ExpireTime >= currentTime
 }
