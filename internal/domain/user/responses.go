@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type UserCreateResponse struct {
+type CreateResponse struct {
 	ID          bson.ObjectId `json:"id" bson:"_id"`
 	Username    string        `json:"username" bson:"username"`
 	PersonInfo  `json:"personInfo"`

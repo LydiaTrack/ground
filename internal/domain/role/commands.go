@@ -1,4 +1,4 @@
-package commands
+package role
 
 import (
 	"lydia-track-base/internal/domain/auth"

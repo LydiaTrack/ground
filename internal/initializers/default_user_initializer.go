@@ -4,7 +4,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"lydia-track-base/internal/domain/auth"
 	"lydia-track-base/internal/domain/user"
-	"lydia-track-base/internal/domain/user/commands"
 	"lydia-track-base/internal/repository"
 	"lydia-track-base/internal/service"
 	"lydia-track-base/internal/utils"
@@ -14,7 +13,7 @@ import (
 
 // InitializeDefaultUser initializes the default user with default credentials
 func InitializeDefaultUser() error {
-	userCreateCmd := commands.CreateUserCommand{
+	userCreateCmd := user.CreateUserCommand{
 		Username: os.Getenv("DEFAULT_USER_USERNAME"),
 		Password: os.Getenv("DEFAULT_USER_PASSWORD"),
 		PersonInfo: user.PersonInfo{

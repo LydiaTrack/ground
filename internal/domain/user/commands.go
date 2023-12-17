@@ -1,21 +1,20 @@
-package commands
+package user
 
 import (
 	"gopkg.in/mgo.v2/bson"
 	"lydia-track-base/internal/domain/auth"
-	"lydia-track-base/internal/domain/user"
 )
 
 type CreateUserCommand struct {
-	Username        string `json:"username"`
-	Password        string `json:"password"`
-	user.PersonInfo `json:"personInfo"`
+	Username   string `json:"username"`
+	Password   string `json:"password"`
+	PersonInfo `json:"personInfo"`
 }
 
 type UpdateUserCommand struct {
-	Username        string `json:"username"`
-	Password        string `json:"password"`
-	user.PersonInfo `json:"personInfo"`
+	Username   string `json:"username"`
+	Password   string `json:"password"`
+	PersonInfo `json:"personInfo"`
 }
 
 type DeleteUserCommand struct {
