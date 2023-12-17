@@ -5,8 +5,8 @@ import (
 	"github.com/joho/godotenv"
 	"log"
 	"lydia-track-base/cmd/lydia-track-base/api"
+	"lydia-track-base/internal/initializers"
 	"lydia-track-base/internal/mongodb"
-	"lydia-track-base/internal/service"
 	"lydia-track-base/internal/utils"
 )
 
@@ -27,14 +27,14 @@ func main() {
 	// Initialize logging
 	utils.InitLogging()
 	r := gin.New()
-	// Initialize database
-	mongodb.InitializeContainer()
-	// Initialize routes
+	// Initialize database connection
+	mongodb.InitializeMongoDBConnection()
+	// Initialize API routes
 	initializeRoutes(r)
 	// Initialize default user
-	service.InitializeDefaultUser()
+	initializers.InitializeDefaultUser()
 	// Initialize default role
-	service.InitializeDefaultRole()
+	initializers.InitializeDefaultRole()
 
 	// Run server on port 8080
 	r.Run(":8080")
