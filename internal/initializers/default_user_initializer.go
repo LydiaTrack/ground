@@ -1,4 +1,4 @@
-package service
+package initializers
 
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -6,6 +6,7 @@ import (
 	"lydia-track-base/internal/domain/user"
 	"lydia-track-base/internal/domain/user/commands"
 	"lydia-track-base/internal/repository"
+	"lydia-track-base/internal/service"
 	"lydia-track-base/internal/utils"
 	"os"
 	"time"
@@ -23,7 +24,7 @@ func InitializeDefaultUser() error {
 		},
 	}
 
-	_, err := NewUserService(repository.GetUserRepository()).
+	_, err := service.NewUserService(repository.GetUserRepository()).
 		CreateUser(userCreateCmd, []auth.Permission{auth.AdminPermission})
 	if err != nil {
 		return err

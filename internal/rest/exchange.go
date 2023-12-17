@@ -3,6 +3,7 @@ package rest
 import (
 	"bytes"
 	"encoding/json"
+	"lydia-track-base/internal/utils"
 	"net/http"
 )
 
@@ -22,7 +23,6 @@ type HttpEntity struct {
 
 // Exchange is a method to exchange data between 3rd party APIs
 func Exchange(url string, method string, entity HttpEntity, responseStructPtr interface{}) error {
-	// TODO: Add logging
 	// First we need to create a new http client
 	client := &http.Client{}
 
@@ -32,6 +32,7 @@ func Exchange(url string, method string, entity HttpEntity, responseStructPtr in
 		return err
 	}
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(requestBody))
+	utils.Log("Request for url: ", url, " with method: ", method, " and body: ", string(requestBody))
 	if err != nil {
 		return err
 	}
@@ -43,6 +44,7 @@ func Exchange(url string, method string, entity HttpEntity, responseStructPtr in
 
 	// Then we need to execute the request
 	resp, err := client.Do(req)
+	utils.Log("Response for url: ", url, " with method: ", method, " and body: ", string(requestBody))
 	if err != nil {
 		return err
 	}
