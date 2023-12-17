@@ -1,8 +1,9 @@
-package command
+package commands
 
 import (
 	"errors"
 	"lydia-track-base/internal/domain/audit"
+	"lydia-track-base/internal/domain/auth"
 	"time"
 )
 
@@ -47,4 +48,19 @@ func (di DeleteIntervalAuditCommand) Validate() error {
 	}
 
 	return nil
+}
+
+var CreatePermission = auth.Permission{
+	Domain: "audit",
+	Action: "CREATE",
+}
+
+var DeletePermission = auth.Permission{
+	Domain: "audit",
+	Action: "DELETE",
+}
+
+var ReadPermission = auth.Permission{
+	Domain: "audit",
+	Action: "READ",
 }

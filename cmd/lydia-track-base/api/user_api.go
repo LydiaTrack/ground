@@ -13,7 +13,10 @@ import (
 func InitUser(r *gin.Engine) {
 
 	userService := service.NewUserService(repository.GetUserRepository())
-	userHandler := handlers.NewUserHandler(userService)
+	sessionService := service.NewSessionService(repository.GetSessionRepository(), userService)
+	authService := service.NewAuthService(userService, sessionService)
+
+	userHandler := handlers.NewUserHandler(userService, authService)
 
 	routerGroup := r.Group("/users")
 	routerGroup.Use(middlewares.JwtAuthMiddleware()).
