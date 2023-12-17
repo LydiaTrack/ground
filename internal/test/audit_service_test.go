@@ -2,7 +2,6 @@ package test
 
 import (
 	"lydia-track-base/internal/domain/audit"
-	"lydia-track-base/internal/domain/audit/command"
 	"lydia-track-base/internal/domain/auth"
 	"lydia-track-base/internal/repository"
 	"lydia-track-base/internal/service"
@@ -32,7 +31,7 @@ func TestCreateAudit(t *testing.T) {
 	}
 
 	// Create a new Audit
-	createAuditCmd := commands.CreateAuditCommand{
+	createAuditCmd := audit.CreateAuditCommand{
 		Source:    "test",
 		Operation: operation,
 		AdditionalData: map[string]interface{}{
@@ -76,7 +75,7 @@ func TestGetAudit(t *testing.T) {
 	}
 
 	// Create a new Audit
-	createAuditCmd := commands.CreateAuditCommand{
+	createAuditCmd := audit.CreateAuditCommand{
 		Source:    "test",
 		Operation: operation,
 		AdditionalData: map[string]interface{}{
@@ -144,7 +143,7 @@ func TestExistsAudit(t *testing.T) {
 	}
 
 	// Create a new Audit
-	createAuditCmd := commands.CreateAuditCommand{
+	createAuditCmd := audit.CreateAuditCommand{
 		Source:    "test",
 		Operation: operation,
 		AdditionalData: map[string]interface{}{
@@ -200,7 +199,7 @@ func TestGetAudits(t *testing.T) {
 	}
 
 	// Create a new Audit
-	createAuditCmd := commands.CreateAuditCommand{
+	createAuditCmd := audit.CreateAuditCommand{
 		Source:    "test",
 		Operation: operation,
 		AdditionalData: map[string]interface{}{
@@ -247,7 +246,7 @@ func TestDeleteOlderThan(t *testing.T) {
 	auditCount := len(audits)
 
 	// Create a new Audit
-	createAuditCmd := commands.CreateAuditCommand{
+	createAuditCmd := audit.CreateAuditCommand{
 		Source:    "test",
 		Operation: operation,
 		AdditionalData: map[string]interface{}{
@@ -262,7 +261,7 @@ func TestDeleteOlderThan(t *testing.T) {
 	}
 
 	// Create a new Audit
-	createAuditCmd = commands.CreateAuditCommand{
+	createAuditCmd = audit.CreateAuditCommand{
 		Source:    "test2",
 		Operation: operation,
 		AdditionalData: map[string]interface{}{
@@ -287,7 +286,7 @@ func TestDeleteOlderThan(t *testing.T) {
 	}
 
 	// Delete all Audits older than a date
-	deleteOlderThanCommand := commands.DeleteOlderThanAuditCommand{
+	deleteOlderThanCommand := audit.DeleteOlderThanAuditCommand{
 		Instant: time.Now(),
 	}
 	err = auditService.DeleteOlderThan(deleteOlderThanCommand, []auth.Permission{auth.AdminPermission})
@@ -328,7 +327,7 @@ func TestDeleteInterval(t *testing.T) {
 	auditCount := len(audits)
 
 	// Create a new Audit
-	createAuditCmd := commands.CreateAuditCommand{
+	createAuditCmd := audit.CreateAuditCommand{
 		Source:    "test",
 		Operation: operation,
 		AdditionalData: map[string]interface{}{
@@ -343,7 +342,7 @@ func TestDeleteInterval(t *testing.T) {
 	}
 
 	// Create a new Audit
-	createAuditCmd = commands.CreateAuditCommand{
+	createAuditCmd = audit.CreateAuditCommand{
 		Source:    "test2",
 		Operation: operation,
 		AdditionalData: map[string]interface{}{
@@ -368,7 +367,7 @@ func TestDeleteInterval(t *testing.T) {
 	}
 
 	// Delete all Audits between two dates
-	deleteIntervalCommand := commands.DeleteIntervalAuditCommand{
+	deleteIntervalCommand := audit.DeleteIntervalAuditCommand{
 		From: time.Now().Add(-time.Hour * 24),
 		To:   time.Now(),
 	}

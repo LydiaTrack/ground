@@ -1,4 +1,4 @@
-package commands
+package session
 
 type CreateSessionCommand struct {
 	UserId       string `json:"userId"`

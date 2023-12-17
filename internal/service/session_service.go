@@ -4,7 +4,6 @@ import (
 	"errors"
 	"lydia-track-base/internal/domain/auth"
 	"lydia-track-base/internal/domain/session"
-	"lydia-track-base/internal/domain/session/commands"
 	"time"
 
 	"gopkg.in/mgo.v2/bson"
@@ -36,7 +35,7 @@ func NewSessionService(sessionRepository SessionRepository, userService UserServ
 }
 
 // CreateSession is a function that creates a session
-func (s SessionService) CreateSession(cmd commands.CreateSessionCommand) (session.InfoModel, error) {
+func (s SessionService) CreateSession(cmd session.CreateSessionCommand) (session.InfoModel, error) {
 	// Check if user exists
 	exists, err := s.UserService.ExistsUser(cmd.UserId, []auth.Permission{auth.AdminPermission})
 	if err != nil {

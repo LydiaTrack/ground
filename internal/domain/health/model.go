@@ -1,4 +1,4 @@
-package domain
+package health
 
 // Health is a struct that contains health information about the application
 // It is used to return the health information

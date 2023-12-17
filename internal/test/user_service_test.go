@@ -4,7 +4,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"lydia-track-base/internal/domain/auth"
 	"lydia-track-base/internal/domain/user"
-	"lydia-track-base/internal/domain/user/commands"
 	"lydia-track-base/internal/repository"
 	"lydia-track-base/internal/service"
 	"lydia-track-base/internal/test_support"
@@ -30,7 +29,7 @@ func TestCreateUser(t *testing.T) {
 
 	birthDate := primitive.NewDateTimeFromTime(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC))
 	// Create a new userModel
-	command := commands.CreateUserCommand{
+	command := user.CreateUserCommand{
 		Username: "test",
 		Password: "test123",
 		PersonInfo: user.PersonInfo{
