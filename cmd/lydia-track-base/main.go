@@ -35,8 +35,6 @@ func main() {
 	service.InitializeDefaultUser()
 	// Initialize default role
 	service.InitializeDefaultRole()
-	// Initialize Casbin policy enforcer
-	//auth.InitializePolicyEnforcer()
 
 	// Run server on port 8080
 	r.Run(":8080")

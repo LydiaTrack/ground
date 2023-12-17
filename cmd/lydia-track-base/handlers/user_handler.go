@@ -1,19 +1,25 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
-	"gopkg.in/mgo.v2/bson"
+	"lydia-track-base/internal/domain/auth"
 	"lydia-track-base/internal/domain/user/commands"
 	"lydia-track-base/internal/service"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type UserHandler struct {
 	userService service.UserService
+	authService service.Service
 }
 
-func NewUserHandler(userService service.UserService) UserHandler {
-	return UserHandler{userService: userService}
+func NewUserHandler(userService service.UserService, authService service.Service) UserHandler {
+	return UserHandler{
+		userService: userService,
+		authService: authService,
+	}
 }
 
 // GetUser godoc
@@ -26,7 +32,19 @@ func NewUserHandler(userService service.UserService) UserHandler {
 // @Router /users:id [get]
 func (h UserHandler) GetUser(c *gin.Context) {
 	id := c.Param("id")
-	user, err := h.userService.GetUser(id)
+
+	currentUser, err := h.authService.GetCurrentUser(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID, []auth.Permission{auth.AdminPermission})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err := h.userService.GetUser(id, currentUserPermissions)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -48,12 +66,24 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	user, err := h.userService.CreateUser(createUserCommand)
+
+	currentUser, err := h.authService.GetCurrentUser(c)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, user)
+	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID, []auth.Permission{auth.AdminPermission})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	createdUser, err := h.userService.CreateUser(createUserCommand, currentUserPermissions)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, createdUser)
 }
 
 // DeleteUser godoc
@@ -70,7 +100,19 @@ func (h UserHandler) DeleteUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	err := h.userService.DeleteUser(deleteUserCommand)
+
+	currentUser, err := h.authService.GetCurrentUser(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID, []auth.Permission{auth.AdminPermission})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = h.userService.DeleteUser(deleteUserCommand, currentUserPermissions)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -92,7 +134,19 @@ func (h UserHandler) AddRoleToUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	err := h.userService.AddRoleToUser(addRoleToUserCommand)
+
+	currentUser, err := h.authService.GetCurrentUser(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID, []auth.Permission{auth.AdminPermission})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = h.userService.AddRoleToUser(addRoleToUserCommand, currentUserPermissions)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -114,7 +168,19 @@ func (h UserHandler) RemoveRoleFromUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	err := h.userService.RemoveRoleFromUser(removeRoleFromUserCommand)
+
+	currentUser, err := h.authService.GetCurrentUser(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID, []auth.Permission{auth.AdminPermission})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = h.userService.RemoveRoleFromUser(removeRoleFromUserCommand, currentUserPermissions)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -132,7 +198,19 @@ func (h UserHandler) RemoveRoleFromUser(c *gin.Context) {
 // @Router /users/roles:id [get]
 func (h UserHandler) GetUserRoles(c *gin.Context) {
 	id := c.Param("id")
-	roles, err := h.userService.GetUserRoles(bson.ObjectIdHex(id))
+
+	currentUser, err := h.authService.GetCurrentUser(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID, []auth.Permission{auth.AdminPermission})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	roles, err := h.userService.GetUserRoles(bson.ObjectIdHex(id), currentUserPermissions)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
