@@ -16,7 +16,7 @@ func InitializeDefaultRole() error {
 		Info: os.Getenv("DEFAULT_ROLE_INFO"),
 	}
 
-	_, err := service.NewRoleService(repository.GetRoleRepository()).CreateRole(roleCreateCmd, []auth.Permission{})
+	_, err := service.NewRoleService(repository.GetRoleRepository()).CreateRole(roleCreateCmd, []auth.Permission{auth.AdminPermission})
 	if err != nil {
 		return err
 	}
