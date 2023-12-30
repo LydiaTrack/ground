@@ -1,7 +1,6 @@
 package test
 
 import (
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"lydia-track-base/internal/domain/auth"
 	"lydia-track-base/internal/domain/user"
 	"lydia-track-base/internal/repository"
@@ -9,15 +8,39 @@ import (
 	"lydia-track-base/internal/test_support"
 	"testing"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+var (
+	userService     service.UserService
+	initializedUser = false
+)
+
+func initializeUserService() {
+	if !initializedUser {
+		test_support.TestWithMongo()
+		repo := repository.GetUserRepository()
+
+		// Create a new user service instance
+		userService = service.NewUserService(repo)
+		initializedUser = true
+	}
+}
+
+//func TestMain(m *testing.M) {
+//	initializeUserService()
+//	m.Run()
+//}
 
 // TestNewUserService Create a new user service instance with UserMongoRepository
 func TestNewUserService(t *testing.T) {
 	test_support.TestWithMongo()
-	repo := repository.GetUserRepository()
 
-	// Create a new user service instance
-	service.NewUserService(repo)
+	// Check for user service is initializedUser or not
+	if !initializedUser {
+		t.Errorf("Error initializing user service")
+	}
 }
 
 // TestCreateUser Create a new user
@@ -25,8 +48,6 @@ func TestCreateUser(t *testing.T) {
 	test_support.TestWithMongo()
 
 	// Create a new userModel service instance
-	userService := service.NewUserService(repository.GetUserRepository())
-
 	birthDate := primitive.NewDateTimeFromTime(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC))
 	// Create a new userModel
 	command := user.CreateUserCommand{
