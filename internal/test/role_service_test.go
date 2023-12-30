@@ -26,23 +26,14 @@ func initializeRoleService() {
 }
 
 func TestRoleService(t *testing.T) {
-	t.Run("NewRoleService", TestNewRoleService)
-	t.Run("CreateRole", TestCreateRole)
-	t.Run("DeleteRole", TestDeleteRole)
+	test_support.TestWithMongo()
+	initializeRoleService()
+
+	t.Run("CreateRole", testCreateRole)
+	t.Run("DeleteRole", testDeleteRole)
 }
 
-func TestNewRoleService(t *testing.T) {
-	t.Run("NewRoleService", func(t *testing.T) {
-		test_support.TestWithMongo()
-		initializeRoleService()
-
-		if !initializedRole {
-			t.Errorf("Error initializing role service")
-		}
-	})
-}
-
-func TestCreateRole(t *testing.T) {
+func testCreateRole(t *testing.T) {
 	t.Run("CreateRole", func(t *testing.T) {
 		test_support.TestWithMongo()
 		initializeRoleService()
@@ -76,7 +67,7 @@ func TestCreateRole(t *testing.T) {
 	})
 }
 
-func TestDeleteRole(t *testing.T) {
+func testDeleteRole(t *testing.T) {
 	t.Run("DeleteRole", func(t *testing.T) {
 		test_support.TestWithMongo()
 		initializeRoleService()

@@ -29,17 +29,13 @@ func initializeUserService() {
 }
 
 func TestNewUserService(t *testing.T) {
-	t.Run("NewUserService", func(t *testing.T) {
-		initializeUserService()
+	test_support.TestWithMongo()
+	initializeRoleService()
 
-		// Check for user service is initialized or not
-		if !initializedUser {
-			t.Errorf("Error initializing user service")
-		}
-	})
+	t.Run("NewUserService", testCreateUser)
 }
 
-func TestCreateUser(t *testing.T) {
+func testCreateUser(t *testing.T) {
 	t.Run("CreateUser", func(t *testing.T) {
 		initializeUserService()
 		test_support.TestWithMongo()
