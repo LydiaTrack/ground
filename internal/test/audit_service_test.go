@@ -27,25 +27,28 @@ func initializeAuditService() {
 }
 
 func TestAuditService(t *testing.T) {
-	t.Run("NewAuditService", TestNewAuditService)
-	t.Run("CreateAudit", TestCreateAudit)
-	t.Run("GetAudit", TestGetAudit)
-	t.Run("ExistsAudit", TestExistsAudit)
-	t.Run("GetAudits", TestGetAudits)
-	t.Run("DeleteOlderThan", TestDeleteOlderThan)
-	t.Run("DeleteInterval", TestDeleteInterval)
+	test_support.TestWithMongo()
+	initializeAuditService()
+
+	t.Run("NewAuditService", testNewAuditService)
+	t.Run("CreateAudit", testCreateAudit)
+	t.Run("GetAudit", testGetAudit)
+	t.Run("ExistsAudit", testExistsAudit)
+	t.Run("GetAudits", testGetAudits)
+	t.Run("DeleteOlderThan", testDeleteOlderThan)
+	t.Run("DeleteInterval", testDeleteInterval)
 }
 
-// TestNewUserService Create a new Audit service instance with AuditMongoRepository
-func TestNewAuditService(t *testing.T) {
+// testNewAuditService Create a new Audit service instance with AuditMongoRepository
+func testNewAuditService(t *testing.T) {
 	t.Run("NewAuditService", func(t *testing.T) {
 		test_support.TestWithMongo()
 		initializeAuditService()
 	})
 }
 
-// TestCreateAudit Create a new Audit
-func TestCreateAudit(t *testing.T) {
+// testCreateAudit Create a new Audit
+func testCreateAudit(t *testing.T) {
 	t.Run("CreateAudit", func(t *testing.T) {
 		test_support.TestWithMongo()
 		initializeAuditService()
@@ -91,8 +94,8 @@ func TestCreateAudit(t *testing.T) {
 	})
 }
 
-// TestGetAudit Get an Audit
-func TestGetAudit(t *testing.T) {
+// testGetAudit Get an Audit
+func testGetAudit(t *testing.T) {
 	t.Run("GetAudit", func(t *testing.T) {
 		test_support.TestWithMongo()
 		initializeAuditService()
@@ -162,8 +165,8 @@ func TestGetAudit(t *testing.T) {
 	})
 }
 
-// TestExistsAudit Check if an Audit exists
-func TestExistsAudit(t *testing.T) {
+// testExistsAudit Check if an Audit exists
+func testExistsAudit(t *testing.T) {
 	t.Run("ExistsAudit", func(t *testing.T) {
 		test_support.TestWithMongo()
 		initializeAuditService()
@@ -221,8 +224,8 @@ func TestExistsAudit(t *testing.T) {
 	})
 }
 
-// TestGetAudits Get all Audits
-func TestGetAudits(t *testing.T) {
+// testGetAudits Get all Audits
+func testGetAudits(t *testing.T) {
 	t.Run("GetAudits", func(t *testing.T) {
 		test_support.TestWithMongo()
 		initializeAuditService()
@@ -263,8 +266,8 @@ func TestGetAudits(t *testing.T) {
 	})
 }
 
-// TestDeleteOlderThan Delete all Audits older than a date
-func TestDeleteOlderThan(t *testing.T) {
+// testDeleteOlderThan Delete all Audits older than a date
+func testDeleteOlderThan(t *testing.T) {
 	t.Run("DeleteOlderThan", func(t *testing.T) {
 		test_support.TestWithMongo()
 		initializeAuditService()
@@ -347,8 +350,8 @@ func TestDeleteOlderThan(t *testing.T) {
 	})
 }
 
-// TestDeleteInterval Delete all Audits between two dates
-func TestDeleteInterval(t *testing.T) {
+// testDeleteInterval Delete all Audits between two dates
+func testDeleteInterval(t *testing.T) {
 	t.Run("DeleteInterval", func(t *testing.T) {
 		test_support.TestWithMongo()
 		initializeAuditService()
