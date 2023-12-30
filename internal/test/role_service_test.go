@@ -25,75 +25,85 @@ func initializeRoleService() {
 	}
 }
 
-func TestMain(m *testing.M) {
-	initializeRoleService()
-	m.Run()
+func TestRoleService(t *testing.T) {
+	t.Run("NewRoleService", TestNewRoleService)
+	t.Run("CreateRole", TestCreateRole)
+	t.Run("DeleteRole", TestDeleteRole)
 }
 
 func TestNewRoleService(t *testing.T) {
-	test_support.TestWithMongo()
+	t.Run("NewRoleService", func(t *testing.T) {
+		test_support.TestWithMongo()
+		initializeRoleService()
 
-	if !initializedRole {
-		t.Errorf("Error initializing role service")
-	}
+		if !initializedRole {
+			t.Errorf("Error initializing role service")
+		}
+	})
 }
 
 func TestCreateRole(t *testing.T) {
-	test_support.TestWithMongo()
+	t.Run("CreateRole", func(t *testing.T) {
+		test_support.TestWithMongo()
+		initializeRoleService()
 
-	command := commands.CreateRoleCommand{
-		Name: "testCreate",
-		Tags: []string{"testTag"},
-		Info: "Test Tag Create",
-	}
+		command := commands.CreateRoleCommand{
+			Name: "testCreate123",
+			Tags: []string{"testTag"},
+			Info: "Test Tag Create",
+		}
 
-	role, err := roleService.CreateRole(command, []auth.Permission{auth.AdminPermission})
+		role, err := roleService.CreateRole(command, []auth.Permission{auth.AdminPermission})
 
-	if err != nil {
-		t.Errorf("Error creating role: %s", err)
-	}
+		if err != nil {
+			t.Errorf("Error creating role: %s", err)
+		}
 
-	if role.Name != command.Name {
-		t.Errorf("Expected role name: %s, got: %s", command.Name, role.Name)
-	}
+		if role.Name != command.Name {
+			t.Errorf("Expected role name: %s, got: %s", command.Name, role.Name)
+		}
 
-	// Check for if role is created or not by exist control
-	exists, err := roleService.ExistsRole(role.ID.Hex(), []auth.Permission{auth.AdminPermission})
+		// Check if the role is created or not by existence control
+		exists, err := roleService.ExistsRole(role.ID.Hex(), []auth.Permission{auth.AdminPermission})
 
-	if err != nil {
-		t.Errorf("Error checking role: %s", err)
-	}
+		if err != nil {
+			t.Errorf("Error checking role: %s", err)
+		}
 
-	if !exists {
-		t.Errorf("Expected role not exists")
-	}
+		if !exists {
+			t.Errorf("Expected role not exists")
+		}
+	})
 }
 
 func TestDeleteRole(t *testing.T) {
-	test_support.TestWithMongo()
+	t.Run("DeleteRole", func(t *testing.T) {
+		test_support.TestWithMongo()
+		initializeRoleService()
 
-	command := commands.CreateRoleCommand{
-		Name: "testDelete",
-		Tags: []string{"testTag"},
-		Info: "Test Tag Delete",
-	}
+		command := commands.CreateRoleCommand{
+			Name: "testDelete",
+			Tags: []string{"testTag"},
+			Info: "Test Tag Delete",
+		}
 
-	role, err := roleService.CreateRole(command, []auth.Permission{auth.AdminPermission})
+		role, err := roleService.CreateRole(command, []auth.Permission{auth.AdminPermission})
 
-	if err != nil {
-		t.Errorf("Error creating role: %s", err)
-	}
+		if err != nil {
+			t.Errorf("Error creating role: %s", err)
+		}
 
-	err = roleService.DeleteRole(role.ID.Hex(), []auth.Permission{auth.AdminPermission})
+		err = roleService.DeleteRole(role.ID.Hex(), []auth.Permission{auth.AdminPermission})
 
-	if err != nil {
-		t.Errorf("Error deleting role: %s", err)
-	}
+		if err != nil {
+			t.Errorf("Error deleting role: %s", err)
+		}
 
-	// Check for if role is deleted or not by exist control
-	exists, err := roleService.ExistsRole(role.ID.Hex(), []auth.Permission{auth.AdminPermission})
+		// Check if the role is deleted or not by existence control
+		exists, err := roleService.ExistsRole(role.ID.Hex(), []auth.Permission{auth.AdminPermission})
 
-	if exists {
-		t.Errorf("Expected role exists")
-	}
+		if exists {
+			t.Errorf("Expected role exists")
+		}
+	})
 }

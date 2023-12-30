@@ -10,25 +10,52 @@ import (
 	"time"
 )
 
+var (
+	auditService     service.AuditService
+	initializedAudit = false
+)
+
+func initializeAuditService() {
+	if !initializedAudit {
+		test_support.TestWithMongo()
+		repo := repository.GetAuditRepository()
+
+		// Create a new Audit service instance
+		auditService = service.NewAuditService(repo)
+		initializedAudit = true
+	}
+}
+
+func TestAuditService(t *testing.T) {
+	t.Run("NewAuditService", TestNewAuditService)
+	t.Run("CreateAudit", TestCreateAudit)
+	t.Run("GetAudit", TestGetAudit)
+	t.Run("ExistsAudit", TestExistsAudit)
+	t.Run("GetAudits", TestGetAudits)
+	t.Run("DeleteOlderThan", TestDeleteOlderThan)
+	t.Run("DeleteInterval", TestDeleteInterval)
+}
+
 // TestNewUserService Create a new Audit service instance with AuditMongoRepository
 func TestNewAuditService(t *testing.T) {
-	test_support.TestWithMongo()
-	repo := repository.GetAuditRepository()
-
-	// Create a new Audit service instance
-	service.NewAuditService(repo)
+	t.Run("NewAuditService", func(t *testing.T) {
+		test_support.TestWithMongo()
+		initializeAuditService()
+	})
 }
 
 // TestCreateAudit Create a new Audit
 func TestCreateAudit(t *testing.T) {
-	test_support.TestWithMongo()
+	t.Run("CreateAudit", func(t *testing.T) {
+		test_support.TestWithMongo()
+		initializeAuditService()
 
-	// Create a new Audit service instance
-	auditService := service.NewAuditService(repository.GetAuditRepository())
-	operation := audit.Operation{
-		Domain:  "testDomain",
-		Command: "CREATE",
-	}
+		// Create a new Audit service instance
+		auditService := service.NewAuditService(repository.GetAuditRepository())
+		operation := audit.Operation{
+			Domain:  "testDomain",
+			Command: "CREATE",
+		}
 
 	// Create a new Audit
 	createAuditCmd := audit.CreateAuditCommand{
@@ -41,38 +68,41 @@ func TestCreateAudit(t *testing.T) {
 	}
 	auditModel, err := auditService.CreateAudit(createAuditCmd, []auth.Permission{auth.AdminPermission})
 
-	if err != nil {
-		t.Errorf("Error creating Audit test: %v", err)
-	} else {
+		if err != nil {
+			t.Errorf("Error creating Audit test: %v", err)
+		} else {
 
-		if auditModel.Source != "test" {
-			t.Errorf("Error creating Audit: %v", err)
-		}
+			if auditModel.Source != "test" {
+				t.Errorf("Error creating Audit: %v", err)
+			}
 
-		if auditModel.Operation != operation {
-			t.Errorf("Error creating Audit: %v", err)
-		}
+			if auditModel.Operation != operation {
+				t.Errorf("Error creating Audit: %v", err)
+			}
 
-		if auditModel.AdditionalData["testStr"] != "test" {
-			t.Errorf("Error creating Audit: %v", err)
-		}
+			if auditModel.AdditionalData["testStr"] != "test" {
+				t.Errorf("Error creating Audit: %v", err)
+			}
 
-		if auditModel.RelatedPrincipal != "Test Lastname" {
-			t.Errorf("Error creating Audit: %v", err)
+			if auditModel.RelatedPrincipal != "Test Lastname" {
+				t.Errorf("Error creating Audit: %v", err)
+			}
 		}
-	}
+	})
 }
 
 // TestGetAudit Get an Audit
 func TestGetAudit(t *testing.T) {
-	test_support.TestWithMongo()
+	t.Run("GetAudit", func(t *testing.T) {
+		test_support.TestWithMongo()
+		initializeAuditService()
 
-	// Create a new Audit service instance
-	auditService := service.NewAuditService(repository.GetAuditRepository())
-	operation := audit.Operation{
-		Domain:  "testDomain",
-		Command: "CREATE",
-	}
+		// Create a new Audit service instance
+		auditService := service.NewAuditService(repository.GetAuditRepository())
+		operation := audit.Operation{
+			Domain:  "testDomain",
+			Command: "CREATE",
+		}
 
 	// Create a new Audit
 	createAuditCmd := audit.CreateAuditCommand{
@@ -85,62 +115,65 @@ func TestGetAudit(t *testing.T) {
 	}
 	auditModel, err := auditService.CreateAudit(createAuditCmd, []auth.Permission{auth.AdminPermission})
 
-	if err != nil {
-		t.Errorf("Error creating Audit test: %v", err)
-	} else {
+		if err != nil {
+			t.Errorf("Error creating Audit test: %v", err)
+		} else {
 
-		if auditModel.Source != "test" {
-			t.Errorf("Error creating Audit: %v", err)
+			if auditModel.Source != "test" {
+				t.Errorf("Error creating Audit: %v", err)
+			}
+
+			if auditModel.Operation != operation {
+				t.Errorf("Error creating Audit: %v", err)
+			}
+
+			if auditModel.AdditionalData["testStr"] != "test" {
+				t.Errorf("Error creating Audit: %v", err)
+			}
+
+			if auditModel.RelatedPrincipal != "Test Lastname" {
+				t.Errorf("Error creating Audit: %v", err)
+			}
 		}
 
-		if auditModel.Operation != operation {
-			t.Errorf("Error creating Audit: %v", err)
+		// Get an Audit
+		audit, err := auditService.GetAudit(auditModel.ID.Hex(), []auth.Permission{auth.AdminPermission})
+
+		if err != nil {
+			t.Errorf("Error getting Audit test: %v", err)
+		} else {
+
+			if audit.Source != "test" {
+				t.Errorf("Error getting Audit: %v", err)
+			}
+
+			if audit.Operation != operation {
+				t.Errorf("Error getting Audit: %v", err)
+			}
+
+			if audit.AdditionalData["testStr"] != "test" {
+				t.Errorf("Error getting Audit: %v", err)
+			}
+
+			if audit.RelatedPrincipal != "Test Lastname" {
+				t.Errorf("Error getting Audit: %v", err)
+			}
 		}
-
-		if auditModel.AdditionalData["testStr"] != "test" {
-			t.Errorf("Error creating Audit: %v", err)
-		}
-
-		if auditModel.RelatedPrincipal != "Test Lastname" {
-			t.Errorf("Error creating Audit: %v", err)
-		}
-	}
-
-	// Get an Audit
-	audit, err := auditService.GetAudit(auditModel.ID.Hex(), []auth.Permission{auth.AdminPermission})
-
-	if err != nil {
-		t.Errorf("Error getting Audit test: %v", err)
-	} else {
-
-		if audit.Source != "test" {
-			t.Errorf("Error getting Audit: %v", err)
-		}
-
-		if audit.Operation != operation {
-			t.Errorf("Error getting Audit: %v", err)
-		}
-
-		if audit.AdditionalData["testStr"] != "test" {
-			t.Errorf("Error getting Audit: %v", err)
-		}
-
-		if audit.RelatedPrincipal != "Test Lastname" {
-			t.Errorf("Error getting Audit: %v", err)
-		}
-	}
+	})
 }
 
 // TestExistsAudit Check if an Audit exists
 func TestExistsAudit(t *testing.T) {
-	test_support.TestWithMongo()
+	t.Run("ExistsAudit", func(t *testing.T) {
+		test_support.TestWithMongo()
+		initializeAuditService()
 
-	// Create a new Audit service instance
-	auditService := service.NewAuditService(repository.GetAuditRepository())
-	operation := audit.Operation{
-		Domain:  "testDomain",
-		Command: "CREATE",
-	}
+		// Create a new Audit service instance
+		auditService := service.NewAuditService(repository.GetAuditRepository())
+		operation := audit.Operation{
+			Domain:  "testDomain",
+			Command: "CREATE",
+		}
 
 	// Create a new Audit
 	createAuditCmd := audit.CreateAuditCommand{
@@ -153,50 +186,53 @@ func TestExistsAudit(t *testing.T) {
 	}
 	auditModel, err := auditService.CreateAudit(createAuditCmd, []auth.Permission{auth.AdminPermission})
 
-	if err != nil {
-		t.Errorf("Error creating Audit test: %v", err)
-	} else {
+		if err != nil {
+			t.Errorf("Error creating Audit test: %v", err)
+		} else {
 
-		if auditModel.Source != "test" {
-			t.Errorf("Error creating Audit: %v", err)
+			if auditModel.Source != "test" {
+				t.Errorf("Error creating Audit: %v", err)
+			}
+
+			if auditModel.Operation != operation {
+				t.Errorf("Error creating Audit: %v", err)
+			}
+
+			if auditModel.AdditionalData["testStr"] != "test" {
+				t.Errorf("Error creating Audit: %v", err)
+			}
+
+			if auditModel.RelatedPrincipal != "Test Lastname" {
+				t.Errorf("Error creating Audit: %v", err)
+			}
 		}
 
-		if auditModel.Operation != operation {
-			t.Errorf("Error creating Audit: %v", err)
+		// Check if an Audit exists
+		exists, err := auditService.ExistsAudit(auditModel.ID.Hex(), []auth.Permission{auth.AdminPermission})
+
+		if err != nil {
+			t.Errorf("Error exists Audit test: %v", err)
+		} else {
+
+			if exists != true {
+				t.Errorf("Error exists Audit: %v", err)
+			}
 		}
-
-		if auditModel.AdditionalData["testStr"] != "test" {
-			t.Errorf("Error creating Audit: %v", err)
-		}
-
-		if auditModel.RelatedPrincipal != "Test Lastname" {
-			t.Errorf("Error creating Audit: %v", err)
-		}
-	}
-
-	// Check if an Audit exists
-	exists, err := auditService.ExistsAudit(auditModel.ID.Hex(), []auth.Permission{auth.AdminPermission})
-
-	if err != nil {
-		t.Errorf("Error exists Audit test: %v", err)
-	} else {
-
-		if exists != true {
-			t.Errorf("Error exists Audit: %v", err)
-		}
-	}
+	})
 }
 
 // TestGetAudits Get all Audits
 func TestGetAudits(t *testing.T) {
-	test_support.TestWithMongo()
+	t.Run("GetAudits", func(t *testing.T) {
+		test_support.TestWithMongo()
+		initializeAuditService()
 
-	// Create a new Audit service instance
-	auditService := service.NewAuditService(repository.GetAuditRepository())
-	operation := audit.Operation{
-		Domain:  "testDomain",
-		Command: "CREATE",
-	}
+		// Create a new Audit service instance
+		auditService := service.NewAuditService(repository.GetAuditRepository())
+		operation := audit.Operation{
+			Domain:  "testDomain",
+			Command: "CREATE",
+		}
 
 	// Create a new Audit
 	createAuditCmd := audit.CreateAuditCommand{
@@ -209,41 +245,44 @@ func TestGetAudits(t *testing.T) {
 	}
 	_, err := auditService.CreateAudit(createAuditCmd, []auth.Permission{auth.AdminPermission})
 
-	if err != nil {
-		t.Errorf("Error creating Audit test: %v", err)
-	}
-
-	// Get all Audits
-	audits, err := auditService.GetAudits([]auth.Permission{auth.AdminPermission})
-
-	if err != nil {
-		t.Errorf("Error getting Audits test: %v", err)
-	} else {
-
-		if len(audits) == 0 {
-			t.Errorf("Error getting Audits: %v", err)
+		if err != nil {
+			t.Errorf("Error creating Audit test: %v", err)
 		}
-	}
+
+		// Get all Audits
+		audits, err := auditService.GetAudits([]auth.Permission{auth.AdminPermission})
+
+		if err != nil {
+			t.Errorf("Error getting Audits test: %v", err)
+		} else {
+
+			if len(audits) == 0 {
+				t.Errorf("Error getting Audits: %v", err)
+			}
+		}
+	})
 }
 
 // TestDeleteOlderThan Delete all Audits older than a date
 func TestDeleteOlderThan(t *testing.T) {
-	test_support.TestWithMongo()
+	t.Run("DeleteOlderThan", func(t *testing.T) {
+		test_support.TestWithMongo()
+		initializeAuditService()
 
-	// Create a new Audit service instance
-	auditService := service.NewAuditService(repository.GetAuditRepository())
-	operation := audit.Operation{
-		Domain:  "testDomain",
-		Command: "CREATE",
-	}
+		// Create a new Audit service instance
+		auditService := service.NewAuditService(repository.GetAuditRepository())
+		operation := audit.Operation{
+			Domain:  "testDomain",
+			Command: "CREATE",
+		}
 
-	// Get all Audits
-	audits, err := auditService.GetAudits([]auth.Permission{auth.AdminPermission})
-	if err != nil {
-		t.Errorf("Error getting Audits test: %v", err)
-	}
+		// Get all Audits
+		audits, err := auditService.GetAudits([]auth.Permission{auth.AdminPermission})
+		if err != nil {
+			t.Errorf("Error getting Audits test: %v", err)
+		}
 
-	auditCount := len(audits)
+		auditCount := len(audits)
 
 	// Create a new Audit
 	createAuditCmd := audit.CreateAuditCommand{
@@ -256,9 +295,9 @@ func TestDeleteOlderThan(t *testing.T) {
 	}
 	_, err = auditService.CreateAudit(createAuditCmd, []auth.Permission{auth.AdminPermission})
 
-	if err != nil {
-		t.Errorf("Error creating Audit test: %v", err)
-	}
+		if err != nil {
+			t.Errorf("Error creating Audit test: %v", err)
+		}
 
 	// Create a new Audit
 	createAuditCmd = audit.CreateAuditCommand{
@@ -274,16 +313,16 @@ func TestDeleteOlderThan(t *testing.T) {
 		t.Errorf("Error creating Audit test: %v", err)
 	}
 
-	// Check if auditCount + 2 audits exist
-	audits, err = auditService.GetAudits([]auth.Permission{auth.AdminPermission})
-	if err != nil {
-		t.Errorf("Error getting Audits test: %v", err)
-	} else {
+		// Check if auditCount + 2 audits exist
+		audits, err = auditService.GetAudits([]auth.Permission{auth.AdminPermission})
+		if err != nil {
+			t.Errorf("Error getting Audits test: %v", err)
+		} else {
 
-		if len(audits) != auditCount+2 {
-			t.Errorf("Error getting Audits: %v", err)
+			if len(audits) != auditCount+2 {
+				t.Errorf("Error getting Audits: %v", err)
+			}
 		}
-	}
 
 	// Delete all Audits older than a date
 	deleteOlderThanCommand := audit.DeleteOlderThanAuditCommand{
@@ -291,40 +330,43 @@ func TestDeleteOlderThan(t *testing.T) {
 	}
 	err = auditService.DeleteOlderThan(deleteOlderThanCommand, []auth.Permission{auth.AdminPermission})
 
-	if err != nil {
-		t.Errorf("Error deleting Audits test: %v", err)
-	}
-
-	// Get all Audits
-	audits, err = auditService.GetAudits([]auth.Permission{auth.AdminPermission})
-	if err != nil {
-		t.Errorf("Error getting Audits test: %v", err)
-	} else {
-
-		if len(audits) != 0 {
-			t.Errorf("Error getting Audits: %v", err)
+		if err != nil {
+			t.Errorf("Error deleting Audits test: %v", err)
 		}
-	}
+
+		// Get all Audits
+		audits, err = auditService.GetAudits([]auth.Permission{auth.AdminPermission})
+		if err != nil {
+			t.Errorf("Error getting Audits test: %v", err)
+		} else {
+
+			if len(audits) != 0 {
+				t.Errorf("Error getting Audits: %v", err)
+			}
+		}
+	})
 }
 
 // TestDeleteInterval Delete all Audits between two dates
 func TestDeleteInterval(t *testing.T) {
-	test_support.TestWithMongo()
+	t.Run("DeleteInterval", func(t *testing.T) {
+		test_support.TestWithMongo()
+		initializeAuditService()
 
-	// Create a new Audit service instance
-	auditService := service.NewAuditService(repository.GetAuditRepository())
-	operation := audit.Operation{
-		Domain:  "testDomain",
-		Command: "CREATE",
-	}
+		// Create a new Audit service instance
+		auditService := service.NewAuditService(repository.GetAuditRepository())
+		operation := audit.Operation{
+			Domain:  "testDomain",
+			Command: "CREATE",
+		}
 
-	// Get all Audits
-	audits, err := auditService.GetAudits([]auth.Permission{auth.AdminPermission})
-	if err != nil {
-		t.Errorf("Error getting Audits test: %v", err)
-	}
+		// Get all Audits
+		audits, err := auditService.GetAudits([]auth.Permission{auth.AdminPermission})
+		if err != nil {
+			t.Errorf("Error getting Audits test: %v", err)
+		}
 
-	auditCount := len(audits)
+		auditCount := len(audits)
 
 	// Create a new Audit
 	createAuditCmd := audit.CreateAuditCommand{
@@ -337,9 +379,9 @@ func TestDeleteInterval(t *testing.T) {
 	}
 	_, err = auditService.CreateAudit(createAuditCmd, []auth.Permission{auth.AdminPermission})
 
-	if err != nil {
-		t.Errorf("Error creating Audit test: %v", err)
-	}
+		if err != nil {
+			t.Errorf("Error creating Audit test: %v", err)
+		}
 
 	// Create a new Audit
 	createAuditCmd = audit.CreateAuditCommand{
@@ -355,16 +397,16 @@ func TestDeleteInterval(t *testing.T) {
 		t.Errorf("Error creating Audit test: %v", err)
 	}
 
-	// Check if auditCount + 2 audits exist
-	audits, err = auditService.GetAudits([]auth.Permission{auth.AdminPermission})
-	if err != nil {
-		t.Errorf("Error getting Audits test: %v", err)
-	} else {
+		// Check if auditCount + 2 audits exist
+		audits, err = auditService.GetAudits([]auth.Permission{auth.AdminPermission})
+		if err != nil {
+			t.Errorf("Error getting Audits test: %v", err)
+		} else {
 
-		if len(audits) != auditCount+2 {
-			t.Errorf("Error getting Audits: %v", err)
+			if len(audits) != auditCount+2 {
+				t.Errorf("Error getting Audits: %v", err)
+			}
 		}
-	}
 
 	// Delete all Audits between two dates
 	deleteIntervalCommand := audit.DeleteIntervalAuditCommand{
@@ -373,18 +415,19 @@ func TestDeleteInterval(t *testing.T) {
 	}
 	err = auditService.DeleteInterval(deleteIntervalCommand, []auth.Permission{auth.AdminPermission})
 
-	if err != nil {
-		t.Errorf("Error deleting Audits test: %v", err)
-	}
-
-	// Get all Audits
-	audits, err = auditService.GetAudits([]auth.Permission{auth.AdminPermission})
-	if err != nil {
-		t.Errorf("Error getting Audits test: %v", err)
-	} else {
-
-		if len(audits) != 0 {
-			t.Errorf("Error getting Audits: %v", err)
+		if err != nil {
+			t.Errorf("Error deleting Audits test: %v", err)
 		}
-	}
+
+		// Get all Audits
+		audits, err = auditService.GetAudits([]auth.Permission{auth.AdminPermission})
+		if err != nil {
+			t.Errorf("Error getting Audits test: %v", err)
+		} else {
+
+			if len(audits) != 0 {
+				t.Errorf("Error getting Audits: %v", err)
+			}
+		}
+	})
 }
