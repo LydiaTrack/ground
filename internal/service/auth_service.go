@@ -3,10 +3,10 @@ package service
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
-	auth2 "lydia-track-base/internal/auth"
 	"lydia-track-base/internal/domain/auth"
-	"lydia-track-base/internal/domain/session/commands"
+	"lydia-track-base/internal/domain/session"
 	"lydia-track-base/internal/domain/user"
+	"lydia-track-base/internal/utils"
 	"os"
 	"strconv"
 	"time"
@@ -18,7 +18,7 @@ type Service struct {
 }
 
 type Response struct {
-	auth2.TokenPair
+	utils.TokenPair
 }
 
 type RefreshTokenRequest struct {
@@ -55,7 +55,7 @@ func (s Service) Login(request Request) (Response, error) {
 	}
 
 	// Generate token
-	tokenPair, err := auth2.GenerateTokenPair(userModel.ID)
+	tokenPair, err := utils.GenerateTokenPair(userModel.ID)
 	if err != nil {
 		return Response{}, err
 	}
@@ -71,9 +71,9 @@ func (s Service) Login(request Request) (Response, error) {
 }
 
 // SetSession is a function that sets the session with the given user id and token pair
-func (s Service) SetSession(userId string, tokenPair auth2.TokenPair) error {
+func (s Service) SetSession(userId string, tokenPair utils.TokenPair) error {
 	// Start a session
-	refreshTokenLifespan, err := strconv.Atoi(os.Getenv(auth2.RefreshExpirationKey))
+	refreshTokenLifespan, err := strconv.Atoi(os.Getenv(utils.RefreshExpirationKey))
 	if err != nil {
 		return err
 	}
@@ -85,7 +85,7 @@ func (s Service) SetSession(userId string, tokenPair auth2.TokenPair) error {
 	}
 
 	// Save refresh token with expire time
-	createSessionCmd := commands.CreateSessionCommand{
+	createSessionCmd := session.CreateSessionCommand{
 		UserId:       userId,
 		ExpireTime:   time.Now().Add(time.Hour * time.Duration(refreshTokenLifespan)).Unix(),
 		RefreshToken: tokenPair.RefreshToken,
@@ -100,7 +100,7 @@ func (s Service) SetSession(userId string, tokenPair auth2.TokenPair) error {
 
 // GetCurrentUser is a function that returns the current user
 func (s Service) GetCurrentUser(c *gin.Context) (user.Model, error) {
-	userId, err := auth2.ExtractUserIdFromContext(c)
+	userId, err := utils.ExtractUserIdFromContext(c)
 	if err != nil {
 		return user.Model{}, err
 	}
@@ -114,39 +114,39 @@ func (s Service) GetCurrentUser(c *gin.Context) (user.Model, error) {
 }
 
 // RefreshTokenPair is a function that refreshes the token pair
-func (s Service) RefreshTokenPair(c *gin.Context) (auth2.TokenPair, error) {
+func (s Service) RefreshTokenPair(c *gin.Context) (utils.TokenPair, error) {
 	// Get the refresh token from the request body
 	var refreshTokenRequest RefreshTokenRequest
 	if err := c.ShouldBindJSON(&refreshTokenRequest); err != nil {
-		return auth2.TokenPair{}, err
+		return utils.TokenPair{}, err
 	}
 
 	// Get current user id
 	currentUser, err := s.GetCurrentUser(c)
 	if err != nil {
-		return auth2.TokenPair{}, err
+		return utils.TokenPair{}, err
 	}
 
 	// Get the session by user id
 	sessionInfo, err := s.sessionService.GetUserSession(currentUser.ID.Hex())
 	if err != nil {
-		return auth2.TokenPair{}, err
+		return utils.TokenPair{}, err
 	}
 
 	// Check if the refresh token is valid
 	if sessionInfo.RefreshToken != refreshTokenRequest.RefreshToken {
-		return auth2.TokenPair{}, errors.New("refresh token is invalid")
+		return utils.TokenPair{}, errors.New("refresh token is invalid")
 	}
 
 	// Now that we know the token is valid, we can extract the user id from it
-	tokenPair, err := auth2.GenerateTokenPair(currentUser.ID)
+	tokenPair, err := utils.GenerateTokenPair(currentUser.ID)
 	if err != nil {
-		return auth2.TokenPair{}, err
+		return utils.TokenPair{}, err
 	}
 
 	err = s.SetSession(currentUser.ID.Hex(), tokenPair)
 	if err != nil {
-		return auth2.TokenPair{}, err
+		return utils.TokenPair{}, err
 	}
 
 	return tokenPair, nil

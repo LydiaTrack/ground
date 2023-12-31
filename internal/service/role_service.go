@@ -4,7 +4,6 @@ import (
 	"errors"
 	"lydia-track-base/internal/domain/auth"
 	"lydia-track-base/internal/domain/role"
-	"lydia-track-base/internal/domain/role/commands"
 	"time"
 
 	"gopkg.in/mgo.v2/bson"
@@ -20,12 +19,11 @@ func NewRoleService(roleRepository RoleRepository) RoleService {
 	}
 }
 
-func (s RoleService) CreateRole(command commands.CreateRoleCommand, permissions []auth.Permission) (role.Model, error) {
-	if !CheckPermission(permissions, commands.CreatePermission) {
+func (s RoleService) CreateRole(command role.CreateRoleCommand, permissions []auth.Permission) (role.Model, error) {
+	if !CheckPermission(permissions, role.CreatePermission) {
 		return role.Model{}, errors.New("not permitted")
 	}
 
-	// TODO: These kind of operations must be done with specific requests, not by RoleModel model itself
 	// Validate role
 	// Map command to role
 	roleModel := role.NewRole(bson.NewObjectId().Hex(), command.Name, command.Tags, command.Info, time.Now(), 1)
@@ -47,7 +45,7 @@ func (s RoleService) CreateRole(command commands.CreateRoleCommand, permissions 
 }
 
 func (s RoleService) GetRole(id string, permissions []auth.Permission) (role.Model, error) {
-	if !CheckPermission(permissions, commands.ReadPermission) {
+	if !CheckPermission(permissions, role.ReadPermission) {
 		return role.Model{}, errors.New("not permitted")
 	}
 
@@ -59,7 +57,7 @@ func (s RoleService) GetRole(id string, permissions []auth.Permission) (role.Mod
 }
 
 func (s RoleService) ExistsRole(id string, permissions []auth.Permission) (bool, error) {
-	if !CheckPermission(permissions, commands.ReadPermission) {
+	if !CheckPermission(permissions, role.ReadPermission) {
 		return false, errors.New("not permitted")
 	}
 
@@ -71,7 +69,7 @@ func (s RoleService) ExistsRole(id string, permissions []auth.Permission) (bool,
 }
 
 func (s RoleService) DeleteRole(id string, permissions []auth.Permission) error {
-	if !CheckPermission(permissions, commands.DeletePermission) {
+	if !CheckPermission(permissions, role.DeletePermission) {
 		return errors.New("not permitted")
 	}
 
