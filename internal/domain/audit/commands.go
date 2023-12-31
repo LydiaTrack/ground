@@ -1,15 +1,14 @@
-package commands
+package audit
 
 import (
 	"errors"
-	"lydia-track-base/internal/domain/audit"
 	"lydia-track-base/internal/domain/auth"
 	"time"
 )
 
 type CreateAuditCommand struct {
 	Source           string `json:"source"`
-	audit.Operation  `json:"operation"`
+	Operation        `json:"operation"`
 	AdditionalData   map[string]interface{} `json:"additionalData,omitempty"`
 	RelatedPrincipal string                 `json:"relatedPrincipal,omitempty"`
 }

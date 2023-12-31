@@ -3,7 +3,6 @@ package service
 import (
 	"errors"
 	"lydia-track-base/internal/domain/audit"
-	"lydia-track-base/internal/domain/audit/command"
 	"lydia-track-base/internal/domain/auth"
 	"time"
 
@@ -36,8 +35,8 @@ type AuditRepository interface {
 }
 
 // CreateAudit TODO: Add permission check
-func (s AuditService) CreateAudit(command commands.CreateAuditCommand, permissions []auth.Permission) (audit.Model, error) {
-	if !CheckPermission(permissions, commands.CreatePermission) {
+func (s AuditService) CreateAudit(command audit.CreateAuditCommand, permissions []auth.Permission) (audit.Model, error) {
+	if !CheckPermission(permissions, audit.CreatePermission) {
 		return audit.Model{}, errors.New("not permitted")
 	}
 
@@ -48,7 +47,7 @@ func (s AuditService) CreateAudit(command commands.CreateAuditCommand, permissio
 
 // GetAudit TODO: Add permission check
 func (s AuditService) GetAudit(id string, permissions []auth.Permission) (audit.Model, error) {
-	if !CheckPermission(permissions, commands.ReadPermission) {
+	if !CheckPermission(permissions, audit.ReadPermission) {
 		return audit.Model{}, errors.New("not permitted")
 	}
 
@@ -58,7 +57,7 @@ func (s AuditService) GetAudit(id string, permissions []auth.Permission) (audit.
 
 // ExistsAudit TODO: Add permission check
 func (s AuditService) ExistsAudit(id string, permissions []auth.Permission) (bool, error) {
-	if !CheckPermission(permissions, commands.ReadPermission) {
+	if !CheckPermission(permissions, audit.ReadPermission) {
 		return false, errors.New("not permitted")
 	}
 
@@ -68,7 +67,7 @@ func (s AuditService) ExistsAudit(id string, permissions []auth.Permission) (boo
 
 // GetAudits TODO: Add permission check
 func (s AuditService) GetAudits(permissions []auth.Permission) ([]audit.Model, error) {
-	if !CheckPermission(permissions, commands.ReadPermission) {
+	if !CheckPermission(permissions, audit.ReadPermission) {
 		return nil, errors.New("not permitted")
 	}
 
@@ -77,8 +76,8 @@ func (s AuditService) GetAudits(permissions []auth.Permission) ([]audit.Model, e
 }
 
 // DeleteOlderThan TODO: Add permission check
-func (s AuditService) DeleteOlderThan(command commands.DeleteOlderThanAuditCommand, permissions []auth.Permission) error {
-	if !CheckPermission(permissions, commands.DeletePermission) {
+func (s AuditService) DeleteOlderThan(command audit.DeleteOlderThanAuditCommand, permissions []auth.Permission) error {
+	if !CheckPermission(permissions, audit.DeletePermission) {
 		return errors.New("not permitted")
 	}
 
@@ -92,8 +91,8 @@ func (s AuditService) DeleteOlderThan(command commands.DeleteOlderThanAuditComma
 }
 
 // DeleteInterval TODO: Add permission check
-func (s AuditService) DeleteInterval(command commands.DeleteIntervalAuditCommand, permissions []auth.Permission) error {
-	if !CheckPermission(permissions, commands.DeletePermission) {
+func (s AuditService) DeleteInterval(command audit.DeleteIntervalAuditCommand, permissions []auth.Permission) error {
+	if !CheckPermission(permissions, audit.DeletePermission) {
 		return errors.New("not permitted")
 	}
 

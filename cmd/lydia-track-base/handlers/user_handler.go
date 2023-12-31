@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"lydia-track-base/internal/domain/auth"
-	"lydia-track-base/internal/domain/user/commands"
+	"lydia-track-base/internal/domain/user"
 	"lydia-track-base/internal/service"
 	"net/http"
 
@@ -61,7 +61,7 @@ func (h UserHandler) GetUser(c *gin.Context) {
 // @Success 200 {object} map[string]interface{}
 // @Router /users [post]
 func (h UserHandler) CreateUser(c *gin.Context) {
-	var createUserCommand commands.CreateUserCommand
+	var createUserCommand user.CreateUserCommand
 	if err := c.ShouldBindJSON(&createUserCommand); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -95,7 +95,7 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 // @Success 200 {object} map[string]interface{}
 // @Router /users:id [delete]
 func (h UserHandler) DeleteUser(c *gin.Context) {
-	var deleteUserCommand commands.DeleteUserCommand
+	var deleteUserCommand user.DeleteUserCommand
 	if err := c.ShouldBindJSON(&deleteUserCommand); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -129,7 +129,7 @@ func (h UserHandler) DeleteUser(c *gin.Context) {
 // @Success 200 {object} map[string]interface{}
 // @Router /users/roles [post]
 func (h UserHandler) AddRoleToUser(c *gin.Context) {
-	var addRoleToUserCommand commands.AddRoleToUserCommand
+	var addRoleToUserCommand user.AddRoleToUserCommand
 	if err := c.ShouldBindJSON(&addRoleToUserCommand); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -163,7 +163,7 @@ func (h UserHandler) AddRoleToUser(c *gin.Context) {
 // @Success 200 {object} map[string]interface{}
 // @Router /users/roles [delete]
 func (h UserHandler) RemoveRoleFromUser(c *gin.Context) {
-	var removeRoleFromUserCommand commands.RemoveRoleFromUserCommand
+	var removeRoleFromUserCommand user.RemoveRoleFromUserCommand
 	if err := c.ShouldBindJSON(&removeRoleFromUserCommand); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

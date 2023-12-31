@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"lydia-track-base/internal/domain/auth"
-	"lydia-track-base/internal/domain/role/commands"
+	"lydia-track-base/internal/domain/role"
 	"lydia-track-base/internal/service"
 	"net/http"
 
@@ -62,7 +62,7 @@ func (h RoleHandler) GetRole(c *gin.Context) {
 // @Success 200 {object} map[string]interface{}
 // @Router /roles [post]
 func (h RoleHandler) CreateRole(c *gin.Context) {
-	var role commands.CreateRoleCommand
+	var role role.CreateRoleCommand
 	if err := c.ShouldBindJSON(&role); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
