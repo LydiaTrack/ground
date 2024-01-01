@@ -2,7 +2,7 @@ package test
 
 import (
 	"lydia-track-base/internal/domain/auth"
-	"lydia-track-base/internal/domain/role/commands"
+	"lydia-track-base/internal/domain/role"
 	"lydia-track-base/internal/repository"
 	"lydia-track-base/internal/service"
 	"lydia-track-base/internal/test_support"
@@ -38,7 +38,7 @@ func testCreateRole(t *testing.T) {
 		test_support.TestWithMongo()
 		initializeRoleService()
 
-		command := commands.CreateRoleCommand{
+		command := role.CreateRoleCommand{
 			Name: "testCreate123",
 			Tags: []string{"testTag"},
 			Info: "Test Tag Create",
@@ -72,7 +72,7 @@ func testDeleteRole(t *testing.T) {
 		test_support.TestWithMongo()
 		initializeRoleService()
 
-		command := commands.CreateRoleCommand{
+		command := role.CreateRoleCommand{
 			Name: "testDelete",
 			Tags: []string{"testTag"},
 			Info: "Test Tag Delete",
