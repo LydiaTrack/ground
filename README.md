@@ -51,7 +51,7 @@ go build lydia-track-base/cmd/lydia-track-base
 - [x] Authorization
 - [x] Refresh token
 - [x] Password encryption
-- [] Password recovery (to be implemented)
+- [ ] Password recovery (to be implemented)
 
 > [!NOTE]
 > This project is only a base software for actual projects. It is not intended to be used as a standalone software. But can be used as a base for other projects.
