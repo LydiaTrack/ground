@@ -1,10 +1,10 @@
 package api
 
 import (
+	"github.com/LydiaTrack/lydia-track-base/handlers"
+	"github.com/LydiaTrack/lydia-track-base/internal/repository"
+	"github.com/LydiaTrack/lydia-track-base/internal/service"
 	"github.com/gin-gonic/gin"
-	"lydia-track-base/cmd/lydia-track-base/handlers"
-	"lydia-track-base/internal/repository"
-	"lydia-track-base/internal/service"
 )
 
 // InitAuth initializes auth routes

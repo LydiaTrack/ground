@@ -1,8 +1,8 @@
 package user
 
 import (
+	"github.com/LydiaTrack/lydia-track-base/internal/domain/auth"
 	"gopkg.in/mgo.v2/bson"
-	"lydia-track-base/internal/domain/auth"
 )
 
 type CreateUserCommand struct {

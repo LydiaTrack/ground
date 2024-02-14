@@ -2,10 +2,10 @@ package repository
 
 import (
 	"context"
+	"github.com/LydiaTrack/lydia-track-base/internal/domain/session"
+	"github.com/LydiaTrack/lydia-track-base/internal/mongodb"
 	"go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/mgo.v2/bson"
-	"lydia-track-base/internal/domain/session"
-	"lydia-track-base/internal/mongodb"
 )
 
 type SessionMongoRepository struct {

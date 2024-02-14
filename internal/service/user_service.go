@@ -2,12 +2,12 @@ package service
 
 import (
 	"errors"
+	"github.com/LydiaTrack/lydia-track-base/internal/domain/auth"
+	"github.com/LydiaTrack/lydia-track-base/internal/domain/role"
+	"github.com/LydiaTrack/lydia-track-base/internal/domain/user"
+	"github.com/LydiaTrack/lydia-track-base/internal/utils"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2/bson"
-	"lydia-track-base/internal/domain/auth"
-	"lydia-track-base/internal/domain/role"
-	"lydia-track-base/internal/domain/user"
-	"lydia-track-base/internal/utils"
 	"time"
 )
 

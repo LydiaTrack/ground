@@ -1,12 +1,12 @@
 package initializers
 
 import (
+	"github.com/LydiaTrack/lydia-track-base/internal/domain/auth"
+	"github.com/LydiaTrack/lydia-track-base/internal/domain/user"
+	"github.com/LydiaTrack/lydia-track-base/internal/repository"
+	"github.com/LydiaTrack/lydia-track-base/internal/service"
+	"github.com/LydiaTrack/lydia-track-base/internal/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"lydia-track-base/internal/domain/auth"
-	"lydia-track-base/internal/domain/user"
-	"lydia-track-base/internal/repository"
-	"lydia-track-base/internal/service"
-	"lydia-track-base/internal/utils"
 	"os"
 	"time"
 )

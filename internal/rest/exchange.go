@@ -3,7 +3,7 @@ package rest
 import (
 	"bytes"
 	"encoding/json"
-	"lydia-track-base/internal/utils"
+	"github.com/LydiaTrack/lydia-track-base/internal/utils"
 	"net/http"
 )
 
