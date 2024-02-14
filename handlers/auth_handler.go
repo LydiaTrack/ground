@@ -1,8 +1,8 @@
 package handlers
 
 import (
+	"github.com/LydiaTrack/lydia-track-base/internal/service"
 	"github.com/gin-gonic/gin"
-	"lydia-track-base/internal/service"
 	"net/http"
 )
 

@@ -1,25 +1,19 @@
-package main
+package lydia_track_base
 
 import (
+	"log"
+
+	"github.com/LydiaTrack/lydia-track-base/api"
+	"github.com/LydiaTrack/lydia-track-base/internal/initializers"
+	"github.com/LydiaTrack/lydia-track-base/internal/mongodb"
+	"github.com/LydiaTrack/lydia-track-base/internal/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/kr/pretty"
-	"log"
-	"lydia-track-base/cmd/lydia-track-base/api"
-	"lydia-track-base/internal/initializers"
-	"lydia-track-base/internal/mongodb"
-	"lydia-track-base/internal/utils"
 )
 
-// @title Lydia Track Base API
-// @version 0.0.1
-// @description Lydia Track Base API
-
-// @host localhost:8080
-// @BasePath /
-// @schemes http
-func main() {
-
+// InitializeLydiaBase initializes the Lydia base server with r as the gin Engine
+func InitializeLydiaBase(r *gin.Engine) {
 	// Initialize environment variables
 	err := godotenv.Load()
 	if err != nil {
@@ -27,7 +21,6 @@ func main() {
 	}
 	// Initialize logging
 	utils.InitLogging()
-	r := gin.New()
 	// Initialize database connection
 	mongodb.InitializeMongoDBConnection()
 	// Initialize API routes

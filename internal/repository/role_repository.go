@@ -2,10 +2,10 @@ package repository
 
 import (
 	"context"
+	"github.com/LydiaTrack/lydia-track-base/internal/domain/role"
+	"github.com/LydiaTrack/lydia-track-base/internal/mongodb"
 	"go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/mgo.v2/bson"
-	"lydia-track-base/internal/domain/role"
-	"lydia-track-base/internal/mongodb"
 )
 
 // A RoleMongoRepository that implements RoleRepository

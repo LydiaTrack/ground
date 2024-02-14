@@ -2,11 +2,11 @@ package service
 
 import (
 	"errors"
+	"github.com/LydiaTrack/lydia-track-base/internal/domain/auth"
+	"github.com/LydiaTrack/lydia-track-base/internal/domain/session"
+	"github.com/LydiaTrack/lydia-track-base/internal/domain/user"
+	"github.com/LydiaTrack/lydia-track-base/internal/utils"
 	"github.com/gin-gonic/gin"
-	"lydia-track-base/internal/domain/auth"
-	"lydia-track-base/internal/domain/session"
-	"lydia-track-base/internal/domain/user"
-	"lydia-track-base/internal/utils"
 	"os"
 	"strconv"
 	"time"
