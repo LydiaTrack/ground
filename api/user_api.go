@@ -1,12 +1,12 @@
 package api
 
 import (
+	"github.com/LydiaTrack/lydia-track-base/handlers"
+	"github.com/LydiaTrack/lydia-track-base/internal/middlewares"
+	"github.com/LydiaTrack/lydia-track-base/internal/repository"
+	"github.com/LydiaTrack/lydia-track-base/internal/service"
+	"github.com/LydiaTrack/lydia-track-base/internal/utils"
 	"github.com/gin-gonic/gin"
-	"lydia-track-base/cmd/lydia-track-base/handlers"
-	"lydia-track-base/internal/middlewares"
-	"lydia-track-base/internal/repository"
-	"lydia-track-base/internal/service"
-	"lydia-track-base/internal/utils"
 )
 
 // InitUser initializes user routes

@@ -1,8 +1,8 @@
 package api
 
 import (
+	"github.com/LydiaTrack/lydia-track-base/handlers"
 	"github.com/gin-gonic/gin"
-	"lydia-track-base/cmd/lydia-track-base/handlers"
 )
 
 // InitHealth initializes health routes
