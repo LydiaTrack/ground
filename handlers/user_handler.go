@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"lydia-track-base/internal/domain/auth"
-	"lydia-track-base/internal/domain/user"
-	"lydia-track-base/internal/service"
+	"github.com/LydiaTrack/lydia-track-base/internal/domain/auth"
+	"github.com/LydiaTrack/lydia-track-base/internal/domain/user"
+	"github.com/LydiaTrack/lydia-track-base/internal/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

@@ -2,11 +2,11 @@ package repository
 
 import (
 	"context"
+	"github.com/LydiaTrack/lydia-track-base/internal/domain/role"
+	"github.com/LydiaTrack/lydia-track-base/internal/domain/user"
+	"github.com/LydiaTrack/lydia-track-base/internal/mongodb"
 	"go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/mgo.v2/bson"
-	"lydia-track-base/internal/domain/role"
-	"lydia-track-base/internal/domain/user"
-	"lydia-track-base/internal/mongodb"
 )
 
 // A UserMongoRepository that implements UserRepository

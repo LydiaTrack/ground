@@ -1,10 +1,10 @@
 package test_support
 
 import (
+	"github.com/LydiaTrack/lydia-track-base/internal/mongodb"
+	"github.com/LydiaTrack/lydia-track-base/internal/utils"
 	"github.com/joho/godotenv"
 	"log"
-	"lydia-track-base/internal/mongodb"
-	"lydia-track-base/internal/utils"
 )
 
 func TestWithMongo() {

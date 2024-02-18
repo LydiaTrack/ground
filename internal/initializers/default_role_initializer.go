@@ -1,11 +1,11 @@
 package initializers
 
 import (
-	"lydia-track-base/internal/domain/auth"
-	"lydia-track-base/internal/domain/role"
-	"lydia-track-base/internal/repository"
-	"lydia-track-base/internal/service"
-	"lydia-track-base/internal/utils"
+	"github.com/LydiaTrack/lydia-track-base/internal/domain/auth"
+	"github.com/LydiaTrack/lydia-track-base/internal/domain/role"
+	"github.com/LydiaTrack/lydia-track-base/internal/repository"
+	"github.com/LydiaTrack/lydia-track-base/internal/service"
+	"github.com/LydiaTrack/lydia-track-base/internal/utils"
 	"os"
 )
 

@@ -2,10 +2,10 @@ package repository
 
 import (
 	"context"
+	"github.com/LydiaTrack/lydia-track-base/internal/domain/audit"
+	"github.com/LydiaTrack/lydia-track-base/internal/mongodb"
 	"go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/mgo.v2/bson"
-	"lydia-track-base/internal/domain/audit"
-	"lydia-track-base/internal/mongodb"
 	"time"
 )
 
