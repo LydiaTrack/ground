@@ -51,8 +51,8 @@ func (s AuditService) GetAudit(id string, permissions []auth.Permission) (audit.
 		return audit.Model{}, errors.New("not permitted")
 	}
 
-	auditModel, error := s.auditRepository.GetAudit(bson.ObjectIdHex(id))
-	return auditModel, error
+	auditModel, err := s.auditRepository.GetAudit(bson.ObjectIdHex(id))
+	return auditModel, err
 }
 
 // ExistsAudit TODO: Add permission check
@@ -61,8 +61,8 @@ func (s AuditService) ExistsAudit(id string, permissions []auth.Permission) (boo
 		return false, errors.New("not permitted")
 	}
 
-	exists, error := s.auditRepository.ExistsAudit(bson.ObjectIdHex(id))
-	return exists, error
+	exists, err := s.auditRepository.ExistsAudit(bson.ObjectIdHex(id))
+	return exists, err
 }
 
 // GetAudits TODO: Add permission check
@@ -71,8 +71,8 @@ func (s AuditService) GetAudits(permissions []auth.Permission) ([]audit.Model, e
 		return nil, errors.New("not permitted")
 	}
 
-	audits, error := s.auditRepository.GetAudits()
-	return audits, error
+	audits, err := s.auditRepository.GetAudits()
+	return audits, err
 }
 
 // DeleteOlderThan TODO: Add permission check
@@ -81,13 +81,13 @@ func (s AuditService) DeleteOlderThan(command audit.DeleteOlderThanAuditCommand,
 		return errors.New("not permitted")
 	}
 
-	error := command.Validate()
-	if error != nil {
-		return error
+	err := command.Validate()
+	if err != nil {
+		return err
 	}
 
-	error = s.auditRepository.DeleteOlderThan(command.Instant)
-	return error
+	err = s.auditRepository.DeleteOlderThan(command.Instant)
+	return err
 }
 
 // DeleteInterval TODO: Add permission check
@@ -96,11 +96,11 @@ func (s AuditService) DeleteInterval(command audit.DeleteIntervalAuditCommand, p
 		return errors.New("not permitted")
 	}
 
-	error := command.Validate()
-	if error != nil {
-		return error
+	err := command.Validate()
+	if err != nil {
+		return err
 	}
 
-	error = s.auditRepository.DeleteInterval(command.From, command.To)
-	return error
+	err = s.auditRepository.DeleteInterval(command.From, command.To)
+	return err
 }
