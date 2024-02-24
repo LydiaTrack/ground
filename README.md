@@ -6,7 +6,7 @@ This is the base repository for the Lydia Track backend. It has written in Golan
 
 ### Prerequisites
 
-- [Golang](https://golang.org/doc/install) (1.19)
+- [Golang](https://golang.org/doc/install) (1.22)
 - [MongoDB Image](https://hub.docker.com/_/mongo) (4.4.6)
 - [Docker](https://docs.docker.com/get-docker/) (20.10.6)
 
