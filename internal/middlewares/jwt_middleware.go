@@ -1,7 +1,7 @@
 package middlewares
 
 import (
-	"github.com/LydiaTrack/lydia-track-base/internal/utils"
+	"github.com/Lydia/lydia-base/internal/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
