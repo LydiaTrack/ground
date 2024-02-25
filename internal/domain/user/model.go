@@ -2,7 +2,7 @@ package user
 
 import (
 	"errors"
-	"github.com/LydiaTrack/lydia-track-base/internal/domain/role"
+	"github.com/Lydia/lydia-base/internal/domain/role"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"gopkg.in/mgo.v2/bson"
 	"net/mail"
