@@ -22,7 +22,7 @@ git clone git@github.com:Lydia/lydia-base.git
 
 ```bash
 LYDIA_DB_URI=example.mongodb.com
-LYDIA_DB_NAME=lydia-track-db
+LYDIA_DB_NAME=lydia-db
 # It defines the DB type for mongoDB, it can be either CONTAINER or REMOTE
 LYDIA_DB_CONNECTION_TYPE=CONTAINER
 # DB Container connection port
