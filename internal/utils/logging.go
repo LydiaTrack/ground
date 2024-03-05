@@ -11,13 +11,13 @@ var logger *log.Logger
 // InitLogging initializes logging by creating a new logger and setting its flags and output
 func InitLogging() {
 	// Save log to file with date and time
-	logfile, err := os.Create("lydia-track-base.log")
+	logfile, err := os.Create("lydia-base.log")
 	if err != nil {
 		log.Fatal("Cannot create file", err)
 	}
 	// Save on both stdout and file
 	write := io.MultiWriter(os.Stdout, logfile)
-	logger = log.New(write, "lydia-track-base ", log.LstdFlags)
+	logger = log.New(write, "lydia-base ", log.LstdFlags)
 
 	defer logfile.Close()
 	Log("Logging initialized")

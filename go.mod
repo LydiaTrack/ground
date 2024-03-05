@@ -1,4 +1,4 @@
-module github.com/LydiaTrack/lydia-track-base
+module github.com/Lydia/lydia-base
 
 go 1.20
 

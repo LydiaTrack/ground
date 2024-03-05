@@ -2,11 +2,11 @@ basePath: /
 host: localhost:8080
 info:
   contact: {}
-  description: Lydia Track Base API
+  description: Lydia Base API
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  title: Lydia Track Base API
+  title: Lydia Base API
   version: 0.0.1
 paths:
   /users:

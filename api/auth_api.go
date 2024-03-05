@@ -1,9 +1,9 @@
 package api
 
 import (
-	"github.com/LydiaTrack/lydia-track-base/handlers"
-	"github.com/LydiaTrack/lydia-track-base/internal/repository"
-	"github.com/LydiaTrack/lydia-track-base/internal/service"
+	"github.com/Lydia/lydia-base/handlers"
+	"github.com/Lydia/lydia-base/internal/repository"
+	"github.com/Lydia/lydia-base/internal/service"
 	"github.com/gin-gonic/gin"
 )
 
