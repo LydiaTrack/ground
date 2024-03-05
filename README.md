@@ -1,6 +1,6 @@
-# Lydia Track Base
+# Lydia Base
 
-This is the base repository for the Lydia Track backend. It has written in Golang and uses the Gin framework. It behaves as a REST API and uses a MongoDB database as remote or local connection.
+This is the base repository for the Lydia backend. It has written in Golang and uses the Gin framework. It behaves as a REST API and uses a MongoDB database as remote or local connection.
 
 ## Installation
 
@@ -15,14 +15,14 @@ This is the base repository for the Lydia Track backend. It has written in Golan
 1. Clone the repository
 
 ```bash
-git clone git@github.com:LydiaTrack/lydia-track-base.git
+git clone git@github.com:Lydia/lydia-base.git
 ```
 
 2. Create a `.env` file in the root directory of the project and add the following variables:
 
 ```bash
 LYDIA_DB_URI=example.mongodb.com
-LYDIA_DB_NAME=lydia-track-db
+LYDIA_DB_NAME=lydia-db
 # It defines the DB type for mongoDB, it can be either CONTAINER or REMOTE
 LYDIA_DB_CONNECTION_TYPE=CONTAINER
 # DB Container connection port
@@ -40,7 +40,7 @@ DEFAULT_ROLE_INFO=Standard user role
 3. Run the following command to start the project
 
 ```bash
-go build lydia-track-base/cmd/lydia-track-base
+go build lydia-base/cmd/lydia-base
 ```
 
 ## Abilities

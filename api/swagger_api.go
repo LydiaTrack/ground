@@ -1,7 +1,7 @@
 package api
 
 import (
-	_ "github.com/LydiaTrack/lydia-track-base/docs"
+	_ "github.com/Lydia/lydia-base/docs"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"

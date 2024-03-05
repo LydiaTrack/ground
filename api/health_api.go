@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/LydiaTrack/lydia-track-base/handlers"
+	"github.com/Lydia/lydia-base/handlers"
 	"github.com/gin-gonic/gin"
 )
 

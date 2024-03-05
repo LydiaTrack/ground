@@ -1,0 +1,31 @@
+name: Lydia Release
+
+on:
+  push:
+    branches:
+      - release/*
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.22
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        # Go Test for Just Internal/Test directory, other directories are not related to testing process.
+        run: go test -v ./internal/test/...
+
+      - name: Tagging
+        run: |
+          git tag -a -m "Release v1.0.0" v1.0.0
+          git push origin v1.0.0
+        
