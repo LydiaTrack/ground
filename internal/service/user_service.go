@@ -170,7 +170,7 @@ func (s UserService) VerifyUser(username string, password string, permissions []
 	// Compare the passwords
 	err = bcrypt.CompareHashAndPassword([]byte(userModel.Password), []byte(password))
 	if err != nil {
-		utils.LogFatal("Error comparing passwords: " + err.Error())
+		utils.LogError("Error comparing passwords: " + err.Error())
 		return user.Model{}, err
 	}
 
@@ -210,16 +210,16 @@ func (s UserService) GetUserRoles(userID bson.ObjectId, permissions []auth.Permi
 }
 
 // GetUserPermissions gets the permissions of a user
-func (s UserService) GetUserPermissions(userID bson.ObjectId, _permissions []auth.Permission) ([]auth.Permission, error) {
-	userRoles, err := s.GetUserRoles(userID, _permissions)
+func (s UserService) GetUserPermissions(userID bson.ObjectId) ([]auth.Permission, error) {
+	userRoles, err := s.GetUserRoles(userID, []auth.Permission{auth.AdminPermission})
 	if err != nil {
 		return nil, err
 	}
 
-	var permissions []auth.Permission
+	var userPermissions []auth.Permission
 	for _, userRole := range userRoles {
-		permissions = append(permissions, userRole.Permissions...)
+		userPermissions = append(userPermissions, userRole.Permissions...)
 	}
 
-	return permissions, nil
+	return userPermissions, nil
 }
