@@ -7,9 +7,10 @@ import (
 )
 
 type CreateRoleCommand struct {
-	Name string   `json:"name"`
-	Tags []string `json:"tags,omitempty"`
-	Info string   `json:"roleInfo,omitempty"`
+	Name        string            `json:"name"`
+	Tags        []string          `json:"tags,omitempty"`
+	Info        string            `json:"roleInfo,omitempty"`
+	Permissions []auth.Permission `json:"permissions"`
 }
 
 type UpdateRoleCommand struct {

@@ -18,12 +18,12 @@ type Model struct {
 	Version     int               `json:"version" bson:"version"`
 }
 
-func NewRole(id string, name string, tags []string, roleInfo string, createdDate time.Time, version int) Model {
+func NewRole(id string, name string, permissions []auth.Permission, tags []string, roleInfo string, createdDate time.Time, version int) Model {
 	return Model{
 		ID:          bson.ObjectIdHex(id),
 		Name:        name,
-		Permissions: []auth.Permission{},
 		Tags:        tags,
+		Permissions: permissions,
 		RoleInfo:    roleInfo,
 		CreatedDate: createdDate,
 		Version:     version,

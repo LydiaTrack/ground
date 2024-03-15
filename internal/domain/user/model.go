@@ -2,7 +2,6 @@ package user
 
 import (
 	"errors"
-	"github.com/Lydia/lydia-base/internal/domain/role"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"gopkg.in/mgo.v2/bson"
 	"net/mail"
@@ -15,9 +14,9 @@ type Model struct {
 	Username    string        `json:"username" bson:"username"`
 	Password    string        `json:"-" bson:"password"`
 	PersonInfo  `json:"personInfo" bson:"personInfo"`
-	CreatedDate time.Time    `json:"createdDate" bson:"createdDate"`
-	Version     int          `json:"version" bson:"version"`
-	Roles       []role.Model `json:"roles,omitempty" bson:"roles,omitempty"`
+	CreatedDate time.Time       `json:"createdDate" bson:"createdDate"`
+	Version     int             `json:"version" bson:"version"`
+	RoleIds     []bson.ObjectId `json:"roleIds" bson:"roleIds"`
 }
 
 func NewUser(id string, username string, password string, personInfo PersonInfo, createdDate time.Time, version int) Model {
@@ -28,6 +27,7 @@ func NewUser(id string, username string, password string, personInfo PersonInfo,
 		PersonInfo:  personInfo,
 		CreatedDate: createdDate,
 		Version:     version,
+		RoleIds:     make([]bson.ObjectId, 0),
 	}
 
 }

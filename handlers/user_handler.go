@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"github.com/Lydia/lydia-base/internal/domain/auth"
+	"net/http"
+
 	"github.com/Lydia/lydia-base/internal/domain/user"
 	"github.com/Lydia/lydia-base/internal/service"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/mgo.v2/bson"
@@ -38,7 +38,7 @@ func (h UserHandler) GetUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID, []auth.Permission{auth.AdminPermission})
+	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -72,7 +72,7 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID, []auth.Permission{auth.AdminPermission})
+	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -106,7 +106,7 @@ func (h UserHandler) DeleteUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID, []auth.Permission{auth.AdminPermission})
+	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -140,7 +140,7 @@ func (h UserHandler) AddRoleToUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID, []auth.Permission{auth.AdminPermission})
+	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -166,24 +166,20 @@ func (h UserHandler) RemoveRoleFromUser(c *gin.Context) {
 	var removeRoleFromUserCommand user.RemoveRoleFromUserCommand
 	if err := c.ShouldBindJSON(&removeRoleFromUserCommand); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
 	}
 
 	currentUser, err := h.authService.GetCurrentUser(c)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
 	}
-	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID, []auth.Permission{auth.AdminPermission})
+	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
 	}
 
 	err = h.userService.RemoveRoleFromUser(removeRoleFromUserCommand, currentUserPermissions)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "success"})
 }
@@ -204,7 +200,7 @@ func (h UserHandler) GetUserRoles(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID, []auth.Permission{auth.AdminPermission})
+	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
