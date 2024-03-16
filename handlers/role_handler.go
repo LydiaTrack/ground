@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"github.com/Lydia/lydia-base/internal/domain/auth"
 	"github.com/Lydia/lydia-base/internal/domain/role"
 	"github.com/Lydia/lydia-base/internal/service"
 	"net/http"
@@ -39,7 +38,7 @@ func (h RoleHandler) GetRole(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID, []auth.Permission{auth.AdminPermission})
+	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -73,7 +72,7 @@ func (h RoleHandler) CreateRole(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID, []auth.Permission{auth.AdminPermission})
+	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -103,7 +102,7 @@ func (h RoleHandler) DeleteRole(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID, []auth.Permission{auth.AdminPermission})
+	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

@@ -34,8 +34,8 @@ func LogError(message string, args ...interface{}) {
 }
 
 // LogFatal with severity FATAL
-func LogFatal(message string, args ...interface{}) {
-	logger.Fatalf("[FATAL] "+message, args...)
+func LogFatal(message string) {
+	logger.Fatalln("[FATAL] " + message)
 }
 
 // LogPanic with severity PANIC

@@ -20,11 +20,12 @@ var (
 
 // NewUserMongoRepository creates a new UserMongoRepository instance
 // which implements UserRepository
-func newUserMongoRepository() *UserMongoRepository {
+func initializeUserRepository() *UserMongoRepository {
 	ctx := context.Background()
 	// FIXME: Burada ileride uzaktaki bir mongodb instance'ına bağlanmak gerekecek
 
 	collection := mongodb.GetCollection("users", ctx)
+	roleRepository = GetRoleRepository()
 
 	return &UserMongoRepository{
 		collection: collection,
@@ -35,7 +36,7 @@ func newUserMongoRepository() *UserMongoRepository {
 // returns the existing one
 func GetUserRepository() *UserMongoRepository {
 	if userRepository == nil {
-		userRepository = newUserMongoRepository()
+		userRepository = initializeUserRepository()
 	}
 	return userRepository
 }
@@ -96,7 +97,7 @@ func (r *UserMongoRepository) GetUserByUsername(username string) (user.Model, er
 }
 
 func (r *UserMongoRepository) AddRoleToUser(userID bson.ObjectId, roleID bson.ObjectId) error {
-	_, err := r.collection.UpdateOne(context.Background(), bson.M{"_id": userID}, bson.M{"$addToSet": bson.M{"roles": roleID}})
+	_, err := r.collection.UpdateOne(context.Background(), bson.M{"_id": userID}, bson.M{"$push": bson.M{"roleIds": roleID}})
 	if err != nil {
 		return err
 	}
@@ -104,7 +105,7 @@ func (r *UserMongoRepository) AddRoleToUser(userID bson.ObjectId, roleID bson.Ob
 }
 
 func (r *UserMongoRepository) RemoveRoleFromUser(userID bson.ObjectId, roleID bson.ObjectId) error {
-	_, err := r.collection.UpdateOne(context.Background(), bson.M{"_id": userID}, bson.M{"$pull": bson.M{"roles": roleID}})
+	_, err := r.collection.UpdateOne(context.Background(), bson.M{"_id": userID}, bson.M{"$pull": bson.M{"roleIds": roleID}})
 	if err != nil {
 		return err
 	}
@@ -117,5 +118,15 @@ func (r *UserMongoRepository) GetUserRoles(userID bson.ObjectId) ([]role.Model, 
 		return nil, err
 	}
 
-	return userModel.Roles, nil
+	// Resolve roleIds to roles
+	var roles []role.Model
+	for _, roleID := range userModel.RoleIds {
+		roleModel, err := GetRoleRepository().GetRole(roleID)
+		if err != nil {
+			return nil, err
+		}
+		roles = append(roles, roleModel)
+	}
+
+	return roles, nil
 }

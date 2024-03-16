@@ -26,7 +26,7 @@ func (s RoleService) CreateRole(command role.CreateRoleCommand, permissions []au
 
 	// Validate role
 	// Map command to role
-	roleModel := role.NewRole(bson.NewObjectId().Hex(), command.Name, command.Tags, command.Info, time.Now(), 1)
+	roleModel := role.NewRole(bson.NewObjectId().Hex(), command.Name, command.Permissions, command.Tags, command.Info, time.Now(), 1)
 	if err := roleModel.Validate(); err != nil {
 		return roleModel, err
 	}
