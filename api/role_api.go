@@ -1,10 +1,10 @@
 package api
 
 import (
-	"github.com/Lydia/lydia-base/handlers"
-	"github.com/Lydia/lydia-base/internal/repository"
-	"github.com/Lydia/lydia-base/internal/service"
-	"github.com/Lydia/lydia-base/internal/utils"
+	"github.com/LydiaTrack/lydia-base/handlers"
+	"github.com/LydiaTrack/lydia-base/internal/repository"
+	"github.com/LydiaTrack/lydia-base/internal/service"
+	"github.com/LydiaTrack/lydia-base/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 

@@ -2,7 +2,7 @@ package mongodb
 
 import (
 	"context"
-	"github.com/Lydia/lydia-base/internal/utils"
+	"github.com/LydiaTrack/lydia-base/internal/utils"
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"

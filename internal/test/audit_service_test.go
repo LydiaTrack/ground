@@ -1,11 +1,11 @@
 package test
 
 import (
-	"github.com/Lydia/lydia-base/internal/domain/audit"
-	"github.com/Lydia/lydia-base/internal/domain/auth"
-	"github.com/Lydia/lydia-base/internal/repository"
-	"github.com/Lydia/lydia-base/internal/service"
-	"github.com/Lydia/lydia-base/internal/test_support"
+	"github.com/LydiaTrack/lydia-base/internal/domain/audit"
+	"github.com/LydiaTrack/lydia-base/internal/domain/auth"
+	"github.com/LydiaTrack/lydia-base/internal/repository"
+	"github.com/LydiaTrack/lydia-base/internal/service"
+	"github.com/LydiaTrack/lydia-base/internal/test_support"
 	"testing"
 	"time"
 )
