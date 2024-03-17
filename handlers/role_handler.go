@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"github.com/Lydia/lydia-base/internal/domain/role"
-	"github.com/Lydia/lydia-base/internal/service"
+	"github.com/LydiaTrack/lydia-base/internal/domain/role"
+	"github.com/LydiaTrack/lydia-base/internal/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

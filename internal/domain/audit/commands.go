@@ -2,7 +2,7 @@ package audit
 
 import (
 	"errors"
-	"github.com/Lydia/lydia-base/internal/domain/auth"
+	"github.com/LydiaTrack/lydia-base/internal/domain/auth"
 	"time"
 )
 

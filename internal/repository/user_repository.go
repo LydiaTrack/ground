@@ -2,9 +2,9 @@ package repository
 
 import (
 	"context"
-	"github.com/Lydia/lydia-base/internal/domain/role"
-	"github.com/Lydia/lydia-base/internal/domain/user"
-	"github.com/Lydia/lydia-base/internal/mongodb"
+	"github.com/LydiaTrack/lydia-base/internal/domain/role"
+	"github.com/LydiaTrack/lydia-base/internal/domain/user"
+	"github.com/LydiaTrack/lydia-base/internal/mongodb"
 	"go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/mgo.v2/bson"
 )

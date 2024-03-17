@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/Lydia/lydia-base/internal/domain/health"
+	"github.com/LydiaTrack/lydia-base/internal/domain/health"
 )
 
 // GetApplicationHealth returns the health of the application

@@ -3,8 +3,8 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/Lydia/lydia-base/internal/domain/user"
-	"github.com/Lydia/lydia-base/internal/service"
+	"github.com/LydiaTrack/lydia-base/internal/domain/user"
+	"github.com/LydiaTrack/lydia-base/internal/service"
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/mgo.v2/bson"
