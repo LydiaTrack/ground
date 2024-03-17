@@ -3,10 +3,10 @@ package lydia_base
 import (
 	"log"
 
-	"github.com/Lydia/lydia-base/api"
-	"github.com/Lydia/lydia-base/internal/initializers"
-	"github.com/Lydia/lydia-base/internal/mongodb"
-	"github.com/Lydia/lydia-base/internal/utils"
+	"github.com/LydiaTrack/lydia-base/api"
+	"github.com/LydiaTrack/lydia-base/internal/initializers"
+	"github.com/LydiaTrack/lydia-base/internal/mongodb"
+	"github.com/LydiaTrack/lydia-base/internal/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/kr/pretty"
