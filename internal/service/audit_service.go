@@ -2,8 +2,8 @@ package service
 
 import (
 	"errors"
-	"github.com/Lydia/lydia-base/internal/domain/audit"
-	"github.com/Lydia/lydia-base/internal/domain/auth"
+	"github.com/LydiaTrack/lydia-base/internal/domain/audit"
+	"github.com/LydiaTrack/lydia-base/internal/domain/auth"
 	"time"
 
 	"gopkg.in/mgo.v2/bson"
