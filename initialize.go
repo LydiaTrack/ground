@@ -12,8 +12,8 @@ import (
 	"github.com/kr/pretty"
 )
 
-// InitializeLydiaBase initializes the Lydia base server with r as the gin Engine
-func InitializeLydiaBase(r *gin.Engine) {
+// Initialize initializes the Lydia base server with r as the gin Engine
+func Initialize(r *gin.Engine) {
 	// Initialize environment variables
 	err := godotenv.Load()
 	if err != nil {
@@ -38,8 +38,6 @@ func InitializeLydiaBase(r *gin.Engine) {
 		panic(err)
 	}
 
-	// Run server on port 8080
-	r.Run(":8080")
 }
 
 // initializeRoutes initializes routes for each API
