@@ -1,8 +1,7 @@
-package service
+package auth
 
 import (
 	"errors"
-	"github.com/LydiaTrack/lydia-base/internal/domain/auth"
 	"github.com/LydiaTrack/lydia-base/internal/domain/session"
 	"github.com/LydiaTrack/lydia-base/internal/domain/user"
 	"github.com/LydiaTrack/lydia-base/internal/utils"
@@ -11,6 +10,18 @@ import (
 	"strconv"
 	"time"
 )
+
+type UserService interface {
+	ExistsByUsername(username string, permissions []Permission) (bool, error)
+	VerifyUser(username, password string, permissions []Permission) (user.Model, error)
+	GetUser(id string, permissions []Permission) (user.Model, error)
+}
+
+type SessionService interface {
+	DeleteSessionByUser(userId string) error
+	CreateSession(command session.CreateSessionCommand) (session.InfoModel, error)
+	GetUserSession(userId string) (session.InfoModel, error)
+}
 
 type Service struct {
 	userService    UserService
@@ -40,7 +51,7 @@ func NewAuthService(userService UserService, sessionService SessionService) Serv
 // Login is a function that handles the login process
 func (s Service) Login(request Request) (Response, error) {
 	// Check if user exists
-	exists, err := s.userService.ExistsByUsername(request.Username, []auth.Permission{auth.AdminPermission})
+	exists, err := s.userService.ExistsByUsername(request.Username, []Permission{AdminPermission})
 	if err != nil {
 		return Response{}, err
 	}
@@ -49,7 +60,7 @@ func (s Service) Login(request Request) (Response, error) {
 	}
 
 	// Check if password is correct
-	userModel, err := s.userService.VerifyUser(request.Username, request.Password, []auth.Permission{auth.AdminPermission})
+	userModel, err := s.userService.VerifyUser(request.Username, request.Password, []Permission{AdminPermission})
 	if err != nil {
 		return Response{}, err
 	}
@@ -105,7 +116,7 @@ func (s Service) GetCurrentUser(c *gin.Context) (user.Model, error) {
 		return user.Model{}, err
 	}
 
-	userModel, err := s.userService.GetUser(userId, []auth.Permission{auth.AdminPermission})
+	userModel, err := s.userService.GetUser(userId, []Permission{AdminPermission})
 	if err != nil {
 		return user.Model{}, err
 	}
@@ -158,7 +169,7 @@ func (s Service) RefreshTokenPair(c *gin.Context) (utils.TokenPair, error) {
 // 2. */Action
 // 3. Domain/*
 // 4. Domain/Action
-func CheckPermission(Permissions []auth.Permission, Permission auth.Permission) bool {
+func CheckPermission(Permissions []Permission, Permission Permission) bool {
 	// Check if there is a */*
 	for _, permission := range Permissions {
 		if permission.Domain == "*" && permission.Action == "*" {

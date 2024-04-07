@@ -1,8 +1,8 @@
 package test
 
 import (
+	"github.com/LydiaTrack/lydia-base/auth"
 	"github.com/LydiaTrack/lydia-base/internal/domain/audit"
-	"github.com/LydiaTrack/lydia-base/internal/domain/auth"
 	"github.com/LydiaTrack/lydia-base/internal/repository"
 	"github.com/LydiaTrack/lydia-base/internal/service"
 	"github.com/LydiaTrack/lydia-base/internal/test_support"

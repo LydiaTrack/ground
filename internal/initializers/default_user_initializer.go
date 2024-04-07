@@ -1,7 +1,7 @@
 package initializers
 
 import (
-	"github.com/LydiaTrack/lydia-base/internal/domain/auth"
+	"github.com/LydiaTrack/lydia-base/auth"
 	"github.com/LydiaTrack/lydia-base/internal/domain/user"
 	"github.com/LydiaTrack/lydia-base/internal/repository"
 	"github.com/LydiaTrack/lydia-base/internal/service"

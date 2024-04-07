@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/LydiaTrack/lydia-base/auth"
 	"net/http"
 
 	"github.com/LydiaTrack/lydia-base/internal/domain/user"
@@ -12,10 +13,10 @@ import (
 
 type UserHandler struct {
 	userService service.UserService
-	authService service.Service
+	authService auth.Service
 }
 
-func NewUserHandler(userService service.UserService, authService service.Service) UserHandler {
+func NewUserHandler(userService service.UserService, authService auth.Service) UserHandler {
 	return UserHandler{
 		userService: userService,
 		authService: authService,
