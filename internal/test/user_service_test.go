@@ -209,7 +209,7 @@ func testAddRoleToUser(t *testing.T) {
 	}
 
 	// Get user's permissions
-	permissions, err := userService.GetUserpermissionList(userModel.ID)
+	permissions, err := userService.GetUserPermissionList(userModel.ID)
 
 	if err != nil {
 		t.Errorf("Error getting user permissions: %v", err)
@@ -296,7 +296,7 @@ func testRemoveRoleFromUser(t *testing.T) {
 	}
 
 	// Get user's permissions
-	permissions, err := userService.GetUserpermissionList(userModel.ID)
+	permissions, err := userService.GetUserPermissionList(userModel.ID)
 
 	if err != nil {
 		t.Errorf("Error getting user permissions: %v", err)

@@ -39,7 +39,7 @@ func (h RoleHandler) GetRole(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID)
+	currentUserPermissions, err := h.userService.GetUserPermissionList(currentUser.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -73,7 +73,7 @@ func (h RoleHandler) CreateRole(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID)
+	currentUserPermissions, err := h.userService.GetUserPermissionList(currentUser.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -103,7 +103,7 @@ func (h RoleHandler) DeleteRole(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID)
+	currentUserPermissions, err := h.userService.GetUserPermissionList(currentUser.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
