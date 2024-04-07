@@ -39,7 +39,7 @@ func (h UserHandler) GetUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID)
+	currentUserPermissions, err := h.userService.GetUserPermissionList(currentUser.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -73,7 +73,7 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID)
+	currentUserPermissions, err := h.userService.GetUserPermissionList(currentUser.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -107,7 +107,7 @@ func (h UserHandler) DeleteUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID)
+	currentUserPermissions, err := h.userService.GetUserPermissionList(currentUser.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -141,7 +141,7 @@ func (h UserHandler) AddRoleToUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID)
+	currentUserPermissions, err := h.userService.GetUserPermissionList(currentUser.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -173,7 +173,7 @@ func (h UserHandler) RemoveRoleFromUser(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
-	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID)
+	currentUserPermissions, err := h.userService.GetUserPermissionList(currentUser.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
@@ -201,7 +201,7 @@ func (h UserHandler) GetUserRoles(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	currentUserPermissions, err := h.userService.GetUserPermissions(currentUser.ID)
+	currentUserPermissions, err := h.userService.GetUserPermissionList(currentUser.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

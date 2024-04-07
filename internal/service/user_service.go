@@ -210,8 +210,8 @@ func (s UserService) GetUserRoles(userID bson.ObjectId, permissionList []auth.Pe
 	return s.userRepository.GetUserRoles(userID)
 }
 
-// GetUserpermissionList gets the permissionList of a user
-func (s UserService) GetUserpermissionList(userID bson.ObjectId) ([]auth.Permission, error) {
+// GetUserPermissionList gets the permissionList of a user
+func (s UserService) GetUserPermissionList(userID bson.ObjectId) ([]auth.Permission, error) {
 	userRoles, err := s.GetUserRoles(userID, []auth.Permission{auth.AdminPermission})
 	if err != nil {
 		return nil, err
