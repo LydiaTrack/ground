@@ -2,7 +2,7 @@ package role
 
 import (
 	"errors"
-	"github.com/LydiaTrack/lydia-base/internal/domain/auth"
+	"github.com/LydiaTrack/lydia-base/auth"
 	"time"
 
 	"gopkg.in/mgo.v2/bson"

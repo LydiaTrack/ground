@@ -1,6 +1,7 @@
 package initializers
 
 import (
+	auth2 "github.com/LydiaTrack/lydia-base/auth"
 	"github.com/LydiaTrack/lydia-base/internal/domain/auth"
 	"github.com/LydiaTrack/lydia-base/internal/domain/role"
 	"github.com/LydiaTrack/lydia-base/internal/repository"
@@ -16,7 +17,7 @@ func InitializeDefaultRole() error {
 		Info: os.Getenv("DEFAULT_ROLE_INFO"),
 	}
 
-	_, err := service.NewRoleService(repository.GetRoleRepository()).CreateRole(roleCreateCmd, []auth.Permission{auth.AdminPermission})
+	_, err := service.NewRoleService(repository.GetRoleRepository()).CreateRole(roleCreateCmd, []auth2.Permission{auth.AdminPermission})
 	if err != nil {
 		return err
 	}

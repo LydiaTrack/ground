@@ -1,8 +1,9 @@
 package test
 
 import (
-	"github.com/LydiaTrack/lydia-base/internal/domain/auth"
+	"github.com/LydiaTrack/lydia-base/auth"
 	"github.com/LydiaTrack/lydia-base/internal/domain/role"
+	"github.com/LydiaTrack/lydia-base/internal/permissions"
 	"github.com/LydiaTrack/lydia-base/internal/repository"
 	"github.com/LydiaTrack/lydia-base/internal/service"
 	"github.com/LydiaTrack/lydia-base/internal/test_support"
@@ -42,7 +43,7 @@ func testCreateRole(t *testing.T) {
 		Info: "Test Tag Create",
 	}
 
-	role, err := roleService.CreateRole(command, []auth.Permission{auth.AdminPermission})
+	role, err := roleService.CreateRole(command, []auth.Permission{permissions.RoleCreatePermission})
 
 	if err != nil {
 		t.Errorf("Error creating role: %s", err)

@@ -2,8 +2,9 @@ package service
 
 import (
 	"errors"
+	"github.com/LydiaTrack/lydia-base/auth"
 	"github.com/LydiaTrack/lydia-base/internal/domain/audit"
-	"github.com/LydiaTrack/lydia-base/internal/domain/auth"
+	"github.com/LydiaTrack/lydia-base/internal/permissions"
 	"time"
 
 	"gopkg.in/mgo.v2/bson"
@@ -35,8 +36,8 @@ type AuditRepository interface {
 }
 
 // CreateAudit TODO: Add permission check
-func (s AuditService) CreateAudit(command audit.CreateAuditCommand, permissions []auth.Permission) (audit.Model, error) {
-	if !CheckPermission(permissions, audit.CreatePermission) {
+func (s AuditService) CreateAudit(command audit.CreateAuditCommand, permissionList []auth.Permission) (audit.Model, error) {
+	if !auth.CheckPermission(permissionList, permissions.AuditCreatePermission) {
 		return audit.Model{}, errors.New("not permitted")
 	}
 
@@ -46,8 +47,8 @@ func (s AuditService) CreateAudit(command audit.CreateAuditCommand, permissions 
 }
 
 // GetAudit TODO: Add permission check
-func (s AuditService) GetAudit(id string, permissions []auth.Permission) (audit.Model, error) {
-	if !CheckPermission(permissions, audit.ReadPermission) {
+func (s AuditService) GetAudit(id string, permissionList []auth.Permission) (audit.Model, error) {
+	if !auth.CheckPermission(permissionList, permissions.AuditReadPermission) {
 		return audit.Model{}, errors.New("not permitted")
 	}
 
@@ -56,8 +57,8 @@ func (s AuditService) GetAudit(id string, permissions []auth.Permission) (audit.
 }
 
 // ExistsAudit TODO: Add permission check
-func (s AuditService) ExistsAudit(id string, permissions []auth.Permission) (bool, error) {
-	if !CheckPermission(permissions, audit.ReadPermission) {
+func (s AuditService) ExistsAudit(id string, permissionList []auth.Permission) (bool, error) {
+	if !auth.CheckPermission(permissionList, permissions.AuditReadPermission) {
 		return false, errors.New("not permitted")
 	}
 
@@ -66,8 +67,8 @@ func (s AuditService) ExistsAudit(id string, permissions []auth.Permission) (boo
 }
 
 // GetAudits TODO: Add permission check
-func (s AuditService) GetAudits(permissions []auth.Permission) ([]audit.Model, error) {
-	if !CheckPermission(permissions, audit.ReadPermission) {
+func (s AuditService) GetAudits(permissionList []auth.Permission) ([]audit.Model, error) {
+	if !auth.CheckPermission(permissionList, permissions.AuditReadPermission) {
 		return nil, errors.New("not permitted")
 	}
 
@@ -76,8 +77,8 @@ func (s AuditService) GetAudits(permissions []auth.Permission) ([]audit.Model, e
 }
 
 // DeleteOlderThan TODO: Add permission check
-func (s AuditService) DeleteOlderThan(command audit.DeleteOlderThanAuditCommand, permissions []auth.Permission) error {
-	if !CheckPermission(permissions, audit.DeletePermission) {
+func (s AuditService) DeleteOlderThan(command audit.DeleteOlderThanAuditCommand, permissionList []auth.Permission) error {
+	if !auth.CheckPermission(permissionList, permissions.AuditDeletePermission) {
 		return errors.New("not permitted")
 	}
 
@@ -91,8 +92,8 @@ func (s AuditService) DeleteOlderThan(command audit.DeleteOlderThanAuditCommand,
 }
 
 // DeleteInterval TODO: Add permission check
-func (s AuditService) DeleteInterval(command audit.DeleteIntervalAuditCommand, permissions []auth.Permission) error {
-	if !CheckPermission(permissions, audit.DeletePermission) {
+func (s AuditService) DeleteInterval(command audit.DeleteIntervalAuditCommand, permissionList []auth.Permission) error {
+	if !auth.CheckPermission(permissionList, permissions.AuditDeletePermission) {
 		return errors.New("not permitted")
 	}
 

@@ -1,7 +1,6 @@
 package user
 
 import (
-	"github.com/LydiaTrack/lydia-base/internal/domain/auth"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -29,24 +28,4 @@ type AddRoleToUserCommand struct {
 type RemoveRoleFromUserCommand struct {
 	UserID bson.ObjectId `json:"userId"`
 	RoleID bson.ObjectId `json:"roleId"`
-}
-
-var CreatePermission = auth.Permission{
-	Domain: "user",
-	Action: "CREATE",
-}
-
-var UpdatePermission = auth.Permission{
-	Domain: "user",
-	Action: "UPDATE",
-}
-
-var DeletePermission = auth.Permission{
-	Domain: "user",
-	Action: "DELETE",
-}
-
-var ReadPermission = auth.Permission{
-	Domain: "user",
-	Action: "READ",
 }

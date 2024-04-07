@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/LydiaTrack/lydia-base/auth"
 	"github.com/LydiaTrack/lydia-base/handlers"
 	"github.com/LydiaTrack/lydia-base/internal/middlewares"
 	"github.com/LydiaTrack/lydia-base/internal/repository"
@@ -14,7 +15,7 @@ func InitUser(r *gin.Engine) {
 
 	userService := service.NewUserService(repository.GetUserRepository())
 	sessionService := service.NewSessionService(repository.GetSessionRepository(), userService)
-	authService := service.NewAuthService(userService, sessionService)
+	authService := auth.NewAuthService(userService, sessionService)
 
 	userHandler := handlers.NewUserHandler(userService, authService)
 
