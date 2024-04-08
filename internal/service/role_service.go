@@ -2,8 +2,9 @@ package service
 
 import (
 	"errors"
-	"github.com/LydiaTrack/lydia-base/internal/domain/auth"
+	"github.com/LydiaTrack/lydia-base/auth"
 	"github.com/LydiaTrack/lydia-base/internal/domain/role"
+	"github.com/LydiaTrack/lydia-base/internal/permissions"
 	"time"
 
 	"gopkg.in/mgo.v2/bson"
@@ -19,8 +20,8 @@ func NewRoleService(roleRepository RoleRepository) RoleService {
 	}
 }
 
-func (s RoleService) CreateRole(command role.CreateRoleCommand, permissions []auth.Permission) (role.Model, error) {
-	if !CheckPermission(permissions, role.CreatePermission) {
+func (s RoleService) CreateRole(command role.CreateRoleCommand, permissionList []auth.Permission) (role.Model, error) {
+	if !auth.CheckPermission(permissionList, permissions.RoleCreatePermission) {
 		return role.Model{}, errors.New("not permitted")
 	}
 
@@ -44,8 +45,8 @@ func (s RoleService) CreateRole(command role.CreateRoleCommand, permissions []au
 	return roleModel, nil
 }
 
-func (s RoleService) GetRole(id string, permissions []auth.Permission) (role.Model, error) {
-	if !CheckPermission(permissions, role.ReadPermission) {
+func (s RoleService) GetRole(id string, permissionList []auth.Permission) (role.Model, error) {
+	if !auth.CheckPermission(permissionList, permissions.RoleReadPermission) {
 		return role.Model{}, errors.New("not permitted")
 	}
 
@@ -56,8 +57,8 @@ func (s RoleService) GetRole(id string, permissions []auth.Permission) (role.Mod
 	return roleModel, nil
 }
 
-func (s RoleService) ExistsRole(id string, permissions []auth.Permission) (bool, error) {
-	if !CheckPermission(permissions, role.ReadPermission) {
+func (s RoleService) ExistsRole(id string, permissionList []auth.Permission) (bool, error) {
+	if !auth.CheckPermission(permissionList, permissions.RoleReadPermission) {
 		return false, errors.New("not permitted")
 	}
 
@@ -68,8 +69,8 @@ func (s RoleService) ExistsRole(id string, permissions []auth.Permission) (bool,
 	return exists, nil
 }
 
-func (s RoleService) DeleteRole(id string, permissions []auth.Permission) error {
-	if !CheckPermission(permissions, role.DeletePermission) {
+func (s RoleService) DeleteRole(id string, permissionList []auth.Permission) error {
+	if !auth.CheckPermission(permissionList, permissions.RoleDeletePermission) {
 		return errors.New("not permitted")
 	}
 

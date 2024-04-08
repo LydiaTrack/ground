@@ -1,7 +1,7 @@
 package test
 
 import (
-	"github.com/LydiaTrack/lydia-base/internal/domain/auth"
+	"github.com/LydiaTrack/lydia-base/auth"
 	"github.com/LydiaTrack/lydia-base/internal/domain/role"
 	"github.com/LydiaTrack/lydia-base/internal/domain/user"
 	"github.com/LydiaTrack/lydia-base/internal/repository"
@@ -209,7 +209,7 @@ func testAddRoleToUser(t *testing.T) {
 	}
 
 	// Get user's permissions
-	permissions, err := userService.GetUserPermissions(userModel.ID)
+	permissions, err := userService.GetUserPermissionList(userModel.ID)
 
 	if err != nil {
 		t.Errorf("Error getting user permissions: %v", err)
@@ -296,7 +296,7 @@ func testRemoveRoleFromUser(t *testing.T) {
 	}
 
 	// Get user's permissions
-	permissions, err := userService.GetUserPermissions(userModel.ID)
+	permissions, err := userService.GetUserPermissionList(userModel.ID)
 
 	if err != nil {
 		t.Errorf("Error getting user permissions: %v", err)
