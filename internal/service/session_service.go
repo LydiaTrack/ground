@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	"github.com/LydiaTrack/lydia-base/internal/domain/auth"
+	"github.com/LydiaTrack/lydia-base/auth"
 	"github.com/LydiaTrack/lydia-base/internal/domain/session"
 	"time"
 

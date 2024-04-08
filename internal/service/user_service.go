@@ -2,9 +2,10 @@ package service
 
 import (
 	"errors"
-	"github.com/LydiaTrack/lydia-base/internal/domain/auth"
+	"github.com/LydiaTrack/lydia-base/auth"
 	"github.com/LydiaTrack/lydia-base/internal/domain/role"
 	"github.com/LydiaTrack/lydia-base/internal/domain/user"
+	"github.com/LydiaTrack/lydia-base/internal/permissions"
 	"github.com/LydiaTrack/lydia-base/internal/utils"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2/bson"
@@ -42,8 +43,8 @@ type UserRepository interface {
 	GetUserRoles(userID bson.ObjectId) ([]role.Model, error)
 }
 
-func (s UserService) CreateUser(command user.CreateUserCommand, permissions []auth.Permission) (user.CreateResponse, error) {
-	if !CheckPermission(permissions, user.CreatePermission) {
+func (s UserService) CreateUser(command user.CreateUserCommand, permissionList []auth.Permission) (user.CreateResponse, error) {
+	if !auth.CheckPermission(permissionList, permissions.UserCreatePermission) {
 		return user.CreateResponse{}, errors.New("not permitted")
 	}
 
@@ -102,8 +103,8 @@ func afterCreateUser(user user.Model) (user.Model, error) {
 	return user, nil
 }
 
-func (s UserService) GetUser(id string, permissions []auth.Permission) (user.Model, error) {
-	if !CheckPermission(permissions, user.ReadPermission) {
+func (s UserService) GetUser(id string, permissionList []auth.Permission) (user.Model, error) {
+	if !auth.CheckPermission(permissionList, permissions.UserReadPermission) {
 		return user.Model{}, errors.New("not permitted")
 	}
 
@@ -114,8 +115,8 @@ func (s UserService) GetUser(id string, permissions []auth.Permission) (user.Mod
 	return userModel, nil
 }
 
-func (s UserService) ExistsUser(id string, permissions []auth.Permission) (bool, error) {
-	if !CheckPermission(permissions, user.ReadPermission) {
+func (s UserService) ExistsUser(id string, permissionList []auth.Permission) (bool, error) {
+	if !auth.CheckPermission(permissionList, permissions.UserReadPermission) {
 		return false, errors.New("not permitted")
 	}
 
@@ -126,12 +127,12 @@ func (s UserService) ExistsUser(id string, permissions []auth.Permission) (bool,
 	return exists, nil
 }
 
-func (s UserService) DeleteUser(command user.DeleteUserCommand, permissions []auth.Permission) error {
-	if !CheckPermission(permissions, user.DeletePermission) {
+func (s UserService) DeleteUser(command user.DeleteUserCommand, permissionList []auth.Permission) error {
+	if !auth.CheckPermission(permissionList, permissions.UserDeletePermission) {
 		return errors.New("not permitted")
 	}
 
-	existsUser, err := s.ExistsUser(command.ID.Hex(), permissions)
+	existsUser, err := s.ExistsUser(command.ID.Hex(), permissionList)
 	if err != nil {
 		return err
 	}
@@ -156,8 +157,8 @@ func hashPassword(rawPassword string) (string, error) {
 }
 
 // VerifyUser verifies a user by username and password
-func (s UserService) VerifyUser(username string, password string, permissions []auth.Permission) (user.Model, error) {
-	if !CheckPermission(permissions, user.ReadPermission) {
+func (s UserService) VerifyUser(username string, password string, permissionList []auth.Permission) (user.Model, error) {
+	if !auth.CheckPermission(permissionList, permissions.UserReadPermission) {
 		return user.Model{}, errors.New("not permitted")
 	}
 
@@ -178,48 +179,48 @@ func (s UserService) VerifyUser(username string, password string, permissions []
 }
 
 // ExistsByUsername gets a user by username
-func (s UserService) ExistsByUsername(username string, permissions []auth.Permission) (bool, error) {
-	if !CheckPermission(permissions, user.ReadPermission) {
+func (s UserService) ExistsByUsername(username string, permissionList []auth.Permission) (bool, error) {
+	if !auth.CheckPermission(permissionList, permissions.UserReadPermission) {
 		return false, errors.New("not permitted")
 	}
 	return s.userRepository.ExistsByUsername(username), nil
 }
 
 // AddRoleToUser adds a role to a user
-func (s UserService) AddRoleToUser(command user.AddRoleToUserCommand, permissions []auth.Permission) error {
-	if !CheckPermission(permissions, user.UpdatePermission) {
+func (s UserService) AddRoleToUser(command user.AddRoleToUserCommand, permissionList []auth.Permission) error {
+	if !auth.CheckPermission(permissionList, permissions.UserUpdatePermission) {
 		return errors.New("not permitted")
 	}
 	return s.userRepository.AddRoleToUser(command.UserID, command.RoleID)
 }
 
 // RemoveRoleFromUser removes a role from a user
-func (s UserService) RemoveRoleFromUser(command user.RemoveRoleFromUserCommand, permissions []auth.Permission) error {
-	if !CheckPermission(permissions, user.UpdatePermission) {
+func (s UserService) RemoveRoleFromUser(command user.RemoveRoleFromUserCommand, permissionList []auth.Permission) error {
+	if !auth.CheckPermission(permissionList, permissions.UserDeletePermission) {
 		return errors.New("not permitted")
 	}
 	return s.userRepository.RemoveRoleFromUser(command.UserID, command.RoleID)
 }
 
 // GetUserRoles gets the roles of a user
-func (s UserService) GetUserRoles(userID bson.ObjectId, permissions []auth.Permission) ([]role.Model, error) {
-	if !CheckPermission(permissions, user.ReadPermission) {
+func (s UserService) GetUserRoles(userID bson.ObjectId, permissionList []auth.Permission) ([]role.Model, error) {
+	if !auth.CheckPermission(permissionList, permissions.UserReadPermission) {
 		return nil, errors.New("not permitted")
 	}
 	return s.userRepository.GetUserRoles(userID)
 }
 
-// GetUserPermissions gets the permissions of a user
-func (s UserService) GetUserPermissions(userID bson.ObjectId) ([]auth.Permission, error) {
+// GetUserPermissionList gets the permissionList of a user
+func (s UserService) GetUserPermissionList(userID bson.ObjectId) ([]auth.Permission, error) {
 	userRoles, err := s.GetUserRoles(userID, []auth.Permission{auth.AdminPermission})
 	if err != nil {
 		return nil, err
 	}
 
-	var userPermissions []auth.Permission
+	var userpermissionList []auth.Permission
 	for _, userRole := range userRoles {
-		userPermissions = append(userPermissions, userRole.Permissions...)
+		userpermissionList = append(userpermissionList, userRole.Permissions...)
 	}
 
-	return userPermissions, nil
+	return userpermissionList, nil
 }

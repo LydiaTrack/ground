@@ -1,16 +1,16 @@
 package handlers
 
 import (
-	"github.com/LydiaTrack/lydia-base/internal/service"
+	"github.com/LydiaTrack/lydia-base/auth"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 type AuthHandler struct {
-	authService service.Service
+	authService auth.Service
 }
 
-func NewAuthHandler(authService service.Service) AuthHandler {
+func NewAuthHandler(authService auth.Service) AuthHandler {
 	return AuthHandler{authService: authService}
 }
 
@@ -23,7 +23,7 @@ func NewAuthHandler(authService service.Service) AuthHandler {
 // @Success 200 {object} map[string]interface{}
 // @Router /login [post]
 func (h AuthHandler) Login(c *gin.Context) {
-	var loginCommand service.Request
+	var loginCommand auth.Request
 	if err := c.ShouldBindJSON(&loginCommand); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
