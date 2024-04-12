@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
     inputs:
         level:
+            type: choice
             description: 'The level of the version bump'
             required: true
             default: 'minor'
