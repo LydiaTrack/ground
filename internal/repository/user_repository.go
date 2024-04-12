@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/LydiaTrack/lydia-base/internal/domain/role"
 	"github.com/LydiaTrack/lydia-base/internal/domain/user"
-	"github.com/LydiaTrack/lydia-base/internal/mongodb"
+	"github.com/LydiaTrack/lydia-base/mongodb"
 	"go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/mgo.v2/bson"
 )

@@ -1,11 +1,11 @@
 package lydia_base
 
 import (
+	"github.com/LydiaTrack/lydia-base/mongodb"
 	"log"
 
 	"github.com/LydiaTrack/lydia-base/api"
 	"github.com/LydiaTrack/lydia-base/internal/initializers"
-	"github.com/LydiaTrack/lydia-base/internal/mongodb"
 	"github.com/LydiaTrack/lydia-base/internal/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
