@@ -24,7 +24,7 @@ func initializeUserService() {
 		repo := repository.GetUserRepository()
 
 		// Create a new user service instance
-		userService = service.NewUserService(repo)
+		userService = *service.NewUserService(repo)
 		initializedUser = true
 	}
 }
