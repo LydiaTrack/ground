@@ -21,7 +21,7 @@ func initializeRoleService() {
 		repo := repository.GetRoleRepository()
 
 		// Create a new role service instance
-		roleService = service.NewRoleService(repo)
+		roleService = *service.NewRoleService(repo)
 		initializedRole = true
 	}
 }

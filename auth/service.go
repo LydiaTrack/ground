@@ -41,8 +41,8 @@ type Request struct {
 	Password string `json:"password"`
 }
 
-func NewAuthService(userService UserService, sessionService SessionService) Service {
-	return Service{
+func NewAuthService(userService UserService, sessionService SessionService) *Service {
+	return &Service{
 		userService:    userService,
 		sessionService: sessionService,
 	}
