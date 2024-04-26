@@ -1,4 +1,4 @@
-package lydia_base
+package helper
 
 import (
 	"github.com/LydiaTrack/lydia-base/internal/api"
