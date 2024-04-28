@@ -6,7 +6,7 @@ import (
 	"github.com/LydiaTrack/lydia-base/internal/domain/user"
 	"github.com/LydiaTrack/lydia-base/internal/repository"
 	"github.com/LydiaTrack/lydia-base/internal/service"
-	"github.com/LydiaTrack/lydia-base/internal/test_support"
+	"github.com/LydiaTrack/lydia-base/test_support"
 	"testing"
 	"time"
 
@@ -24,7 +24,7 @@ func initializeUserService() {
 		repo := repository.GetUserRepository()
 
 		// Create a new user service instance
-		userService = service.NewUserService(repo)
+		userService = *service.NewUserService(repo)
 		initializedUser = true
 	}
 }

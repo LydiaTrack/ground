@@ -27,8 +27,8 @@ type SessionRepository interface {
 	DeleteSessionById(sessionId bson.ObjectId) error
 }
 
-func NewSessionService(sessionRepository SessionRepository, userService UserService) SessionService {
-	return SessionService{
+func NewSessionService(sessionRepository SessionRepository, userService UserService) *SessionService {
+	return &SessionService{
 		sessionRepository: sessionRepository,
 		UserService:       userService,
 	}
