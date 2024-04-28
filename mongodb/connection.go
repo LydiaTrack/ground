@@ -2,12 +2,12 @@ package mongodb
 
 import (
 	"context"
-	"github.com/LydiaTrack/lydia-base/internal/utils"
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 	"os"
 )
 
@@ -20,6 +20,7 @@ var (
 	// mongodbContainerInstance is the instance of the mongodb container
 	mongodbContainerInstance *mongodbContainer
 	connected                = false
+	connectionType           string
 )
 
 const (
@@ -49,34 +50,26 @@ func startContainer(ctx context.Context) error {
 	return nil
 }
 
-// connectRemoteHost connects to the remote host of the mongodb container
-func connectRemoteHost(_ctx context.Context) error {
-	// TODO: Remote connection of mongodb container
-	utils.LogFatal("Remote connection of mongodb container is not implemented yet!")
-	panic("Remote connection of mongodb container is not implemented yet!")
-	return nil
-}
-
 // InitializeMongoDBConnection initializes the mongodb container
 func InitializeMongoDBConnection() error {
 	ctx := context.Background()
 
 	// Check for mongoDB connection type, if it is remote, connect to the remote host
 	// else, start the container on local machine and connect to it
-	connectionType := os.Getenv("LYDIA_DB_CONNECTION_TYPE")
-	if connectionType == RemoteConnection {
-		err := connectRemoteHost(ctx)
-		if err != nil {
-			return err
-		}
-	} else if connectionType == ContainerConnection {
+	connectionTypeEnv := os.Getenv("LYDIA_DB_CONNECTION_TYPE")
+	if connectionTypeEnv == ContainerConnection {
 		err := startContainer(ctx)
 		if err != nil {
 			return err
 		}
+		log.Println("Connecting to local mongodb container...")
+		connectionType = ContainerConnection
+	} else if connectionTypeEnv == RemoteConnection {
+		log.Println("Connecting to remote host of mongodb container...")
+		connectionType = RemoteConnection
 	} else {
-		utils.LogFatal("Cannot detect connection type for mongodb container!")
-		panic("Invalid connection type for mongodb container!")
+		log.Fatal("Invalid connection type for mongodb container!")
+		return nil
 	}
 
 	return nil
@@ -92,22 +85,32 @@ func getContainer() *mongodbContainer {
 
 // GetCollection returns the mongodb collection that is connected with a mongoDB container
 func GetCollection(collectionName string, ctx context.Context) *mongo.Collection {
-	container := getContainer()
-	host, err := container.Host(ctx)
-	if err != nil {
-		return nil
-	}
+	if connectionType == ContainerConnection {
+		container := getContainer()
+		host, err := container.Host(ctx)
+		if err != nil {
+			return nil
+		}
+		portNumber := os.Getenv("LYDIA_DB_PORT")
+		port, err := container.MappedPort(ctx, nat.Port(portNumber))
+		if err != nil {
+			return nil
+		}
 
-	portNumber := os.Getenv("LYDIA_DB_PORT")
-	port, err := container.MappedPort(ctx, nat.Port(portNumber))
-	if err != nil {
-		return nil
-	}
+		client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+host+":"+port.Port()))
+		if err != nil {
+			return nil
+		}
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+host+":"+port.Port()))
-	if err != nil {
-		return nil
-	}
+		return client.Database(os.Getenv("LYDIA_DB_NAME")).Collection(collectionName)
+	} else if connectionType == RemoteConnection {
+		client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("LYDIA_DB_URI")))
+		if err != nil {
+			return nil
+		}
 
-	return client.Database(os.Getenv("LYDIA_DB_NAME")).Collection(collectionName)
+		return client.Database(os.Getenv("LYDIA_DB_NAME")).Collection(collectionName)
+	}
+	log.Fatal("Invalid connection type for mongodb container!")
+	return nil
 }

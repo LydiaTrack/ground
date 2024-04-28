@@ -16,6 +16,7 @@ func InitUser(r *gin.Engine, services service_initializer.Services) {
 	routerGroup := r.Group("/users")
 	routerGroup.Use(middlewares.JwtAuthMiddleware()).
 		POST("", userHandler.CreateUser).
+		GET("", userHandler.GetUsers).
 		GET("/:id", userHandler.GetUser).
 		DELETE("/:id", userHandler.DeleteUser).
 		GET("/roles/:id", userHandler.GetUserRoles).

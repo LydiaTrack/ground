@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/LydiaTrack/lydia-base/auth"
 	"net/http"
+	"os"
 
 	"github.com/LydiaTrack/lydia-base/internal/domain/user"
 	"github.com/LydiaTrack/lydia-base/internal/service"
@@ -21,6 +22,40 @@ func NewUserHandler(userService service.UserService, authService auth.Service) U
 		userService: userService,
 		authService: authService,
 	}
+}
+
+// GetUsers godoc
+// @Summary Get users
+// @Description get users.
+// @Tags root
+// @Accept */*
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /users [get]
+func (h UserHandler) GetUsers(c *gin.Context) {
+	currentUser, err := h.authService.GetCurrentUser(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	currentUserPermissions, err := h.userService.GetUserPermissionList(currentUser.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	var users []user.Model
+	if currentUser.Username == os.Getenv("DEFAULT_USER_USERNAME") {
+		users, err = h.userService.GetUsers([]auth.Permission{auth.AdminPermission})
+	} else {
+		users, err = h.userService.GetUsers(currentUserPermissions)
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, users)
+
 }
 
 // GetUser godoc
