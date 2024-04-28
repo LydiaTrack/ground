@@ -6,7 +6,7 @@ import (
 	"github.com/LydiaTrack/lydia-base/internal/permissions"
 	"github.com/LydiaTrack/lydia-base/internal/repository"
 	"github.com/LydiaTrack/lydia-base/internal/service"
-	"github.com/LydiaTrack/lydia-base/internal/test_support"
+	"github.com/LydiaTrack/lydia-base/test_support"
 	"testing"
 )
 
@@ -21,7 +21,7 @@ func initializeRoleService() {
 		repo := repository.GetRoleRepository()
 
 		// Create a new role service instance
-		roleService = service.NewRoleService(repo)
+		roleService = *service.NewRoleService(repo)
 		initializedRole = true
 	}
 }

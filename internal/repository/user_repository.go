@@ -50,6 +50,20 @@ func (r *UserMongoRepository) SaveUser(userModel user.Model) (user.Model, error)
 	return userModel, nil
 }
 
+// GetUsers gets all users
+func (r *UserMongoRepository) GetUsers() ([]user.Model, error) {
+	cursor, err := r.collection.Find(context.Background(), bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	var users []user.Model
+	err = cursor.All(context.Background(), &users)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
 // GetUser gets a user by id
 func (r *UserMongoRepository) GetUser(id bson.ObjectId) (user.Model, error) {
 	var userModel user.Model
