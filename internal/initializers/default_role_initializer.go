@@ -10,6 +10,14 @@ import (
 )
 
 func InitializeDefaultRole() error {
+
+	// While using remote connection for MongoDB instead of container, the role can be exist in the database.
+	// In this case, the default role will not be created.
+	isExists := repository.GetRoleRepository().ExistsByRolename(os.Getenv("DEFAULT_ROLE_NAME"))
+	if isExists {
+		utils.Log("Default role already exists")
+		return nil
+	}
 	roleCreateCmd := role.CreateRoleCommand{
 		Name: os.Getenv("DEFAULT_ROLE_NAME"),
 		Tags: []string{os.Getenv("DEFAULT_ROLE_TAG")},

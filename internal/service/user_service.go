@@ -25,6 +25,8 @@ func NewUserService(userRepository UserRepository) *UserService {
 type UserRepository interface {
 	// SaveUser saves a user
 	SaveUser(user user.Model) (user.Model, error)
+	// GetUsers gets all users
+	GetUsers() ([]user.Model, error)
 	// GetUser gets a user by id
 	GetUser(id bson.ObjectId) (user.Model, error)
 	// GetUserByUsername gets a user by username
@@ -101,6 +103,15 @@ func beforeCreateUser(userModel user.Model) (user.Model, error) {
 // afterCreateUser is a hook that is called after creating a user
 func afterCreateUser(user user.Model) (user.Model, error) {
 	return user, nil
+}
+
+// GetUsers gets all users
+func (s UserService) GetUsers(permissionList []auth.Permission) ([]user.Model, error) {
+	if !auth.CheckPermission(permissionList, permissions.UserReadPermission) {
+		return nil, errors.New("not permitted")
+	}
+	return s.userRepository.GetUsers()
+
 }
 
 func (s UserService) GetUser(id string, permissionList []auth.Permission) (user.Model, error) {
