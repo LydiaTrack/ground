@@ -33,16 +33,17 @@ func Initialize(r *gin.Engine) {
 	// Initialize API routes
 	initializeRoutes(r, service_initializer.GetServices())
 
-	// Initialize default user
-	err = initializers.InitializeDefaultUser()
+	// Initialize default role
+	err = initializers.InitializeDefaultRole()
 	if err != nil {
 		log.Fatal("Error initializing default user")
 	}
 
-	// Initialize default role
-	err = initializers.InitializeDefaultRole()
+	// Initialize default user
+	err = initializers.InitializeDefaultUser()
 	if err != nil {
-		log.Fatal("Error initializing default role")
+		log.Fatal("Error initializing default user")
+		panic(err)
 	}
 
 }
