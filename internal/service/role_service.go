@@ -81,6 +81,24 @@ func (s RoleService) DeleteRole(id string, permissionList []auth.Permission) err
 	return nil
 }
 
+func (s RoleService) ExistsByRolename(rolename string, permissionList []auth.Permission) bool {
+	if !auth.CheckPermission(permissionList, permissions.RoleReadPermission) {
+		return false
+	}
+	return s.roleRepository.ExistsByRolename(rolename)
+}
+
+func (s RoleService) GetRoleByRolename(rolename string, permissionList []auth.Permission) (role.Model, error) {
+	if !auth.CheckPermission(permissionList, permissions.RoleReadPermission) {
+		return role.Model{}, errors.New("not permitted")
+	}
+	roleModel, err := s.roleRepository.GetRoleByRolename(rolename)
+	if err != nil {
+		return role.Model{}, err
+	}
+	return roleModel, nil
+}
+
 type RoleRepository interface {
 	// SaveRole saves a role
 	SaveRole(role role.Model) (role.Model, error)
@@ -92,4 +110,6 @@ type RoleRepository interface {
 	DeleteRole(id bson.ObjectId) error
 	// ExistsByRolename checks if a role exists by rolename
 	ExistsByRolename(rolename string) bool
+	// GetRoleByRolename gets a role by rolename
+	GetRoleByRolename(rolename string) (role.Model, error)
 }
