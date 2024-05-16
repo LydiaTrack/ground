@@ -84,3 +84,13 @@ func (r *RoleMongoRepository) ExistsByRolename(rolename string) bool {
 	}
 	return count > 0
 }
+
+func (r *RoleMongoRepository) GetRoleByRolename(rolename string) (role.Model, error) {
+	var roleModel role.Model
+	err := r.collection.FindOne(context.Background(), bson.M{"name": rolename}).Decode(&roleModel)
+	if err != nil {
+		return role.Model{}, err
+	}
+	return roleModel, nil
+
+}
