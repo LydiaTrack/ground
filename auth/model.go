@@ -7,7 +7,7 @@ type Permission struct {
 	Action string `json:"action"`
 }
 
-type AuthContext struct {
-	Permissions []Permission  `json:"permissions"`
-	UserId      bson.ObjectId `json:"userId"`
+type PermissionContext struct {
+	Permissions []Permission   `json:"permissions"`
+	UserId      *bson.ObjectId `json:"userId"`
 }

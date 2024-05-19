@@ -6,18 +6,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CreateAuthContext(c *gin.Context, authService auth.Service, userService service.UserService) (auth.AuthContext, error) {
+func CreateAuthContext(c *gin.Context, authService auth.Service, userService service.UserService) (auth.PermissionContext, error) {
 	currentUser, err := authService.GetCurrentUser(c)
 	if err != nil {
-		return auth.AuthContext{}, err
+		return auth.PermissionContext{}, err
 	}
 	currentUserPermissions, err := userService.GetUserPermissionList(currentUser.ID)
 	if err != nil {
-		return auth.AuthContext{}, err
+		return auth.PermissionContext{}, err
 	}
 
-	return auth.AuthContext{
+	return auth.PermissionContext{
 		Permissions: currentUserPermissions,
-		UserId:      currentUser.ID,
+		UserId:      &currentUser.ID,
 	}, nil
 }

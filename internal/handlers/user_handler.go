@@ -48,14 +48,14 @@ func (h UserHandler) GetUsers(c *gin.Context) {
 
 	var users []user.Model
 	if currentUser.Username == os.Getenv("DEFAULT_USER_USERNAME") {
-		users, err = h.userService.GetUsers(auth.AuthContext{
+		users, err = h.userService.GetUsers(auth.PermissionContext{
 			Permissions: []auth.Permission{auth.AdminPermission},
-			UserId:      currentUser.ID,
+			UserId:      &currentUser.ID,
 		})
 	} else {
-		users, err = h.userService.GetUsers(auth.AuthContext{
+		users, err = h.userService.GetUsers(auth.PermissionContext{
 			Permissions: currentUserPermissions,
-			UserId:      currentUser.ID,
+			UserId:      &currentUser.ID,
 		})
 	}
 	if err != nil {

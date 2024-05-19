@@ -11,7 +11,6 @@ import (
 	"github.com/LydiaTrack/lydia-base/internal/repository"
 	"github.com/LydiaTrack/lydia-base/internal/service"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // InitializeDefaultUser initializes the default user with default credentials
@@ -20,9 +19,9 @@ func InitializeDefaultUser() error {
 	// In this case, the default user will not be created.
 	userService := service.NewUserService(repository.GetUserRepository())
 	roleService := service.NewRoleService(repository.GetRoleRepository())
-	isExists, err := userService.ExistsByUsername(os.Getenv("DEFAULT_USER_USERNAME"), auth.AuthContext{
+	isExists, err := userService.ExistsByUsername(os.Getenv("DEFAULT_USER_USERNAME"), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 	if err != nil {
 		return err
@@ -53,9 +52,9 @@ func InitializeDefaultUser() error {
 			},
 		}
 
-		userCreateResponse, err := userService.CreateUser(userCreateCmd, auth.AuthContext{
+		userCreateResponse, err := userService.CreateUser(userCreateCmd, auth.PermissionContext{
 			Permissions: []auth.Permission{auth.AdminPermission},
-			UserId:      bson.NewObjectId(),
+			UserId:      nil,
 		})
 		if err != nil {
 			return err
@@ -91,9 +90,9 @@ func addAdminRolesToUser(userModel user.Model, roleService service.RoleService, 
 		log.Log("Default user does not have any roles, adding admin roles...")
 	} else {
 		for _, roleId := range userRoleIds {
-			roleModel, err := roleService.GetRole(roleId.Hex(), auth.AuthContext{
+			roleModel, err := roleService.GetRole(roleId.Hex(), auth.PermissionContext{
 				Permissions: []auth.Permission{auth.AdminPermission},
-				UserId:      bson.NewObjectId(),
+				UserId:      nil,
 			})
 			if err != nil {
 				return err
@@ -113,9 +112,9 @@ func addAdminRolesToUser(userModel user.Model, roleService service.RoleService, 
 	// if admin user does not have admin roles, add admin roles
 
 	// Check if admin role exists
-	existsRole := roleService.ExistsByRolename("LYDIA_ADMIN", auth.AuthContext{
+	existsRole := roleService.ExistsByRolename("LYDIA_ADMIN", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 	roleModel := role.Model{}
 	if !existsRole {
@@ -131,9 +130,9 @@ func addAdminRolesToUser(userModel user.Model, roleService service.RoleService, 
 		UserID: userModel.ID,
 		RoleID: roleModel.ID,
 	}
-	err := userService.AddRoleToUser(addRoleCmd, auth.AuthContext{
+	err := userService.AddRoleToUser(addRoleCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 	if err != nil {
 		return err
@@ -149,9 +148,9 @@ func createAdminRole(roleService service.RoleService) (role.Model, error) {
 		Info:        "Lydia Admin role for the default user",
 		Permissions: []auth.Permission{auth.AdminPermission},
 	}
-	roleModel, err := roleService.CreateRole(createRoleCmd, auth.AuthContext{
+	roleModel, err := roleService.CreateRole(createRoleCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 	if err != nil {
 		return role.Model{}, err
