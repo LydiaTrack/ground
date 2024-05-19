@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/LydiaTrack/lydia-base/internal/handlers"
+	"github.com/LydiaTrack/lydia-base/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
@@ -9,5 +10,7 @@ import (
 func InitHealth(r *gin.Engine) {
 	healthHandler := handlers.NewHealthHandler()
 
-	r.GET("/health", healthHandler.GetHealth)
+	routerGroup := r.Group("/health")
+	routerGroup.Use(middlewares.JwtAuthMiddleware())
+	routerGroup.GET("", healthHandler.GetHealth)
 }
