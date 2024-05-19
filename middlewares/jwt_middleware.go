@@ -1,7 +1,7 @@
 package middlewares
 
 import (
-	"github.com/LydiaTrack/lydia-base/internal/utils"
+	"github.com/LydiaTrack/lydia-base/internal/jwt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,13 +10,13 @@ import (
 // JwtAuthMiddleware is a middleware for JWT authentication
 func JwtAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token, err := utils.ExtractTokenFromContext(c)
+		token, err := jwt.ExtractTokenFromContext(c)
 		if err != nil {
 			c.String(http.StatusUnauthorized, "Unauthorized")
 			c.Abort()
 			return
 		}
-		err = utils.IsTokenValid(token)
+		err = jwt.IsTokenValid(token)
 		if err != nil {
 			c.String(http.StatusUnauthorized, "Unauthorized")
 			c.Abort()

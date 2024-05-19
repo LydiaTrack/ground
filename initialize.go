@@ -3,12 +3,11 @@ package lydia_base
 import (
 	"github.com/LydiaTrack/lydia-base/internal/api"
 	"github.com/LydiaTrack/lydia-base/internal/initializers"
-	"github.com/LydiaTrack/lydia-base/internal/utils"
+	"github.com/LydiaTrack/lydia-base/internal/log"
 	"github.com/LydiaTrack/lydia-base/mongodb"
 	"github.com/LydiaTrack/lydia-base/service_initializer"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"log"
 )
 
 // Initialize initializes the Lydia base server with r as the gin Engine
@@ -16,15 +15,15 @@ func Initialize(r *gin.Engine) {
 	// Initialize environment variables
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.LogFatal("Error loading .env file")
 	}
 	// Initialize logging
-	utils.InitLogging()
+	log.InitLogging()
 
 	// Initialize database connection
 	err = mongodb.InitializeMongoDBConnection()
 	if err != nil {
-		log.Fatal("Error initializing MongoDB connection")
+		log.LogFatal("Error initializing MongoDB connection")
 	}
 
 	// Initialize services
@@ -36,13 +35,13 @@ func Initialize(r *gin.Engine) {
 	// Initialize default role
 	err = initializers.InitializeDefaultRole()
 	if err != nil {
-		log.Fatal("Error initializing default user")
+		log.LogFatal("Error initializing default user")
 	}
 
 	// Initialize default user
 	err = initializers.InitializeDefaultUser()
 	if err != nil {
-		log.Fatal("Error initializing default user")
+		log.LogFatal("Error initializing default user")
 		panic(err)
 	}
 

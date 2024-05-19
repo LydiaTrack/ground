@@ -1,12 +1,13 @@
 package initializers
 
 import (
+	"os"
+
 	"github.com/LydiaTrack/lydia-base/auth"
 	"github.com/LydiaTrack/lydia-base/internal/domain/role"
+	"github.com/LydiaTrack/lydia-base/internal/log"
 	"github.com/LydiaTrack/lydia-base/internal/repository"
 	"github.com/LydiaTrack/lydia-base/internal/service"
-	"github.com/LydiaTrack/lydia-base/internal/utils"
-	"os"
 )
 
 func InitializeDefaultRole() error {
@@ -15,7 +16,7 @@ func InitializeDefaultRole() error {
 	// In this case, the default role will not be created.
 	isExists := repository.GetRoleRepository().ExistsByRolename(os.Getenv("DEFAULT_ROLE_NAME"))
 	if isExists {
-		utils.Log("Default role already exists")
+		log.Log("Default role already exists")
 		return nil
 	}
 	roleCreateCmd := role.CreateRoleCommand{
@@ -24,12 +25,15 @@ func InitializeDefaultRole() error {
 		Info: os.Getenv("DEFAULT_ROLE_INFO"),
 	}
 
-	_, err := service.NewRoleService(repository.GetRoleRepository()).CreateRole(roleCreateCmd, []auth.Permission{auth.AdminPermission})
+	_, err := service.NewRoleService(repository.GetRoleRepository()).CreateRole(roleCreateCmd, auth.PermissionContext{
+		Permissions: []auth.Permission{auth.AdminPermission},
+		UserId:      nil,
+	})
 	if err != nil {
 		return err
 	}
 
-	utils.Log("Default role created successfully")
+	log.Log("Default role created successfully")
 
 	return nil
 }
