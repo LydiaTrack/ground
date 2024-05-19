@@ -4,6 +4,7 @@ import (
 	"github.com/LydiaTrack/lydia-base/auth"
 	"github.com/LydiaTrack/lydia-base/internal/domain/role"
 	"github.com/LydiaTrack/lydia-base/internal/service"
+	"github.com/LydiaTrack/lydia-base/internal/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -34,18 +35,13 @@ func NewRoleHandler(roleService service.RoleService, authService auth.Service, u
 func (h RoleHandler) GetRole(c *gin.Context) {
 	id := c.Param("id")
 
-	currentUser, err := h.authService.GetCurrentUser(c)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	currentUserPermissions, err := h.userService.GetUserPermissionList(currentUser.ID)
+	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	role, err := h.roleService.GetRole(id, currentUserPermissions)
+	role, err := h.roleService.GetRole(id, authContext)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -68,18 +64,13 @@ func (h RoleHandler) CreateRole(c *gin.Context) {
 		return
 	}
 
-	currentUser, err := h.authService.GetCurrentUser(c)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	currentUserPermissions, err := h.userService.GetUserPermissionList(currentUser.ID)
+	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	roleModel, err := h.roleService.CreateRole(role, currentUserPermissions)
+	roleModel, err := h.roleService.CreateRole(role, authContext)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -98,18 +89,13 @@ func (h RoleHandler) CreateRole(c *gin.Context) {
 func (h RoleHandler) DeleteRole(c *gin.Context) {
 	id := c.Param("id")
 
-	currentUser, err := h.authService.GetCurrentUser(c)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	currentUserPermissions, err := h.userService.GetUserPermissionList(currentUser.ID)
+	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	err = h.roleService.DeleteRole(id, currentUserPermissions)
+	err = h.roleService.DeleteRole(id, authContext)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

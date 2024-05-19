@@ -20,8 +20,8 @@ func NewRoleService(roleRepository RoleRepository) *RoleService {
 	}
 }
 
-func (s RoleService) CreateRole(command role.CreateRoleCommand, permissionList []auth.Permission) (role.Model, error) {
-	if !auth.CheckPermission(permissionList, permissions.RoleCreatePermission) {
+func (s RoleService) CreateRole(command role.CreateRoleCommand, authContext auth.AuthContext) (role.Model, error) {
+	if auth.CheckPermission(authContext.Permissions, permissions.RoleCreatePermission) != nil {
 		return role.Model{}, errors.New("not permitted")
 	}
 
@@ -45,8 +45,8 @@ func (s RoleService) CreateRole(command role.CreateRoleCommand, permissionList [
 	return roleModel, nil
 }
 
-func (s RoleService) GetRole(id string, permissionList []auth.Permission) (role.Model, error) {
-	if !auth.CheckPermission(permissionList, permissions.RoleReadPermission) {
+func (s RoleService) GetRole(id string, authContext auth.AuthContext) (role.Model, error) {
+	if auth.CheckPermission(authContext.Permissions, permissions.RoleReadPermission) != nil {
 		return role.Model{}, errors.New("not permitted")
 	}
 
@@ -57,8 +57,8 @@ func (s RoleService) GetRole(id string, permissionList []auth.Permission) (role.
 	return roleModel, nil
 }
 
-func (s RoleService) ExistsRole(id string, permissionList []auth.Permission) (bool, error) {
-	if !auth.CheckPermission(permissionList, permissions.RoleReadPermission) {
+func (s RoleService) ExistsRole(id string, authContext auth.AuthContext) (bool, error) {
+	if auth.CheckPermission(authContext.Permissions, permissions.RoleReadPermission) != nil {
 		return false, errors.New("not permitted")
 	}
 
@@ -69,8 +69,8 @@ func (s RoleService) ExistsRole(id string, permissionList []auth.Permission) (bo
 	return exists, nil
 }
 
-func (s RoleService) DeleteRole(id string, permissionList []auth.Permission) error {
-	if !auth.CheckPermission(permissionList, permissions.RoleDeletePermission) {
+func (s RoleService) DeleteRole(id string, authContext auth.AuthContext) error {
+	if auth.CheckPermission(authContext.Permissions, permissions.RoleDeletePermission) != nil {
 		return errors.New("not permitted")
 	}
 
@@ -81,15 +81,15 @@ func (s RoleService) DeleteRole(id string, permissionList []auth.Permission) err
 	return nil
 }
 
-func (s RoleService) ExistsByRolename(rolename string, permissionList []auth.Permission) bool {
-	if !auth.CheckPermission(permissionList, permissions.RoleReadPermission) {
+func (s RoleService) ExistsByRolename(rolename string, authContext auth.AuthContext) bool {
+	if auth.CheckPermission(authContext.Permissions, permissions.RoleReadPermission) != nil {
 		return false
 	}
 	return s.roleRepository.ExistsByRolename(rolename)
 }
 
-func (s RoleService) GetRoleByRolename(rolename string, permissionList []auth.Permission) (role.Model, error) {
-	if !auth.CheckPermission(permissionList, permissions.RoleReadPermission) {
+func (s RoleService) GetRoleByRolename(rolename string, authContext auth.AuthContext) (role.Model, error) {
+	if auth.CheckPermission(authContext.Permissions, permissions.RoleReadPermission) != nil {
 		return role.Model{}, errors.New("not permitted")
 	}
 	roleModel, err := s.roleRepository.GetRoleByRolename(rolename)

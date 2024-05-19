@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/LydiaTrack/lydia-base/internal/handlers"
-	"github.com/LydiaTrack/lydia-base/internal/utils"
+	"github.com/LydiaTrack/lydia-base/internal/log"
 	"github.com/LydiaTrack/lydia-base/middlewares"
 	"github.com/LydiaTrack/lydia-base/service_initializer"
 	"github.com/gin-gonic/gin"
@@ -19,5 +19,5 @@ func InitRole(r *gin.Engine, services service_initializer.Services) {
 	routerGroup.POST("", roleHandler.CreateRole)
 	routerGroup.DELETE("/:id", roleHandler.DeleteRole)
 
-	utils.Log("Role routes initialized")
+	log.Log("Role routes initialized")
 }
