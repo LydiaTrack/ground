@@ -6,7 +6,7 @@ import (
 	"github.com/LydiaTrack/lydia-base/internal/domain/role"
 	"github.com/LydiaTrack/lydia-base/internal/domain/user"
 	"github.com/LydiaTrack/lydia-base/internal/permissions"
-	"github.com/LydiaTrack/lydia-base/internal/utils"
+	"github.com/LydiaTrack/lydia-base/internal/log"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2/bson"
 	"time"
@@ -45,8 +45,8 @@ type UserRepository interface {
 	GetUserRoles(userID bson.ObjectId) ([]role.Model, error)
 }
 
-func (s UserService) CreateUser(command user.CreateUserCommand, permissionList []auth.Permission) (user.CreateResponse, error) {
-	if !auth.CheckPermission(permissionList, permissions.UserCreatePermission) {
+func (s UserService) CreateUser(command user.CreateUserCommand, authContext auth.AuthContext) (user.CreateResponse, error) {
+	if auth.CheckPermission(authContext.Permissions, permissions.UserCreatePermission) != nil {
 		return user.CreateResponse{}, errors.New("not permitted")
 	}
 
@@ -84,7 +84,7 @@ func (s UserService) CreateUser(command user.CreateUserCommand, permissionList [
 		CreatedDate: savedUser.CreatedDate,
 		Version:     savedUser.Version,
 	}
-	utils.Log("User %s created successfully", response.Username)
+	log.Log("User %s created successfully", response.Username)
 	return response, nil
 }
 
@@ -106,16 +106,16 @@ func afterCreateUser(user user.Model) (user.Model, error) {
 }
 
 // GetUsers gets all users
-func (s UserService) GetUsers(permissionList []auth.Permission) ([]user.Model, error) {
-	if !auth.CheckPermission(permissionList, permissions.UserReadPermission) {
+func (s UserService) GetUsers(authContext auth.AuthContext) ([]user.Model, error) {
+	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
 		return nil, errors.New("not permitted")
 	}
 	return s.userRepository.GetUsers()
 
 }
 
-func (s UserService) GetUser(id string, permissionList []auth.Permission) (user.Model, error) {
-	if !auth.CheckPermission(permissionList, permissions.UserReadPermission) {
+func (s UserService) GetUser(id string, authContext auth.AuthContext) (user.Model, error) {
+	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
 		return user.Model{}, errors.New("not permitted")
 	}
 
@@ -126,8 +126,8 @@ func (s UserService) GetUser(id string, permissionList []auth.Permission) (user.
 	return userModel, nil
 }
 
-func (s UserService) ExistsUser(id string, permissionList []auth.Permission) (bool, error) {
-	if !auth.CheckPermission(permissionList, permissions.UserReadPermission) {
+func (s UserService) ExistsUser(id string, authContext auth.AuthContext) (bool, error) {
+	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
 		return false, errors.New("not permitted")
 	}
 
@@ -138,12 +138,12 @@ func (s UserService) ExistsUser(id string, permissionList []auth.Permission) (bo
 	return exists, nil
 }
 
-func (s UserService) DeleteUser(command user.DeleteUserCommand, permissionList []auth.Permission) error {
-	if !auth.CheckPermission(permissionList, permissions.UserDeletePermission) {
+func (s UserService) DeleteUser(command user.DeleteUserCommand, authContext auth.AuthContext) error {
+	if auth.CheckPermission(authContext.Permissions, permissions.UserDeletePermission) != nil {
 		return errors.New("not permitted")
 	}
 
-	existsUser, err := s.ExistsUser(command.ID.Hex(), permissionList)
+	existsUser, err := s.ExistsUser(command.ID.Hex(), authContext)
 	if err != nil {
 		return err
 	}
@@ -168,8 +168,8 @@ func hashPassword(rawPassword string) (string, error) {
 }
 
 // VerifyUser verifies a user by username and password
-func (s UserService) VerifyUser(username string, password string, permissionList []auth.Permission) (user.Model, error) {
-	if !auth.CheckPermission(permissionList, permissions.UserReadPermission) {
+func (s UserService) VerifyUser(username string, password string, authContext auth.AuthContext) (user.Model, error) {
+	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
 		return user.Model{}, errors.New("not permitted")
 	}
 
@@ -182,7 +182,7 @@ func (s UserService) VerifyUser(username string, password string, permissionList
 	// Compare the passwords
 	err = bcrypt.CompareHashAndPassword([]byte(userModel.Password), []byte(password))
 	if err != nil {
-		utils.LogError("Error comparing passwords: " + err.Error())
+		log.LogError("Error comparing passwords: " + err.Error())
 		return user.Model{}, err
 	}
 
@@ -190,32 +190,32 @@ func (s UserService) VerifyUser(username string, password string, permissionList
 }
 
 // ExistsByUsername gets a user by username
-func (s UserService) ExistsByUsername(username string, permissionList []auth.Permission) (bool, error) {
-	if !auth.CheckPermission(permissionList, permissions.UserReadPermission) {
+func (s UserService) ExistsByUsername(username string, authContext auth.AuthContext) (bool, error) {
+	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
 		return false, errors.New("not permitted")
 	}
 	return s.userRepository.ExistsByUsername(username), nil
 }
 
 // AddRoleToUser adds a role to a user
-func (s UserService) AddRoleToUser(command user.AddRoleToUserCommand, permissionList []auth.Permission) error {
-	if !auth.CheckPermission(permissionList, permissions.UserUpdatePermission) {
+func (s UserService) AddRoleToUser(command user.AddRoleToUserCommand, authContext auth.AuthContext) error {
+	if auth.CheckPermission(authContext.Permissions, permissions.UserUpdatePermission) != nil {
 		return errors.New("not permitted")
 	}
 	return s.userRepository.AddRoleToUser(command.UserID, command.RoleID)
 }
 
 // RemoveRoleFromUser removes a role from a user
-func (s UserService) RemoveRoleFromUser(command user.RemoveRoleFromUserCommand, permissionList []auth.Permission) error {
-	if !auth.CheckPermission(permissionList, permissions.UserDeletePermission) {
+func (s UserService) RemoveRoleFromUser(command user.RemoveRoleFromUserCommand, authContext auth.AuthContext) error {
+	if auth.CheckPermission(authContext.Permissions, permissions.UserDeletePermission) != nil {
 		return errors.New("not permitted")
 	}
 	return s.userRepository.RemoveRoleFromUser(command.UserID, command.RoleID)
 }
 
 // GetUserRoles gets the roles of a user
-func (s UserService) GetUserRoles(userID bson.ObjectId, permissionList []auth.Permission) ([]role.Model, error) {
-	if !auth.CheckPermission(permissionList, permissions.UserReadPermission) {
+func (s UserService) GetUserRoles(userID bson.ObjectId, authContext auth.AuthContext) ([]role.Model, error) {
+	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
 		return nil, errors.New("not permitted")
 	}
 	return s.userRepository.GetUserRoles(userID)
@@ -223,7 +223,10 @@ func (s UserService) GetUserRoles(userID bson.ObjectId, permissionList []auth.Pe
 
 // GetUserPermissionList gets the permissionList of a user
 func (s UserService) GetUserPermissionList(userID bson.ObjectId) ([]auth.Permission, error) {
-	userRoles, err := s.GetUserRoles(userID, []auth.Permission{auth.AdminPermission})
+	userRoles, err := s.GetUserRoles(userID, auth.AuthContext{
+		Permissions: []auth.Permission{auth.AdminPermission},
+		UserId:      bson.NewObjectId(),
+	})
 	if err != nil {
 		return nil, err
 	}

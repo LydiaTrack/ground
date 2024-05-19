@@ -2,19 +2,21 @@ package auth
 
 import (
 	"errors"
-	"github.com/LydiaTrack/lydia-base/internal/domain/session"
-	"github.com/LydiaTrack/lydia-base/internal/domain/user"
-	"github.com/LydiaTrack/lydia-base/internal/utils"
-	"github.com/gin-gonic/gin"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/LydiaTrack/lydia-base/internal/domain/session"
+	"github.com/LydiaTrack/lydia-base/internal/domain/user"
+	"github.com/LydiaTrack/lydia-base/internal/jwt"
+	"github.com/gin-gonic/gin"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type UserService interface {
-	ExistsByUsername(username string, permissions []Permission) (bool, error)
-	VerifyUser(username, password string, permissions []Permission) (user.Model, error)
-	GetUser(id string, permissions []Permission) (user.Model, error)
+	ExistsByUsername(username string, authContext AuthContext) (bool, error)
+	VerifyUser(username, password string, authContext AuthContext) (user.Model, error)
+	GetUser(id string, authContext AuthContext) (user.Model, error)
 }
 
 type SessionService interface {
@@ -29,7 +31,7 @@ type Service struct {
 }
 
 type Response struct {
-	utils.TokenPair
+	jwt.TokenPair
 }
 
 type RefreshTokenRequest struct {
@@ -51,7 +53,10 @@ func NewAuthService(userService UserService, sessionService SessionService) *Ser
 // Login is a function that handles the login process
 func (s Service) Login(request Request) (Response, error) {
 	// Check if user exists
-	exists, err := s.userService.ExistsByUsername(request.Username, []Permission{AdminPermission})
+	exists, err := s.userService.ExistsByUsername(request.Username, AuthContext{
+		Permissions: []Permission{AdminPermission},
+		UserId:      bson.NewObjectId(),
+	})
 	if err != nil {
 		return Response{}, err
 	}
@@ -60,13 +65,16 @@ func (s Service) Login(request Request) (Response, error) {
 	}
 
 	// Check if password is correct
-	userModel, err := s.userService.VerifyUser(request.Username, request.Password, []Permission{AdminPermission})
+	userModel, err := s.userService.VerifyUser(request.Username, request.Password, AuthContext{
+		Permissions: []Permission{AdminPermission},
+		UserId:      bson.NewObjectId(),
+	})
 	if err != nil {
 		return Response{}, err
 	}
 
 	// Generate token
-	tokenPair, err := utils.GenerateTokenPair(userModel.ID)
+	tokenPair, err := jwt.GenerateTokenPair(userModel.ID)
 	if err != nil {
 		return Response{}, err
 	}
@@ -82,9 +90,9 @@ func (s Service) Login(request Request) (Response, error) {
 }
 
 // SetSession is a function that sets the session with the given user id and token pair
-func (s Service) SetSession(userId string, tokenPair utils.TokenPair) error {
+func (s Service) SetSession(userId string, tokenPair jwt.TokenPair) error {
 	// Start a session
-	refreshTokenLifespan, err := strconv.Atoi(os.Getenv(utils.RefreshExpirationKey))
+	refreshTokenLifespan, err := strconv.Atoi(os.Getenv(jwt.RefreshExpirationKey))
 	if err != nil {
 		return err
 	}
@@ -111,12 +119,15 @@ func (s Service) SetSession(userId string, tokenPair utils.TokenPair) error {
 
 // GetCurrentUser is a function that returns the current user
 func (s Service) GetCurrentUser(c *gin.Context) (user.Model, error) {
-	userId, err := utils.ExtractUserIdFromContext(c)
+	userId, err := jwt.ExtractUserIdFromContext(c)
 	if err != nil {
 		return user.Model{}, err
 	}
 
-	userModel, err := s.userService.GetUser(userId, []Permission{AdminPermission})
+	userModel, err := s.userService.GetUser(userId, AuthContext{
+		Permissions: []Permission{AdminPermission},
+		UserId:      bson.NewObjectId(),
+	})
 	if err != nil {
 		return user.Model{}, err
 	}
@@ -125,51 +136,51 @@ func (s Service) GetCurrentUser(c *gin.Context) (user.Model, error) {
 }
 
 // RefreshTokenPair is a function that refreshes the token pair
-func (s Service) RefreshTokenPair(c *gin.Context) (utils.TokenPair, error) {
+func (s Service) RefreshTokenPair(c *gin.Context) (jwt.TokenPair, error) {
 	// Get the refresh token from the request body
 	var refreshTokenRequest RefreshTokenRequest
 	if err := c.ShouldBindJSON(&refreshTokenRequest); err != nil {
-		return utils.TokenPair{}, err
+		return jwt.TokenPair{}, err
 	}
 
 	// Get current user id
 	currentUser, err := s.GetCurrentUser(c)
 	if err != nil {
-		return utils.TokenPair{}, err
+		return jwt.TokenPair{}, err
 	}
 
 	// Get the session by user id
 	sessionInfo, err := s.sessionService.GetUserSession(currentUser.ID.Hex())
 	if err != nil {
-		return utils.TokenPair{}, err
+		return jwt.TokenPair{}, err
 	}
 
 	// Check if the refresh token is valid
 	if sessionInfo.RefreshToken != refreshTokenRequest.RefreshToken {
-		return utils.TokenPair{}, errors.New("refresh token is invalid")
+		return jwt.TokenPair{}, errors.New("refresh token is invalid")
 	}
 
 	// Now that we know the token is valid, we can extract the user id from it
-	tokenPair, err := utils.GenerateTokenPair(currentUser.ID)
+	tokenPair, err := jwt.GenerateTokenPair(currentUser.ID)
 	if err != nil {
-		return utils.TokenPair{}, err
+		return jwt.TokenPair{}, err
 	}
 
 	err = s.SetSession(currentUser.ID.Hex(), tokenPair)
 	if err != nil {
-		return utils.TokenPair{}, err
+		return jwt.TokenPair{}, err
 	}
 
 	return tokenPair, nil
 }
 
-// CheckPermission is a function that checks if Permissions contains Permission
+// Checks if Permissions contains Permission
 // It checks for the following cases:
 // 1. */*
 // 2. */Action
 // 3. Domain/*
 // 4. Domain/Action
-func CheckPermission(Permissions []Permission, Permission Permission) bool {
+func HasPermission(Permissions []Permission, Permission Permission) bool {
 	// Check if there is a */*
 	for _, permission := range Permissions {
 		if permission.Domain == "*" && permission.Action == "*" {
@@ -199,4 +210,13 @@ func CheckPermission(Permissions []Permission, Permission Permission) bool {
 	}
 
 	return false
+}
+
+// Checks if Permissions contains Permission
+func CheckPermission(Permissions []Permission, Permission Permission) error {
+	if !HasPermission(Permissions, Permission) {
+		return errors.New("permission denied")
+	}
+
+	return nil
 }

@@ -37,7 +37,10 @@ func NewSessionService(sessionRepository SessionRepository, userService UserServ
 // CreateSession is a function that creates a session
 func (s SessionService) CreateSession(cmd session.CreateSessionCommand) (session.InfoModel, error) {
 	// Check if user exists
-	exists, err := s.UserService.ExistsUser(cmd.UserId, []auth.Permission{auth.AdminPermission})
+	exists, err := s.UserService.ExistsUser(cmd.UserId, auth.AuthContext{
+		Permissions: []auth.Permission{auth.AdminPermission},
+		UserId:      bson.ObjectIdHex(cmd.UserId),
+	})
 	if err != nil {
 		return session.InfoModel{}, err
 	}
@@ -57,7 +60,10 @@ func (s SessionService) CreateSession(cmd session.CreateSessionCommand) (session
 // GetUserSession is a function that gets a user session
 func (s SessionService) GetUserSession(id string) (session.InfoModel, error) {
 	// Check if user exists
-	exists, err := s.UserService.ExistsUser(id, []auth.Permission{auth.AdminPermission})
+	exists, err := s.UserService.ExistsUser(id, auth.AuthContext{
+		Permissions: []auth.Permission{auth.AdminPermission},
+		UserId:      bson.ObjectIdHex(id),
+	})
 	if err != nil {
 		return session.InfoModel{}, err
 	}
