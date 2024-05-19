@@ -2,12 +2,12 @@ package mongodb
 
 import (
 	"context"
+	"github.com/LydiaTrack/lydia-base/internal/log"
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 	"os"
 )
 
@@ -62,13 +62,13 @@ func InitializeMongoDBConnection() error {
 		if err != nil {
 			return err
 		}
-		log.Println("Connecting to local mongodb container...")
+		log.Log("Connecting to local mongodb container...")
 		connectionType = ContainerConnection
 	} else if connectionTypeEnv == RemoteConnection {
-		log.Println("Connecting to remote host of mongodb container...")
+		log.Log("Connecting to remote host of mongodb container...")
 		connectionType = RemoteConnection
 	} else {
-		log.Fatal("Invalid connection type for mongodb container!")
+		log.LogFatal("Invalid connection type for mongodb container!")
 		return nil
 	}
 
@@ -111,6 +111,6 @@ func GetCollection(collectionName string, ctx context.Context) *mongo.Collection
 
 		return client.Database(os.Getenv("LYDIA_DB_NAME")).Collection(collectionName)
 	}
-	log.Fatal("Invalid connection type for mongodb container!")
+	log.LogFatal("Invalid connection type for mongodb container!")
 	return nil
 }

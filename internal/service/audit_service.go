@@ -36,8 +36,8 @@ type AuditRepository interface {
 }
 
 // CreateAudit TODO: Add permission check
-func (s AuditService) CreateAudit(command audit.CreateAuditCommand, permissionList []auth.Permission) (audit.Model, error) {
-	if !auth.CheckPermission(permissionList, permissions.AuditCreatePermission) {
+func (s AuditService) CreateAudit(command audit.CreateAuditCommand, authContext auth.PermissionContext) (audit.Model, error) {
+	if auth.CheckPermission(authContext.Permissions, permissions.AuditCreatePermission) != nil {
 		return audit.Model{}, errors.New("not permitted")
 	}
 
@@ -47,8 +47,8 @@ func (s AuditService) CreateAudit(command audit.CreateAuditCommand, permissionLi
 }
 
 // GetAudit TODO: Add permission check
-func (s AuditService) GetAudit(id string, permissionList []auth.Permission) (audit.Model, error) {
-	if !auth.CheckPermission(permissionList, permissions.AuditReadPermission) {
+func (s AuditService) GetAudit(id string, authContext auth.PermissionContext) (audit.Model, error) {
+	if auth.CheckPermission(authContext.Permissions, permissions.AuditReadPermission) != nil {
 		return audit.Model{}, errors.New("not permitted")
 	}
 
@@ -57,8 +57,8 @@ func (s AuditService) GetAudit(id string, permissionList []auth.Permission) (aud
 }
 
 // ExistsAudit TODO: Add permission check
-func (s AuditService) ExistsAudit(id string, permissionList []auth.Permission) (bool, error) {
-	if !auth.CheckPermission(permissionList, permissions.AuditReadPermission) {
+func (s AuditService) ExistsAudit(id string, authContext auth.PermissionContext) (bool, error) {
+	if auth.CheckPermission(authContext.Permissions, permissions.AuditReadPermission) != nil {
 		return false, errors.New("not permitted")
 	}
 
@@ -67,8 +67,8 @@ func (s AuditService) ExistsAudit(id string, permissionList []auth.Permission) (
 }
 
 // GetAudits TODO: Add permission check
-func (s AuditService) GetAudits(permissionList []auth.Permission) ([]audit.Model, error) {
-	if !auth.CheckPermission(permissionList, permissions.AuditReadPermission) {
+func (s AuditService) GetAudits(authContext auth.PermissionContext) ([]audit.Model, error) {
+	if auth.CheckPermission(authContext.Permissions, permissions.AuditReadPermission) != nil {
 		return nil, errors.New("not permitted")
 	}
 
@@ -77,8 +77,8 @@ func (s AuditService) GetAudits(permissionList []auth.Permission) ([]audit.Model
 }
 
 // DeleteOlderThan TODO: Add permission check
-func (s AuditService) DeleteOlderThan(command audit.DeleteOlderThanAuditCommand, permissionList []auth.Permission) error {
-	if !auth.CheckPermission(permissionList, permissions.AuditDeletePermission) {
+func (s AuditService) DeleteOlderThan(command audit.DeleteOlderThanAuditCommand, authContext auth.PermissionContext) error {
+	if auth.CheckPermission(authContext.Permissions, permissions.AuditDeletePermission) != nil {
 		return errors.New("not permitted")
 	}
 
@@ -92,8 +92,8 @@ func (s AuditService) DeleteOlderThan(command audit.DeleteOlderThanAuditCommand,
 }
 
 // DeleteInterval TODO: Add permission check
-func (s AuditService) DeleteInterval(command audit.DeleteIntervalAuditCommand, permissionList []auth.Permission) error {
-	if !auth.CheckPermission(permissionList, permissions.AuditDeletePermission) {
+func (s AuditService) DeleteInterval(command audit.DeleteIntervalAuditCommand, authContext auth.PermissionContext) error {
+	if auth.CheckPermission(authContext.Permissions, permissions.AuditDeletePermission) != nil {
 		return errors.New("not permitted")
 	}
 

@@ -3,7 +3,7 @@ package rest
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/LydiaTrack/lydia-base/internal/utils"
+	"github.com/LydiaTrack/lydia-base/internal/log"
 	"net/http"
 )
 
@@ -32,7 +32,7 @@ func Exchange(url string, method string, entity HttpEntity, responseStructPtr in
 		return err
 	}
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(requestBody))
-	utils.Log("Request for url: ", url, " with method: ", method, " and body: ", string(requestBody))
+	log.Log("Request for url: ", url, " with method: ", method, " and body: ", string(requestBody))
 	if err != nil {
 		return err
 	}
@@ -44,7 +44,7 @@ func Exchange(url string, method string, entity HttpEntity, responseStructPtr in
 
 	// Then we need to execute the request
 	resp, err := client.Do(req)
-	utils.Log("Response for url: ", url, " with method: ", method, " and body: ", string(requestBody))
+	log.Log("Response for url: ", url, " with method: ", method, " and body: ", string(requestBody))
 	if err != nil {
 		return err
 	}
