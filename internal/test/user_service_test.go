@@ -10,7 +10,6 @@ import (
 	"github.com/LydiaTrack/lydia-base/internal/repository"
 	"github.com/LydiaTrack/lydia-base/internal/service"
 	"github.com/LydiaTrack/lydia-base/test_support"
-	"gopkg.in/mgo.v2/bson"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -63,9 +62,9 @@ func testCreateUser(t *testing.T) {
 			},
 		},
 	}
-	userModel, err := userService.CreateUser(command, auth.AuthContext{
+	userModel, err := userService.CreateUser(command, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {
@@ -110,9 +109,9 @@ func testCreateUser(t *testing.T) {
 	}
 
 	// Check user is exists
-	exists, err := userService.ExistsUser(userModel.ID.Hex(), auth.AuthContext{
+	exists, err := userService.ExistsUser(userModel.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {
@@ -124,9 +123,9 @@ func testCreateUser(t *testing.T) {
 	}
 
 	// Check user is exists by username
-	existsByUsername, err := userService.ExistsByUsername("test-create-user-001", auth.AuthContext{
+	existsByUsername, err := userService.ExistsByUsername("test-create-user-001", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {
@@ -138,9 +137,9 @@ func testCreateUser(t *testing.T) {
 	}
 
 	// Get user
-	getUserModel, err := userService.GetUser(userModel.ID.Hex(), auth.AuthContext{
+	getUserModel, err := userService.GetUser(userModel.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {
@@ -171,9 +170,9 @@ func testAddRoleToUser(t *testing.T) {
 		},
 	}
 
-	userModel, err := userService.CreateUser(command, auth.AuthContext{
+	userModel, err := userService.CreateUser(command, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {
@@ -192,9 +191,9 @@ func testAddRoleToUser(t *testing.T) {
 		},
 	}
 
-	roleModel, err := roleService.CreateRole(roleCommand, auth.AuthContext{
+	roleModel, err := roleService.CreateRole(roleCommand, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {
@@ -207,9 +206,9 @@ func testAddRoleToUser(t *testing.T) {
 		RoleID: roleModel.ID,
 	}
 
-	err = userService.AddRoleToUser(addRoleToUserCmd, auth.AuthContext{
+	err = userService.AddRoleToUser(addRoleToUserCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {
@@ -217,9 +216,9 @@ func testAddRoleToUser(t *testing.T) {
 	}
 
 	// Check if the role is added to the user
-	roles, err := userService.GetUserRoles(userModel.ID, auth.AuthContext{
+	roles, err := userService.GetUserRoles(userModel.ID, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {
@@ -259,9 +258,9 @@ func testRemoveRoleFromUser(t *testing.T) {
 		},
 	}
 
-	userModel, err := userService.CreateUser(command, auth.AuthContext{
+	userModel, err := userService.CreateUser(command, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {
@@ -283,9 +282,9 @@ func testRemoveRoleFromUser(t *testing.T) {
 		},
 	}
 
-	roleModel, err := roleService.CreateRole(roleCommand, auth.AuthContext{
+	roleModel, err := roleService.CreateRole(roleCommand, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {
@@ -298,9 +297,9 @@ func testRemoveRoleFromUser(t *testing.T) {
 		RoleID: roleModel.ID,
 	}
 
-	err = userService.AddRoleToUser(addRoleToUserCmd, auth.AuthContext{
+	err = userService.AddRoleToUser(addRoleToUserCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {
@@ -313,9 +312,9 @@ func testRemoveRoleFromUser(t *testing.T) {
 		RoleID: roleModel.ID,
 	}
 
-	err = userService.RemoveRoleFromUser(removeRoleFromUserCmd, auth.AuthContext{
+	err = userService.RemoveRoleFromUser(removeRoleFromUserCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {
@@ -323,9 +322,9 @@ func testRemoveRoleFromUser(t *testing.T) {
 	}
 
 	// Check if the role is removed from the user
-	roles, err := userService.GetUserRoles(userModel.ID, auth.AuthContext{
+	roles, err := userService.GetUserRoles(userModel.ID, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {
@@ -361,9 +360,9 @@ func testCreateAndVerifyUser(t *testing.T) {
 		},
 	}
 
-	_, err := userService.CreateUser(command, auth.AuthContext{
+	_, err := userService.CreateUser(command, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {
@@ -371,9 +370,9 @@ func testCreateAndVerifyUser(t *testing.T) {
 	}
 
 	// Verify user
-	_, err = userService.VerifyUser("test-create-verify-user-001", "test123", auth.AuthContext{
+	_, err = userService.VerifyUser("test-create-verify-user-001", "test123", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {
@@ -381,9 +380,9 @@ func testCreateAndVerifyUser(t *testing.T) {
 	}
 
 	// Verify user with wrong password
-	_, err = userService.VerifyUser("test-create-verify-user-001", "test1234", auth.AuthContext{
+	_, err = userService.VerifyUser("test-create-verify-user-001", "test1234", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err == nil {
@@ -404,9 +403,9 @@ func testCreateAndDeleteUser(t *testing.T) {
 		},
 	}
 
-	userModel, err := userService.CreateUser(command, auth.AuthContext{
+	userModel, err := userService.CreateUser(command, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {
@@ -418,9 +417,9 @@ func testCreateAndDeleteUser(t *testing.T) {
 		ID: userModel.ID,
 	}
 
-	err = userService.DeleteUser(deleteUserCmd, auth.AuthContext{
+	err = userService.DeleteUser(deleteUserCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {

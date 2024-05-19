@@ -9,7 +9,6 @@ import (
 	"github.com/LydiaTrack/lydia-base/internal/repository"
 	"github.com/LydiaTrack/lydia-base/internal/service"
 	"github.com/LydiaTrack/lydia-base/test_support"
-	"gopkg.in/mgo.v2/bson"
 )
 
 var (
@@ -45,9 +44,9 @@ func testCreateRole(t *testing.T) {
 		Info: "Test Tag Create",
 	}
 
-	role, err := roleService.CreateRole(command, auth.AuthContext{
+	role, err := roleService.CreateRole(command, auth.PermissionContext{
 		Permissions: []auth.Permission{permissions.RoleCreatePermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {
@@ -59,9 +58,9 @@ func testCreateRole(t *testing.T) {
 	}
 
 	// Check if the role is created or not by existence control
-	exists, err := roleService.ExistsRole(role.ID.Hex(), auth.AuthContext{
+	exists, err := roleService.ExistsRole(role.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {
@@ -73,9 +72,9 @@ func testCreateRole(t *testing.T) {
 	}
 
 	// Check if the role is created or not by getting the role
-	role, err = roleService.GetRole(role.ID.Hex(), auth.AuthContext{
+	role, err = roleService.GetRole(role.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {
@@ -94,9 +93,9 @@ func testCannotCreateRoleWithSameName(t *testing.T) {
 		Info: "Test Tag Create",
 	}
 
-	_, err := roleService.CreateRole(command, auth.AuthContext{
+	_, err := roleService.CreateRole(command, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err == nil {
@@ -110,9 +109,9 @@ func testCannotCreateRoleWithSameName(t *testing.T) {
 		Info: "Test Tag Create123",
 	}
 
-	_, err = roleService.CreateRole(command, auth.AuthContext{
+	_, err = roleService.CreateRole(command, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err == nil {
@@ -127,18 +126,18 @@ func testDeleteRole(t *testing.T) {
 		Info: "Test Tag Delete",
 	}
 
-	role, err := roleService.CreateRole(command, auth.AuthContext{
+	role, err := roleService.CreateRole(command, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {
 		t.Errorf("Error creating role: %s", err)
 	}
 
-	err = roleService.DeleteRole(role.ID.Hex(), auth.AuthContext{
+	err = roleService.DeleteRole(role.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if err != nil {
@@ -146,9 +145,9 @@ func testDeleteRole(t *testing.T) {
 	}
 
 	// Check if the role is deleted or not by existence control
-	exists, err := roleService.ExistsRole(role.ID.Hex(), auth.AuthContext{
+	exists, err := roleService.ExistsRole(role.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 
 	if exists {

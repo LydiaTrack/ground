@@ -45,7 +45,7 @@ type UserRepository interface {
 	GetUserRoles(userID bson.ObjectId) ([]role.Model, error)
 }
 
-func (s UserService) CreateUser(command user.CreateUserCommand, authContext auth.AuthContext) (user.CreateResponse, error) {
+func (s UserService) CreateUser(command user.CreateUserCommand, authContext auth.PermissionContext) (user.CreateResponse, error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.UserCreatePermission) != nil {
 		return user.CreateResponse{}, errors.New("not permitted")
 	}
@@ -106,7 +106,7 @@ func afterCreateUser(user user.Model) (user.Model, error) {
 }
 
 // GetUsers gets all users
-func (s UserService) GetUsers(authContext auth.AuthContext) ([]user.Model, error) {
+func (s UserService) GetUsers(authContext auth.PermissionContext) ([]user.Model, error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
 		return nil, errors.New("not permitted")
 	}
@@ -114,7 +114,7 @@ func (s UserService) GetUsers(authContext auth.AuthContext) ([]user.Model, error
 
 }
 
-func (s UserService) GetUser(id string, authContext auth.AuthContext) (user.Model, error) {
+func (s UserService) GetUser(id string, authContext auth.PermissionContext) (user.Model, error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
 		return user.Model{}, errors.New("not permitted")
 	}
@@ -126,7 +126,7 @@ func (s UserService) GetUser(id string, authContext auth.AuthContext) (user.Mode
 	return userModel, nil
 }
 
-func (s UserService) ExistsUser(id string, authContext auth.AuthContext) (bool, error) {
+func (s UserService) ExistsUser(id string, authContext auth.PermissionContext) (bool, error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
 		return false, errors.New("not permitted")
 	}
@@ -138,7 +138,7 @@ func (s UserService) ExistsUser(id string, authContext auth.AuthContext) (bool, 
 	return exists, nil
 }
 
-func (s UserService) DeleteUser(command user.DeleteUserCommand, authContext auth.AuthContext) error {
+func (s UserService) DeleteUser(command user.DeleteUserCommand, authContext auth.PermissionContext) error {
 	if auth.CheckPermission(authContext.Permissions, permissions.UserDeletePermission) != nil {
 		return errors.New("not permitted")
 	}
@@ -168,7 +168,7 @@ func hashPassword(rawPassword string) (string, error) {
 }
 
 // VerifyUser verifies a user by username and password
-func (s UserService) VerifyUser(username string, password string, authContext auth.AuthContext) (user.Model, error) {
+func (s UserService) VerifyUser(username string, password string, authContext auth.PermissionContext) (user.Model, error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
 		return user.Model{}, errors.New("not permitted")
 	}
@@ -190,7 +190,7 @@ func (s UserService) VerifyUser(username string, password string, authContext au
 }
 
 // ExistsByUsername gets a user by username
-func (s UserService) ExistsByUsername(username string, authContext auth.AuthContext) (bool, error) {
+func (s UserService) ExistsByUsername(username string, authContext auth.PermissionContext) (bool, error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
 		return false, errors.New("not permitted")
 	}
@@ -198,7 +198,7 @@ func (s UserService) ExistsByUsername(username string, authContext auth.AuthCont
 }
 
 // AddRoleToUser adds a role to a user
-func (s UserService) AddRoleToUser(command user.AddRoleToUserCommand, authContext auth.AuthContext) error {
+func (s UserService) AddRoleToUser(command user.AddRoleToUserCommand, authContext auth.PermissionContext) error {
 	if auth.CheckPermission(authContext.Permissions, permissions.UserUpdatePermission) != nil {
 		return errors.New("not permitted")
 	}
@@ -206,7 +206,7 @@ func (s UserService) AddRoleToUser(command user.AddRoleToUserCommand, authContex
 }
 
 // RemoveRoleFromUser removes a role from a user
-func (s UserService) RemoveRoleFromUser(command user.RemoveRoleFromUserCommand, authContext auth.AuthContext) error {
+func (s UserService) RemoveRoleFromUser(command user.RemoveRoleFromUserCommand, authContext auth.PermissionContext) error {
 	if auth.CheckPermission(authContext.Permissions, permissions.UserDeletePermission) != nil {
 		return errors.New("not permitted")
 	}
@@ -214,7 +214,7 @@ func (s UserService) RemoveRoleFromUser(command user.RemoveRoleFromUserCommand, 
 }
 
 // GetUserRoles gets the roles of a user
-func (s UserService) GetUserRoles(userID bson.ObjectId, authContext auth.AuthContext) ([]role.Model, error) {
+func (s UserService) GetUserRoles(userID bson.ObjectId, authContext auth.PermissionContext) ([]role.Model, error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
 		return nil, errors.New("not permitted")
 	}
@@ -223,9 +223,9 @@ func (s UserService) GetUserRoles(userID bson.ObjectId, authContext auth.AuthCon
 
 // GetUserPermissionList gets the permissionList of a user
 func (s UserService) GetUserPermissionList(userID bson.ObjectId) ([]auth.Permission, error) {
-	userRoles, err := s.GetUserRoles(userID, auth.AuthContext{
+	userRoles, err := s.GetUserRoles(userID, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 	if err != nil {
 		return nil, err

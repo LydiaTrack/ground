@@ -8,7 +8,6 @@ import (
 	"github.com/LydiaTrack/lydia-base/internal/log"
 	"github.com/LydiaTrack/lydia-base/internal/repository"
 	"github.com/LydiaTrack/lydia-base/internal/service"
-	"gopkg.in/mgo.v2/bson"
 )
 
 func InitializeDefaultRole() error {
@@ -26,9 +25,9 @@ func InitializeDefaultRole() error {
 		Info: os.Getenv("DEFAULT_ROLE_INFO"),
 	}
 
-	_, err := service.NewRoleService(repository.GetRoleRepository()).CreateRole(roleCreateCmd, auth.AuthContext{
+	_, err := service.NewRoleService(repository.GetRoleRepository()).CreateRole(roleCreateCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 	if err != nil {
 		return err

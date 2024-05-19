@@ -10,13 +10,12 @@ import (
 	"github.com/LydiaTrack/lydia-base/internal/domain/user"
 	"github.com/LydiaTrack/lydia-base/internal/jwt"
 	"github.com/gin-gonic/gin"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type UserService interface {
-	ExistsByUsername(username string, authContext AuthContext) (bool, error)
-	VerifyUser(username, password string, authContext AuthContext) (user.Model, error)
-	GetUser(id string, authContext AuthContext) (user.Model, error)
+	ExistsByUsername(username string, authContext PermissionContext) (bool, error)
+	VerifyUser(username, password string, authContext PermissionContext) (user.Model, error)
+	GetUser(id string, authContext PermissionContext) (user.Model, error)
 }
 
 type SessionService interface {
@@ -53,9 +52,9 @@ func NewAuthService(userService UserService, sessionService SessionService) *Ser
 // Login is a function that handles the login process
 func (s Service) Login(request Request) (Response, error) {
 	// Check if user exists
-	exists, err := s.userService.ExistsByUsername(request.Username, AuthContext{
+	exists, err := s.userService.ExistsByUsername(request.Username, PermissionContext{
 		Permissions: []Permission{AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 	if err != nil {
 		return Response{}, err
@@ -65,9 +64,9 @@ func (s Service) Login(request Request) (Response, error) {
 	}
 
 	// Check if password is correct
-	userModel, err := s.userService.VerifyUser(request.Username, request.Password, AuthContext{
+	userModel, err := s.userService.VerifyUser(request.Username, request.Password, PermissionContext{
 		Permissions: []Permission{AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 	if err != nil {
 		return Response{}, err
@@ -124,9 +123,9 @@ func (s Service) GetCurrentUser(c *gin.Context) (user.Model, error) {
 		return user.Model{}, err
 	}
 
-	userModel, err := s.userService.GetUser(userId, AuthContext{
+	userModel, err := s.userService.GetUser(userId, PermissionContext{
 		Permissions: []Permission{AdminPermission},
-		UserId:      bson.NewObjectId(),
+		UserId:      nil,
 	})
 	if err != nil {
 		return user.Model{}, err
