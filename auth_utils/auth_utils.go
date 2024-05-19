@@ -1,4 +1,4 @@
-package utils
+package auth_utils
 
 import (
 	"github.com/LydiaTrack/lydia-base/auth"

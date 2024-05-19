@@ -5,10 +5,10 @@ import (
 	"os"
 
 	"github.com/LydiaTrack/lydia-base/auth"
+	"github.com/LydiaTrack/lydia-base/auth_utils"
 
 	"github.com/LydiaTrack/lydia-base/internal/domain/user"
 	"github.com/LydiaTrack/lydia-base/internal/service"
-	"github.com/LydiaTrack/lydia-base/internal/utils"
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/mgo.v2/bson"
@@ -77,7 +77,7 @@ func (h UserHandler) GetUsers(c *gin.Context) {
 func (h UserHandler) GetUser(c *gin.Context) {
 	id := c.Param("id")
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := auth_utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -106,7 +106,7 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := auth_utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -135,7 +135,7 @@ func (h UserHandler) DeleteUser(c *gin.Context) {
 		return
 	}
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := auth_utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -164,7 +164,7 @@ func (h UserHandler) AddRoleToUser(c *gin.Context) {
 		return
 	}
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := auth_utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -192,7 +192,7 @@ func (h UserHandler) RemoveRoleFromUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := auth_utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -216,7 +216,7 @@ func (h UserHandler) RemoveRoleFromUser(c *gin.Context) {
 func (h UserHandler) GetUserRoles(c *gin.Context) {
 	id := c.Param("id")
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := auth_utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
