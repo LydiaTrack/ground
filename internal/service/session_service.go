@@ -2,8 +2,8 @@ package service
 
 import (
 	"errors"
-	"github.com/LydiaTrack/lydia-base/auth"
-	"github.com/LydiaTrack/lydia-base/internal/domain/session"
+	"github.com/LydiaTrack/lydia-base/pkg/auth"
+	"github.com/LydiaTrack/lydia-base/pkg/domain/session"
 	"time"
 
 	"gopkg.in/mgo.v2/bson"
@@ -76,7 +76,7 @@ func (s SessionService) GetUserSession(id string) (session.InfoModel, error) {
 	return s.sessionRepository.GetUserSession(bson.ObjectIdHex(id))
 }
 
-// DeleteSession is a function that deletes a session
+// DeleteSessionByUser DeleteSession is a function that deletes a session
 func (s SessionService) DeleteSessionByUser(userId string) error {
 	return s.sessionRepository.DeleteSessionByUserId(bson.ObjectIdHex(userId))
 }
@@ -88,12 +88,12 @@ func (s SessionService) DeleteSessionById(sessionId string) error {
 
 // IsUserHasActiveSession is a function that checks if a user has an active session
 func (s SessionService) IsUserHasActiveSession(userId string) bool {
-	session, err := s.GetUserSession(userId)
+	sessionModel, err := s.GetUserSession(userId)
 	if err != nil {
 		return false
 	}
 
 	// Check if session still valid by comparing the expire time with the current time
 	currentTime := time.Now().Unix()
-	return session.ExpireTime >= currentTime
+	return sessionModel.ExpireTime >= currentTime
 }
