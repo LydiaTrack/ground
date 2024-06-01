@@ -2,12 +2,12 @@ package auth
 
 import (
 	"errors"
+	"github.com/LydiaTrack/lydia-base/pkg/domain/session"
+	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
 	"os"
 	"strconv"
 	"time"
 
-	"github.com/LydiaTrack/lydia-base/internal/domain/session"
-	"github.com/LydiaTrack/lydia-base/internal/domain/user"
 	"github.com/LydiaTrack/lydia-base/internal/jwt"
 	"github.com/gin-gonic/gin"
 )
@@ -173,7 +173,7 @@ func (s Service) RefreshTokenPair(c *gin.Context) (jwt.TokenPair, error) {
 	return tokenPair, nil
 }
 
-// Checks if Permissions contains Permission
+// HasPermission Checks if Permissions contains Permission
 // It checks for the following cases:
 // 1. */*
 // 2. */Action

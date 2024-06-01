@@ -1,6 +1,8 @@
 package permissions
 
-import "github.com/LydiaTrack/lydia-base/auth"
+import (
+	"github.com/LydiaTrack/lydia-base/pkg/auth"
+)
 
 var UserCreatePermission = auth.Permission{
 	Domain: "user",

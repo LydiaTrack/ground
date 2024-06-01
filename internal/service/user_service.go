@@ -2,11 +2,12 @@ package service
 
 import (
 	"errors"
-	"github.com/LydiaTrack/lydia-base/auth"
-	"github.com/LydiaTrack/lydia-base/internal/domain/role"
-	"github.com/LydiaTrack/lydia-base/internal/domain/user"
-	"github.com/LydiaTrack/lydia-base/internal/permissions"
 	"github.com/LydiaTrack/lydia-base/internal/log"
+	"github.com/LydiaTrack/lydia-base/internal/permissions"
+	"github.com/LydiaTrack/lydia-base/pkg/auth"
+	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
+	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
+	"github.com/LydiaTrack/lydia-base/pkg/manager"
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2/bson"
 	"time"
@@ -14,11 +15,13 @@ import (
 
 type UserService struct {
 	userRepository UserRepository
+	roleService    RoleService
 }
 
-func NewUserService(userRepository UserRepository) *UserService {
+func NewUserService(userRepository UserRepository, roleService RoleService) *UserService {
 	return &UserService{
 		userRepository: userRepository,
+		roleService:    roleService,
 	}
 }
 
@@ -63,7 +66,8 @@ func (s UserService) CreateUser(command user.CreateUserCommand, authContext auth
 		return user.CreateResponse{}, errors.New("user already exists")
 	}
 
-	userModel, err := beforeCreateUser(userModel)
+	// Hash the password
+	err := hashPassword(&userModel)
 	if err != nil {
 		return user.CreateResponse{}, err
 	}
@@ -72,37 +76,44 @@ func (s UserService) CreateUser(command user.CreateUserCommand, authContext auth
 	if err != nil {
 		return user.CreateResponse{}, err
 	}
-	savedUser, err = afterCreateUser(savedUser)
+
+	// Add default roles to user
+	err = s.addDefaultRoles(savedUser.ID, authContext)
+
+	userAfterCreate, err := s.userRepository.GetUser(savedUser.ID)
 	if err != nil {
 		return user.CreateResponse{}, err
 	}
-
 	response := user.CreateResponse{
-		ID:          savedUser.ID,
-		Username:    savedUser.Username,
-		PersonInfo:  savedUser.PersonInfo,
-		CreatedDate: savedUser.CreatedDate,
-		Version:     savedUser.Version,
+		ID:          userAfterCreate.ID,
+		Username:    userAfterCreate.Username,
+		PersonInfo:  userAfterCreate.PersonInfo,
+		CreatedDate: userAfterCreate.CreatedDate,
+		Version:     userAfterCreate.Version,
+		RoleIds:     userAfterCreate.RoleIds,
 	}
 	log.Log("User %s created successfully", response.Username)
 	return response, nil
 }
 
-// beforeCreateUser is a hook that is called before creating a user
-func beforeCreateUser(userModel user.Model) (user.Model, error) {
-	// Hash user password before saving
-	hashedPassword, err := hashPassword(userModel.Password)
-	if err != nil {
-		return user.Model{}, err
+// addDefaultRoles adds default roles to a user
+func (s UserService) addDefaultRoles(userId bson.ObjectId, authContext auth.PermissionContext) error {
+	// Get all default roles from all registered role providers
+	defaultRoleNames := manager.GetAllDefaultRoleNames()
+	if len(defaultRoleNames) == 0 {
+		log.Log("No default roles found")
+		return nil
+	}
+	for _, roleName := range defaultRoleNames {
+		roleModel, err := s.roleService.GetRoleByName(roleName, authContext)
+		if err != nil {
+			return err
+		}
+		// Add roles to user
+		err = s.userRepository.AddRoleToUser(userId, roleModel.ID)
 	}
 
-	userModel.Password = hashedPassword
-	return userModel, nil
-}
-
-// afterCreateUser is a hook that is called after creating a user
-func afterCreateUser(user user.Model) (user.Model, error) {
-	return user, nil
+	return nil
 }
 
 // GetUsers gets all users
@@ -158,13 +169,14 @@ func (s UserService) DeleteUser(command user.DeleteUserCommand, authContext auth
 	return nil
 }
 
-// hashPassword hashes a password using bcrypt
-func hashPassword(rawPassword string) (string, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(rawPassword), bcrypt.DefaultCost)
+// hashPassword hashes a password using bcrypt and assigns it to the user
+func hashPassword(userModel *user.Model) error {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userModel.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return "", err
+		return err
 	}
-	return string(hashedPassword), nil
+	userModel.Password = string(hashedPassword)
+	return nil
 }
 
 // VerifyUser verifies a user by username and password

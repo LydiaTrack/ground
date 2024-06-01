@@ -2,7 +2,7 @@ package role
 
 import (
 	"errors"
-	"github.com/LydiaTrack/lydia-base/auth"
+	"github.com/LydiaTrack/lydia-base/pkg/auth"
 	"time"
 
 	"gopkg.in/mgo.v2/bson"
@@ -33,7 +33,7 @@ func NewRole(id string, name string, permissions []auth.Permission, tags []strin
 func (r Model) Validate() error {
 
 	if len(r.Name) == 0 {
-		return errors.New("rolename is required")
+		return errors.New("name is required")
 	}
 
 	return nil

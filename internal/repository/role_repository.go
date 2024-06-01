@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
-	"github.com/LydiaTrack/lydia-base/internal/domain/role"
-	"github.com/LydiaTrack/lydia-base/mongodb"
+	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
+	"github.com/LydiaTrack/lydia-base/pkg/mongodb"
 	"go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -56,6 +56,21 @@ func (r *RoleMongoRepository) GetRole(id bson.ObjectId) (role.Model, error) {
 	return roleModel, nil
 }
 
+// GetRoles gets all roles
+func (r *RoleMongoRepository) GetRoles() ([]role.Model, error) {
+	var roles []role.Model
+	cursor, err := r.collection.Find(context.Background(), bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	err = cursor.All(context.Background(), &roles)
+	if err != nil {
+		return nil, err
+	}
+	return roles, nil
+
+}
+
 // ExistsRole checks if a role exists by role id
 func (r *RoleMongoRepository) ExistsRole(id bson.ObjectId) (bool, error) {
 	var roleModel role.Model
@@ -75,19 +90,19 @@ func (r *RoleMongoRepository) DeleteRole(id bson.ObjectId) error {
 	return nil
 }
 
-// ExistsByRolename checks if a role exists by role name
-func (r *RoleMongoRepository) ExistsByRolename(rolename string) bool {
+// ExistsByName checks if a role exists by role name
+func (r *RoleMongoRepository) ExistsByName(name string) bool {
 	// Check if role exists by name
-	count, err := r.collection.CountDocuments(context.Background(), bson.M{"name": rolename})
+	count, err := r.collection.CountDocuments(context.Background(), bson.M{"name": name})
 	if err != nil {
 		return false
 	}
 	return count > 0
 }
 
-func (r *RoleMongoRepository) GetRoleByRolename(rolename string) (role.Model, error) {
+func (r *RoleMongoRepository) GetRoleByName(name string) (role.Model, error) {
 	var roleModel role.Model
-	err := r.collection.FindOne(context.Background(), bson.M{"name": rolename}).Decode(&roleModel)
+	err := r.collection.FindOne(context.Background(), bson.M{"name": name}).Decode(&roleModel)
 	if err != nil {
 		return role.Model{}, err
 	}
