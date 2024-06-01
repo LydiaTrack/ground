@@ -9,6 +9,7 @@ type CreateResponse struct {
 	ID          bson.ObjectId `json:"id" bson:"_id"`
 	Username    string        `json:"username" bson:"username"`
 	PersonInfo  `json:"personInfo"`
-	CreatedDate time.Time `json:"createdDate" bson:"createdDate"`
-	Version     int       `json:"version" bson:"version"`
+	CreatedDate time.Time       `json:"createdDate" bson:"createdDate"`
+	Version     int             `json:"version" bson:"version"`
+	RoleIds     []bson.ObjectId `json:"roleIds" bson:"roleIds"`
 }

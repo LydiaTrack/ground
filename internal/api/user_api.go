@@ -3,8 +3,8 @@ package api
 import (
 	"github.com/LydiaTrack/lydia-base/internal/handlers"
 	"github.com/LydiaTrack/lydia-base/internal/log"
-	"github.com/LydiaTrack/lydia-base/middlewares"
-	"github.com/LydiaTrack/lydia-base/service_initializer"
+	"github.com/LydiaTrack/lydia-base/pkg/middlewares"
+	"github.com/LydiaTrack/lydia-base/pkg/service_initializer"
 	"github.com/gin-gonic/gin"
 )
 

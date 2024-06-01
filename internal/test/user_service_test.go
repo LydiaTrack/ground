@@ -1,16 +1,15 @@
 package test
 
 import (
+	"github.com/LydiaTrack/lydia-base/pkg/auth"
+	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
+	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
+	"github.com/LydiaTrack/lydia-base/pkg/test_support"
 	"testing"
 	"time"
 
-	"github.com/LydiaTrack/lydia-base/auth"
-	"github.com/LydiaTrack/lydia-base/internal/domain/role"
-	"github.com/LydiaTrack/lydia-base/internal/domain/user"
 	"github.com/LydiaTrack/lydia-base/internal/repository"
 	"github.com/LydiaTrack/lydia-base/internal/service"
-	"github.com/LydiaTrack/lydia-base/test_support"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -24,8 +23,10 @@ func initializeUserService() {
 		test_support.TestWithMongo()
 		repo := repository.GetUserRepository()
 
+		roleService := service.NewRoleService(repository.GetRoleRepository())
+
 		// Create a new user service instance
-		userService = *service.NewUserService(repo)
+		userService = *service.NewUserService(repo, *roleService)
 		initializedUser = true
 	}
 }

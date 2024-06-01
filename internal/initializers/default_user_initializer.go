@@ -1,12 +1,12 @@
 package initializers
 
 import (
+	"github.com/LydiaTrack/lydia-base/pkg/auth"
+	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
+	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
 	"os"
 	"time"
 
-	"github.com/LydiaTrack/lydia-base/auth"
-	"github.com/LydiaTrack/lydia-base/internal/domain/role"
-	"github.com/LydiaTrack/lydia-base/internal/domain/user"
 	"github.com/LydiaTrack/lydia-base/internal/log"
 	"github.com/LydiaTrack/lydia-base/internal/repository"
 	"github.com/LydiaTrack/lydia-base/internal/service"
@@ -17,8 +17,8 @@ import (
 func InitializeDefaultUser() error {
 	// While using remote connection for MongoDB instead of container, the user can be exist in the database.
 	// In this case, the default user will not be created.
-	userService := service.NewUserService(repository.GetUserRepository())
 	roleService := service.NewRoleService(repository.GetRoleRepository())
+	userService := service.NewUserService(repository.GetUserRepository(), *roleService)
 	isExists, err := userService.ExistsByUsername(os.Getenv("DEFAULT_USER_USERNAME"), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserId:      nil,
@@ -112,7 +112,7 @@ func addAdminRolesToUser(userModel user.Model, roleService service.RoleService, 
 	// if admin user does not have admin roles, add admin roles
 
 	// Check if admin role exists
-	existsRole := roleService.ExistsByRolename("LYDIA_ADMIN", auth.PermissionContext{
+	existsRole := roleService.ExistsByName("LYDIA_ADMIN", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserId:      nil,
 	})

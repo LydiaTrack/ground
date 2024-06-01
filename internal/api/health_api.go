@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/LydiaTrack/lydia-base/internal/handlers"
-	"github.com/LydiaTrack/lydia-base/middlewares"
+	"github.com/LydiaTrack/lydia-base/pkg/middlewares"
 	"github.com/gin-gonic/gin"
 )
 

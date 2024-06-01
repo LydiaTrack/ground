@@ -1,10 +1,10 @@
 package initializers
 
 import (
+	"github.com/LydiaTrack/lydia-base/pkg/auth"
+	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
 	"os"
 
-	"github.com/LydiaTrack/lydia-base/auth"
-	"github.com/LydiaTrack/lydia-base/internal/domain/role"
 	"github.com/LydiaTrack/lydia-base/internal/log"
 	"github.com/LydiaTrack/lydia-base/internal/repository"
 	"github.com/LydiaTrack/lydia-base/internal/service"
@@ -14,7 +14,7 @@ func InitializeDefaultRole() error {
 
 	// While using remote connection for MongoDB instead of container, the role can be exist in the database.
 	// In this case, the default role will not be created.
-	isExists := repository.GetRoleRepository().ExistsByRolename(os.Getenv("DEFAULT_ROLE_NAME"))
+	isExists := repository.GetRoleRepository().ExistsByName(os.Getenv("DEFAULT_ROLE_NAME"))
 	if isExists {
 		log.Log("Default role already exists")
 		return nil
