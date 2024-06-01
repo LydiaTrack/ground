@@ -1,13 +1,12 @@
 package handlers
 
 import (
+	"github.com/LydiaTrack/lydia-base/pkg/auth"
+	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
+	"github.com/LydiaTrack/lydia-base/pkg/utils"
 	"net/http"
 	"os"
 
-	"github.com/LydiaTrack/lydia-base/auth"
-	"github.com/LydiaTrack/lydia-base/auth_utils"
-
-	"github.com/LydiaTrack/lydia-base/internal/domain/user"
 	"github.com/LydiaTrack/lydia-base/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -77,18 +76,18 @@ func (h UserHandler) GetUsers(c *gin.Context) {
 func (h UserHandler) GetUser(c *gin.Context) {
 	id := c.Param("id")
 
-	authContext, err := auth_utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	user, err := h.userService.GetUser(id, authContext)
+	userModel, err := h.userService.GetUser(id, authContext)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, userModel)
 }
 
 // CreateUser godoc
@@ -106,7 +105,7 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	authContext, err := auth_utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -129,18 +128,17 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 // @Success 200 {object} map[string]interface{}
 // @Router /users:id [delete]
 func (h UserHandler) DeleteUser(c *gin.Context) {
-	var deleteUserCommand user.DeleteUserCommand
-	if err := c.ShouldBindJSON(&deleteUserCommand); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	id := c.Param("id")
 
-	authContext, err := auth_utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
+	deleteUserCommand := user.DeleteUserCommand{
+		ID: bson.ObjectIdHex(id),
+	}
 	err = h.userService.DeleteUser(deleteUserCommand, authContext)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -164,7 +162,7 @@ func (h UserHandler) AddRoleToUser(c *gin.Context) {
 		return
 	}
 
-	authContext, err := auth_utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -192,7 +190,7 @@ func (h UserHandler) RemoveRoleFromUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
-	authContext, err := auth_utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -216,7 +214,7 @@ func (h UserHandler) RemoveRoleFromUser(c *gin.Context) {
 func (h UserHandler) GetUserRoles(c *gin.Context) {
 	id := c.Param("id")
 
-	authContext, err := auth_utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

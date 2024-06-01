@@ -4,8 +4,8 @@ import (
 	"github.com/LydiaTrack/lydia-base/internal/api"
 	"github.com/LydiaTrack/lydia-base/internal/initializers"
 	"github.com/LydiaTrack/lydia-base/internal/log"
-	"github.com/LydiaTrack/lydia-base/mongodb"
-	"github.com/LydiaTrack/lydia-base/service_initializer"
+	"github.com/LydiaTrack/lydia-base/pkg/mongodb"
+	"github.com/LydiaTrack/lydia-base/pkg/service_initializer"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )

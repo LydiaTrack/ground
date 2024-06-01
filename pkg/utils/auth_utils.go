@@ -1,8 +1,8 @@
-package auth_utils
+package utils
 
 import (
-	"github.com/LydiaTrack/lydia-base/auth"
 	"github.com/LydiaTrack/lydia-base/internal/service"
+	"github.com/LydiaTrack/lydia-base/pkg/auth"
 	"github.com/gin-gonic/gin"
 )
 

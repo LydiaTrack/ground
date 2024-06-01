@@ -1,7 +1,7 @@
 package role
 
 import (
-	"github.com/LydiaTrack/lydia-base/auth"
+	"github.com/LydiaTrack/lydia-base/pkg/auth"
 	"gopkg.in/mgo.v2/bson"
 )
 

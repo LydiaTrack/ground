@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/LydiaTrack/lydia-base/auth"
+	"github.com/LydiaTrack/lydia-base/pkg/auth"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )

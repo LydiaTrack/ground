@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"github.com/LydiaTrack/lydia-base/auth"
-	"github.com/LydiaTrack/lydia-base/auth_utils"
-	"github.com/LydiaTrack/lydia-base/internal/domain/role"
 	"github.com/LydiaTrack/lydia-base/internal/service"
+	"github.com/LydiaTrack/lydia-base/pkg/auth"
+	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
+	"github.com/LydiaTrack/lydia-base/pkg/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -24,6 +24,30 @@ func NewRoleHandler(roleService service.RoleService, authService auth.Service, u
 	}
 }
 
+// GetRoles godoc
+// @Summary Get all roles
+// @Description get all roles.
+// @Tags root
+// @Accept */*
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /roles [get]
+func (h RoleHandler) GetRoles(c *gin.Context) {
+	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	roles, err := h.roleService.GetRoles(authContext)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, roles)
+
+}
+
 // GetRole godoc
 // @Summary Get role by ID
 // @Description get the status of server.
@@ -35,7 +59,7 @@ func NewRoleHandler(roleService service.RoleService, authService auth.Service, u
 func (h RoleHandler) GetRole(c *gin.Context) {
 	id := c.Param("id")
 
-	authContext, err := auth_utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -64,7 +88,7 @@ func (h RoleHandler) CreateRole(c *gin.Context) {
 		return
 	}
 
-	authContext, err := auth_utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -89,7 +113,7 @@ func (h RoleHandler) CreateRole(c *gin.Context) {
 func (h RoleHandler) DeleteRole(c *gin.Context) {
 	id := c.Param("id")
 
-	authContext, err := auth_utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
