@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"errors"
+	"github.com/LydiaTrack/lydia-base/pkg/constants"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/session"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
 	"os"
@@ -57,10 +57,10 @@ func (s Service) Login(request Request) (Response, error) {
 		UserId:      nil,
 	})
 	if err != nil {
-		return Response{}, err
+		return Response{}, constants.ErrorInternalServerError
 	}
 	if !exists {
-		return Response{}, errors.New("user does not exist")
+		return Response{}, constants.ErrorNotFound
 	}
 
 	// Check if password is correct
@@ -69,18 +69,18 @@ func (s Service) Login(request Request) (Response, error) {
 		UserId:      nil,
 	})
 	if err != nil {
-		return Response{}, err
+		return Response{}, constants.ErrorInternalServerError
 	}
 
 	// Generate token
 	tokenPair, err := jwt.GenerateTokenPair(userModel.ID)
 	if err != nil {
-		return Response{}, err
+		return Response{}, constants.ErrorInternalServerError
 	}
 
 	err = s.SetSession(userModel.ID.Hex(), tokenPair)
 	if err != nil {
-		return Response{}, err
+		return Response{}, constants.ErrorInternalServerError
 	}
 
 	return Response{
@@ -93,13 +93,13 @@ func (s Service) SetSession(userId string, tokenPair jwt.TokenPair) error {
 	// Start a session
 	refreshTokenLifespan, err := strconv.Atoi(os.Getenv(jwt.RefreshExpirationKey))
 	if err != nil {
-		return err
+		return constants.ErrorInternalServerError
 	}
 
 	// If there is a session for the user, delete it
 	err = s.sessionService.DeleteSessionByUser(userId)
 	if err != nil {
-		return err
+		return constants.ErrorInternalServerError
 	}
 
 	// Save refresh token with expire time
@@ -110,7 +110,7 @@ func (s Service) SetSession(userId string, tokenPair jwt.TokenPair) error {
 	}
 	_, err = s.sessionService.CreateSession(createSessionCmd)
 	if err != nil {
-		return err
+		return constants.ErrorInternalServerError
 	}
 
 	return nil
@@ -120,7 +120,7 @@ func (s Service) SetSession(userId string, tokenPair jwt.TokenPair) error {
 func (s Service) GetCurrentUser(c *gin.Context) (user.Model, error) {
 	userId, err := jwt.ExtractUserIdFromContext(c)
 	if err != nil {
-		return user.Model{}, err
+		return user.Model{}, constants.ErrorInternalServerError
 	}
 
 	userModel, err := s.userService.GetUser(userId, PermissionContext{
@@ -128,7 +128,7 @@ func (s Service) GetCurrentUser(c *gin.Context) (user.Model, error) {
 		UserId:      nil,
 	})
 	if err != nil {
-		return user.Model{}, err
+		return user.Model{}, constants.ErrorInternalServerError
 	}
 
 	return userModel, nil
@@ -139,35 +139,35 @@ func (s Service) RefreshTokenPair(c *gin.Context) (jwt.TokenPair, error) {
 	// Get the refresh token from the request body
 	var refreshTokenRequest RefreshTokenRequest
 	if err := c.ShouldBindJSON(&refreshTokenRequest); err != nil {
-		return jwt.TokenPair{}, err
+		return jwt.TokenPair{}, constants.ErrorInternalServerError
 	}
 
 	// Get current user id
 	currentUser, err := s.GetCurrentUser(c)
 	if err != nil {
-		return jwt.TokenPair{}, err
+		return jwt.TokenPair{}, constants.ErrorInternalServerError
 	}
 
 	// Get the session by user id
 	sessionInfo, err := s.sessionService.GetUserSession(currentUser.ID.Hex())
 	if err != nil {
-		return jwt.TokenPair{}, err
+		return jwt.TokenPair{}, constants.ErrorInternalServerError
 	}
 
 	// Check if the refresh token is valid
 	if sessionInfo.RefreshToken != refreshTokenRequest.RefreshToken {
-		return jwt.TokenPair{}, errors.New("refresh token is invalid")
+		return jwt.TokenPair{}, constants.ErrorUnauthorized
 	}
 
 	// Now that we know the token is valid, we can extract the user id from it
 	tokenPair, err := jwt.GenerateTokenPair(currentUser.ID)
 	if err != nil {
-		return jwt.TokenPair{}, err
+		return jwt.TokenPair{}, constants.ErrorInternalServerError
 	}
 
 	err = s.SetSession(currentUser.ID.Hex(), tokenPair)
 	if err != nil {
-		return jwt.TokenPair{}, err
+		return jwt.TokenPair{}, constants.ErrorInternalServerError
 	}
 
 	return tokenPair, nil
@@ -211,10 +211,10 @@ func HasPermission(Permissions []Permission, Permission Permission) bool {
 	return false
 }
 
-// Checks if Permissions contains Permission
+// CheckPermission checks if Permissions contains Permission
 func CheckPermission(Permissions []Permission, Permission Permission) error {
 	if !HasPermission(Permissions, Permission) {
-		return errors.New("permission denied")
+		return constants.ErrorPermissionDenied
 	}
 
 	return nil
