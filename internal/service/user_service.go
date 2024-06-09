@@ -194,7 +194,6 @@ func (s UserService) VerifyUser(username string, password string, authContext au
 	// Compare the passwords
 	err = bcrypt.CompareHashAndPassword([]byte(userModel.Password), []byte(password))
 	if err != nil {
-		log.LogError("Error comparing passwords: " + err.Error())
 		return user.Model{}, constants.ErrorInternalServerError
 	}
 
