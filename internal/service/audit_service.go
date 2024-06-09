@@ -101,7 +101,7 @@ func (s AuditService) DeleteOlderThan(command audit.DeleteOlderThanAuditCommand,
 	}
 
 	err = s.auditRepository.DeleteOlderThan(command.Instant)
-	return constants.ErrorInternalServerError
+	return err
 }
 
 // DeleteInterval TODO: Add permission check
@@ -116,5 +116,5 @@ func (s AuditService) DeleteInterval(command audit.DeleteIntervalAuditCommand, a
 	}
 
 	err = s.auditRepository.DeleteInterval(command.From, command.To)
-	return constants.ErrorInternalServerError
+	return err
 }
