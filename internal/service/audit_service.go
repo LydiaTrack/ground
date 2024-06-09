@@ -1,9 +1,9 @@
 package service
 
 import (
-	"errors"
 	"github.com/LydiaTrack/lydia-base/internal/permissions"
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
+	"github.com/LydiaTrack/lydia-base/pkg/constants"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/audit"
 	"time"
 
@@ -38,53 +38,66 @@ type AuditRepository interface {
 // CreateAudit TODO: Add permission check
 func (s AuditService) CreateAudit(command audit.CreateAuditCommand, authContext auth.PermissionContext) (audit.Model, error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.AuditCreatePermission) != nil {
-		return audit.Model{}, errors.New("not permitted")
+		return audit.Model{}, constants.ErrorPermissionDenied
 	}
 
 	auditModel := audit.NewAudit(bson.NewObjectId().Hex(), command.Source, command.Operation,
 		time.Now(), audit.WithAdditionalData(command.AdditionalData), audit.WithRelatedPrincipal(command.RelatedPrincipal))
-	return s.auditRepository.SaveAudit(auditModel)
+	auditModel, err := s.auditRepository.SaveAudit(auditModel)
+	if err != nil {
+		return audit.Model{}, constants.ErrorInternalServerError
+	}
+	return auditModel, nil
 }
 
 // GetAudit TODO: Add permission check
 func (s AuditService) GetAudit(id string, authContext auth.PermissionContext) (audit.Model, error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.AuditReadPermission) != nil {
-		return audit.Model{}, errors.New("not permitted")
+		return audit.Model{}, constants.ErrorPermissionDenied
 	}
 
 	auditModel, err := s.auditRepository.GetAudit(bson.ObjectIdHex(id))
-	return auditModel, err
+	if err != nil {
+		return audit.Model{}, constants.ErrorInternalServerError
+	}
+	return auditModel, nil
 }
 
 // ExistsAudit TODO: Add permission check
 func (s AuditService) ExistsAudit(id string, authContext auth.PermissionContext) (bool, error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.AuditReadPermission) != nil {
-		return false, errors.New("not permitted")
+		return false, constants.ErrorPermissionDenied
 	}
 
 	exists, err := s.auditRepository.ExistsAudit(bson.ObjectIdHex(id))
-	return exists, err
+	if err != nil {
+		return false, constants.ErrorInternalServerError
+	}
+	return exists, nil
 }
 
 // GetAudits TODO: Add permission check
 func (s AuditService) GetAudits(authContext auth.PermissionContext) ([]audit.Model, error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.AuditReadPermission) != nil {
-		return nil, errors.New("not permitted")
+		return nil, constants.ErrorPermissionDenied
 	}
 
 	audits, err := s.auditRepository.GetAudits()
-	return audits, err
+	if err != nil {
+		return nil, constants.ErrorInternalServerError
+	}
+	return audits, nil
 }
 
 // DeleteOlderThan TODO: Add permission check
 func (s AuditService) DeleteOlderThan(command audit.DeleteOlderThanAuditCommand, authContext auth.PermissionContext) error {
 	if auth.CheckPermission(authContext.Permissions, permissions.AuditDeletePermission) != nil {
-		return errors.New("not permitted")
+		return constants.ErrorPermissionDenied
 	}
 
 	err := command.Validate()
 	if err != nil {
-		return err
+		return constants.ErrorBadRequest
 	}
 
 	err = s.auditRepository.DeleteOlderThan(command.Instant)
@@ -94,12 +107,12 @@ func (s AuditService) DeleteOlderThan(command audit.DeleteOlderThanAuditCommand,
 // DeleteInterval TODO: Add permission check
 func (s AuditService) DeleteInterval(command audit.DeleteIntervalAuditCommand, authContext auth.PermissionContext) error {
 	if auth.CheckPermission(authContext.Permissions, permissions.AuditDeletePermission) != nil {
-		return errors.New("not permitted")
+		return constants.ErrorPermissionDenied
 	}
 
 	err := command.Validate()
 	if err != nil {
-		return err
+		return constants.ErrorBadRequest
 	}
 
 	err = s.auditRepository.DeleteInterval(command.From, command.To)
