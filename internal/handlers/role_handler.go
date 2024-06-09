@@ -35,7 +35,7 @@ func NewRoleHandler(roleService service.RoleService, authService auth.Service, u
 func (h RoleHandler) GetRoles(c *gin.Context) {
 	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.EvaluateError(err, c)
 		return
 	}
 
@@ -61,7 +61,7 @@ func (h RoleHandler) GetRole(c *gin.Context) {
 
 	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.EvaluateError(err, c)
 		return
 	}
 
@@ -90,7 +90,7 @@ func (h RoleHandler) CreateRole(c *gin.Context) {
 
 	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.EvaluateError(err, c)
 		return
 	}
 
@@ -115,14 +115,14 @@ func (h RoleHandler) DeleteRole(c *gin.Context) {
 
 	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.EvaluateError(err, c)
 		return
 	}
 
 	err = h.roleService.DeleteRole(id, authContext)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.EvaluateError(err, c)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"status": "success"})
+	c.Status(http.StatusOK)
 }
