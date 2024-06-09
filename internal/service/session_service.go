@@ -1,8 +1,8 @@
 package service
 
 import (
-	"errors"
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
+	"github.com/LydiaTrack/lydia-base/pkg/constants"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/session"
 	"time"
 
@@ -46,7 +46,7 @@ func (s SessionService) CreateSession(cmd session.CreateSessionCommand) (session
 		return session.InfoModel{}, err
 	}
 	if !exists {
-		return session.InfoModel{}, errors.New("user does not exist")
+		return session.InfoModel{}, constants.ErrorNotFound
 	}
 	sessionInfo := session.InfoModel{
 		ID:           bson.NewObjectId(),
@@ -70,7 +70,7 @@ func (s SessionService) GetUserSession(id string) (session.InfoModel, error) {
 		return session.InfoModel{}, err
 	}
 	if !exists {
-		return session.InfoModel{}, errors.New("user does not exist")
+		return session.InfoModel{}, constants.ErrorNotFound
 	}
 
 	return s.sessionRepository.GetUserSession(bson.ObjectIdHex(id))

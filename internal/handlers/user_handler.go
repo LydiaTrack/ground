@@ -78,7 +78,7 @@ func (h UserHandler) GetUser(c *gin.Context) {
 
 	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.EvaluateError(err, c)
 		return
 	}
 
@@ -107,7 +107,7 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 
 	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.EvaluateError(err, c)
 		return
 	}
 
@@ -132,7 +132,7 @@ func (h UserHandler) DeleteUser(c *gin.Context) {
 
 	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.EvaluateError(err, c)
 		return
 	}
 
@@ -141,10 +141,10 @@ func (h UserHandler) DeleteUser(c *gin.Context) {
 	}
 	err = h.userService.DeleteUser(deleteUserCommand, authContext)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.EvaluateError(err, c)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"status": "success"})
+	c.Status(http.StatusOK)
 }
 
 // AddRoleToUser godoc
@@ -164,16 +164,16 @@ func (h UserHandler) AddRoleToUser(c *gin.Context) {
 
 	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.EvaluateError(err, c)
 		return
 	}
 
 	err = h.userService.AddRoleToUser(addRoleToUserCommand, authContext)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.EvaluateError(err, c)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"status": "success"})
+	c.Status(http.StatusOK)
 }
 
 // RemoveRoleFromUser godoc
@@ -192,15 +192,15 @@ func (h UserHandler) RemoveRoleFromUser(c *gin.Context) {
 
 	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.EvaluateError(err, c)
 		return
 	}
 
 	err = h.userService.RemoveRoleFromUser(removeRoleFromUserCommand, authContext)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.EvaluateError(err, c)
 	}
-	c.JSON(http.StatusOK, gin.H{"status": "success"})
+	c.Status(http.StatusOK)
 }
 
 // GetUserRoles godoc
@@ -216,13 +216,13 @@ func (h UserHandler) GetUserRoles(c *gin.Context) {
 
 	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.EvaluateError(err, c)
 		return
 	}
 
 	roles, err := h.userService.GetUserRoles(bson.ObjectIdHex(id), authContext)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.EvaluateError(err, c)
 		return
 	}
 	c.JSON(http.StatusOK, roles)
