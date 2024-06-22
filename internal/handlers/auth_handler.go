@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"github.com/LydiaTrack/lydia-base/internal/blocker"
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
+	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
 	"github.com/LydiaTrack/lydia-base/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 )
 
 type AuthHandler struct {
@@ -37,6 +40,36 @@ func (h AuthHandler) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// SignUp godoc
+// @Summary Sign up
+// @Description sign up.
+// @Tags auth
+// @Accept */*
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /signUp [post]
+func (h AuthHandler) SignUp(c *gin.Context) {
+	ip := c.ClientIP()
+	method := c.Request.Method
+	endpoint := c.FullPath()
+
+	var createUserCommand user.CreateUserCommand
+	if err := c.ShouldBindJSON(&createUserCommand); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	response, err := h.authService.SignUp(createUserCommand)
+	if err != nil {
+		utils.EvaluateError(err, c)
+		return
+	}
+
+	// After user signs up, we should block the user from signing up again for a certain period of time
+	// This is to prevent spam signups
+	blocker.GlobalBlocker.Add(ip, method, endpoint, 5*time.Minute)
+	c.JSON(http.StatusOK, response)
+}
+
 // GetCurrentUser godoc
 // @Summary Get current user
 // @Description get current user.
@@ -47,12 +80,12 @@ func (h AuthHandler) Login(c *gin.Context) {
 // @Success 200 {object} map[string]interface{}
 // @Router /currentUser [get]
 func (h AuthHandler) GetCurrentUser(c *gin.Context) {
-	user, err := h.authService.GetCurrentUser(c)
+	userModel, err := h.authService.GetCurrentUser(c)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
 	}
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, userModel)
 }
 
 // RefreshToken godoc

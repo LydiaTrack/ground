@@ -13,6 +13,7 @@ func InitAuth(r *gin.Engine, services service_initializer.Services) {
 
 	routeGroup := r.Group("/auth")
 	routeGroup.POST("/login", authHandler.Login)
+	routeGroup.POST("/signUp", authHandler.SignUp)
 	routeGroup.GET("/currentUser", authHandler.GetCurrentUser)
 	routeGroup.POST("/refreshToken", authHandler.RefreshToken)
 }
