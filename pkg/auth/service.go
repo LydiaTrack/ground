@@ -13,6 +13,7 @@ import (
 )
 
 type UserService interface {
+	CreateUser(command user.CreateUserCommand, authContext PermissionContext) (user.CreateResponse, error)
 	ExistsByUsername(username string, authContext PermissionContext) (bool, error)
 	VerifyUser(username, password string, authContext PermissionContext) (user.Model, error)
 	GetUser(id string, authContext PermissionContext) (user.Model, error)
@@ -86,6 +87,29 @@ func (s Service) Login(request Request) (Response, error) {
 	return Response{
 		tokenPair,
 	}, nil
+}
+
+// SignUp is a function that handles the signup process, creates a new user from the given request
+func (s Service) SignUp(cmd user.CreateUserCommand) (user.CreateResponse, error) {
+	// Check if user exists
+	exists, err := s.userService.ExistsByUsername(cmd.Username, PermissionContext{
+		Permissions: []Permission{AdminPermission},
+		UserId:      nil,
+	})
+	if err != nil {
+		return user.CreateResponse{}, constants.ErrorInternalServerError
+	}
+	if exists {
+		return user.CreateResponse{}, constants.ErrorConflict
+	}
+
+	// Create user
+	userResponse, err := s.userService.CreateUser(cmd, PermissionContext{Permissions: []Permission{AdminPermission}, UserId: nil})
+	if err != nil {
+		return user.CreateResponse{}, constants.ErrorInternalServerError
+	}
+
+	return userResponse, nil
 }
 
 // SetSession is a function that sets the session with the given user id and token pair
