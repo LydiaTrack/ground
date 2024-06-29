@@ -7,11 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"gopkg.in/mgo.v2/bson"
-
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 const (
@@ -50,7 +48,7 @@ func GenerateTokenPair(userId primitive.ObjectID) (TokenPair, error) {
 	}
 
 	// Refresh token is a random string
-	refreshTokenStr := bson.NewObjectId().Hex()
+	refreshTokenStr := primitive.NewObjectID().Hex()
 
 	return TokenPair{Token: tokenStr, RefreshToken: refreshTokenStr}, nil
 }
