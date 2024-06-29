@@ -22,6 +22,8 @@ func InitUser(r *gin.Engine, services service_initializer.Services) {
 		GET("/roles/:id", userHandler.GetUserRoles).
 		POST("/roles", userHandler.AddRoleToUser).
 		DELETE("/roles", userHandler.RemoveRoleFromUser)
+	checkUsernameGroup := r.Group("/users/checkUsername")
+	checkUsernameGroup.GET("/:username", userHandler.CheckUsername)
 
 	log.Log("User routes initialized")
 }

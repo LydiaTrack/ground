@@ -1,6 +1,9 @@
 package service
 
 import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
+
 	"github.com/LydiaTrack/lydia-base/internal/log"
 	"github.com/LydiaTrack/lydia-base/internal/permissions"
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
@@ -9,8 +12,6 @@ import (
 	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
 	"github.com/LydiaTrack/lydia-base/pkg/manager"
 	"golang.org/x/crypto/bcrypt"
-	"gopkg.in/mgo.v2/bson"
-	"time"
 )
 
 type UserService struct {
@@ -31,21 +32,23 @@ type UserRepository interface {
 	// GetUsers gets all users
 	GetUsers() ([]user.Model, error)
 	// GetUser gets a user by id
-	GetUser(id bson.ObjectId) (user.Model, error)
+	GetUser(id primitive.ObjectID) (user.Model, error)
 	// GetUserByUsername gets a user by username
 	GetUserByUsername(username string) (user.Model, error)
 	// ExistsUser checks if a user exists
-	ExistsUser(id bson.ObjectId) (bool, error)
+	ExistsUser(id primitive.ObjectID) (bool, error)
 	// DeleteUser deletes a user by id
-	DeleteUser(id bson.ObjectId) error
+	DeleteUser(id primitive.ObjectID) error
+	// ExistsByUsername checks if a user exists by username
+	ExistsByUsernameAndEmail(username string, email string) bool
 	// ExistsByUsername checks if a user exists by username
 	ExistsByUsername(username string) bool
 	// AddRoleToUser adds a role to a user
-	AddRoleToUser(userID bson.ObjectId, roleID bson.ObjectId) error
+	AddRoleToUser(userID primitive.ObjectID, roleID primitive.ObjectID) error
 	// RemoveRoleFromUser removes a role from a user
-	RemoveRoleFromUser(userID bson.ObjectId, roleID bson.ObjectId) error
+	RemoveRoleFromUser(userID primitive.ObjectID, roleID primitive.ObjectID) error
 	// GetUserRoles gets the roles of a user
-	GetUserRoles(userID bson.ObjectId) ([]role.Model, error)
+	GetUserRoles(userID primitive.ObjectID) ([]role.Model, error)
 }
 
 func (s UserService) CreateUser(command user.CreateUserCommand, authContext auth.PermissionContext) (user.CreateResponse, error) {
@@ -55,19 +58,19 @@ func (s UserService) CreateUser(command user.CreateUserCommand, authContext auth
 
 	// Validate user
 	// Map command to user
-	userModel := user.NewUser(bson.NewObjectId().Hex(), command.Username,
-		command.Password, command.PersonInfo, time.Now(), 1)
+	userModel, err := user.NewUser(primitive.NewObjectID().Hex(), command.Username,
+		command.Password, command.PersonInfo, command.ContactInfo, time.Now(), 1)
 	if err := userModel.Validate(); err != nil {
 		return user.CreateResponse{}, constants.ErrorBadRequest
 	}
-	userExists := s.userRepository.ExistsByUsername(userModel.Username)
+	userExists := s.userRepository.ExistsByUsernameAndEmail(userModel.Username, userModel.ContactInfo.Email)
 
 	if userExists {
 		return user.CreateResponse{}, constants.ErrorConflict
 	}
 
 	// Hash the password
-	err := hashPassword(&userModel)
+	err = hashPassword(&userModel)
 	if err != nil {
 		return user.CreateResponse{}, err
 	}
@@ -88,6 +91,7 @@ func (s UserService) CreateUser(command user.CreateUserCommand, authContext auth
 		ID:          userAfterCreate.ID,
 		Username:    userAfterCreate.Username,
 		PersonInfo:  userAfterCreate.PersonInfo,
+		ContactInfo: userAfterCreate.ContactInfo,
 		CreatedDate: userAfterCreate.CreatedDate,
 		Version:     userAfterCreate.Version,
 		RoleIds:     userAfterCreate.RoleIds,
@@ -97,7 +101,7 @@ func (s UserService) CreateUser(command user.CreateUserCommand, authContext auth
 }
 
 // addDefaultRoles adds default roles to a user
-func (s UserService) addDefaultRoles(userId bson.ObjectId, authContext auth.PermissionContext) error {
+func (s UserService) addDefaultRoles(userId primitive.ObjectID, authContext auth.PermissionContext) error {
 	// Get all default roles from all registered role providers
 	defaultRoleNames := manager.GetAllDefaultRoleNames()
 	if len(defaultRoleNames) == 0 {
@@ -130,7 +134,11 @@ func (s UserService) GetUser(id string, authContext auth.PermissionContext) (use
 		return user.Model{}, constants.ErrorPermissionDenied
 	}
 
-	userModel, err := s.userRepository.GetUser(bson.ObjectIdHex(id))
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return user.Model{}, constants.ErrorBadRequest
+	}
+	userModel, err := s.userRepository.GetUser(objID)
 	if err != nil {
 		return user.Model{}, err
 	}
@@ -142,7 +150,11 @@ func (s UserService) ExistsUser(id string, authContext auth.PermissionContext) (
 		return false, constants.ErrorPermissionDenied
 	}
 
-	exists, err := s.userRepository.ExistsUser(bson.ObjectIdHex(id))
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return false, constants.ErrorBadRequest
+	}
+	exists, err := s.userRepository.ExistsUser(objID)
 	if err != nil {
 		return false, constants.ErrorInternalServerError
 	}
@@ -201,10 +213,7 @@ func (s UserService) VerifyUser(username string, password string, authContext au
 }
 
 // ExistsByUsername gets a user by username
-func (s UserService) ExistsByUsername(username string, authContext auth.PermissionContext) (bool, error) {
-	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
-		return false, constants.ErrorPermissionDenied
-	}
+func (s UserService) ExistsByUsername(username string) (bool, error) {
 	return s.userRepository.ExistsByUsername(username), nil
 }
 
@@ -225,7 +234,7 @@ func (s UserService) RemoveRoleFromUser(command user.RemoveRoleFromUserCommand, 
 }
 
 // GetUserRoles gets the roles of a user
-func (s UserService) GetUserRoles(userID bson.ObjectId, authContext auth.PermissionContext) ([]role.Model, error) {
+func (s UserService) GetUserRoles(userID primitive.ObjectID, authContext auth.PermissionContext) ([]role.Model, error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
 		return nil, constants.ErrorPermissionDenied
 	}
@@ -233,7 +242,7 @@ func (s UserService) GetUserRoles(userID bson.ObjectId, authContext auth.Permiss
 }
 
 // GetUserPermissionList gets the permissionList of a user
-func (s UserService) GetUserPermissionList(userID bson.ObjectId) ([]auth.Permission, error) {
+func (s UserService) GetUserPermissionList(userID primitive.ObjectID) ([]auth.Permission, error) {
 	userRoles, err := s.GetUserRoles(userID, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserId:      nil,

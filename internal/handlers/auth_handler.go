@@ -1,13 +1,14 @@
 package handlers
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/LydiaTrack/lydia-base/internal/blocker"
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
 	"github.com/LydiaTrack/lydia-base/pkg/utils"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"time"
 )
 
 type AuthHandler struct {
@@ -66,7 +67,7 @@ func (h AuthHandler) SignUp(c *gin.Context) {
 
 	// After user signs up, we should block the user from signing up again for a certain period of time
 	// This is to prevent spam signups
-	blocker.GlobalBlocker.Add(ip, method, endpoint, 5*time.Minute)
+	blocker.GlobalBlocker.Add(ip, method, endpoint, 5*time.Second)
 	c.JSON(http.StatusOK, response)
 }
 

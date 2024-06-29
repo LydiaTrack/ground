@@ -1,11 +1,12 @@
 package initializers
 
 import (
+	"os"
+	"time"
+
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
-	"os"
-	"time"
 
 	"github.com/LydiaTrack/lydia-base/internal/log"
 	"github.com/LydiaTrack/lydia-base/internal/repository"
@@ -19,10 +20,7 @@ func InitializeDefaultUser() error {
 	// In this case, the default user will not be created.
 	roleService := service.NewRoleService(repository.GetRoleRepository())
 	userService := service.NewUserService(repository.GetUserRepository(), *roleService)
-	isExists, err := userService.ExistsByUsername(os.Getenv("DEFAULT_USER_USERNAME"), auth.PermissionContext{
-		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
-	})
+	isExists, err := userService.ExistsByUsername(os.Getenv("DEFAULT_USER_USERNAME"))
 	if err != nil {
 		return err
 	}
@@ -45,7 +43,7 @@ func InitializeDefaultUser() error {
 		userCreateCmd := user.CreateUserCommand{
 			Username: os.Getenv("DEFAULT_USER_USERNAME"),
 			Password: os.Getenv("DEFAULT_USER_PASSWORD"),
-			PersonInfo: user.PersonInfo{
+			PersonInfo: &user.PersonInfo{
 				FirstName: "Lydia",
 				LastName:  "Admin",
 				BirthDate: primitive.NewDateTimeFromTime(time.Now()),
@@ -64,7 +62,7 @@ func InitializeDefaultUser() error {
 			ID:          userCreateResponse.ID,
 			Username:    userCreateResponse.Username,
 			Password:    "",
-			PersonInfo:  user.PersonInfo{},
+			PersonInfo:  &user.PersonInfo{},
 			CreatedDate: time.Time{},
 			Version:     0,
 			RoleIds:     nil,

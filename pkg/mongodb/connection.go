@@ -2,13 +2,14 @@ package mongodb
 
 import (
 	"context"
+	"os"
+
 	"github.com/LydiaTrack/lydia-base/internal/log"
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"os"
 )
 
 // mongodbContainer represents the mongodb container type used in the module

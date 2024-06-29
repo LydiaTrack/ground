@@ -1,13 +1,13 @@
 package service
 
 import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
+
 	"github.com/LydiaTrack/lydia-base/internal/permissions"
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
 	"github.com/LydiaTrack/lydia-base/pkg/constants"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
-	"time"
-
-	"gopkg.in/mgo.v2/bson"
 )
 
 type RoleService struct {
@@ -24,13 +24,13 @@ type RoleRepository interface {
 	// SaveRole saves a role
 	SaveRole(role role.Model) (role.Model, error)
 	// GetRole gets a role by id
-	GetRole(id bson.ObjectId) (role.Model, error)
+	GetRole(id primitive.ObjectID) (role.Model, error)
 	// GetRoles gets all roles
 	GetRoles() ([]role.Model, error)
 	// ExistsRole checks if a role exists
-	ExistsRole(id bson.ObjectId) (bool, error)
+	ExistsRole(id primitive.ObjectID) (bool, error)
 	// DeleteRole deletes a role by id
-	DeleteRole(id bson.ObjectId) error
+	DeleteRole(id primitive.ObjectID) error
 	// ExistsByName checks if a role exists by name
 	ExistsByName(name string) bool
 	// GetRoleByName gets a role by name
@@ -44,7 +44,7 @@ func (s RoleService) CreateRole(command role.CreateRoleCommand, authContext auth
 
 	// Validate role
 	// Map command to role
-	roleModel := role.NewRole(bson.NewObjectId().Hex(), command.Name, command.Permissions, command.Tags, command.Info, time.Now(), 1)
+	roleModel := role.NewRole(primitive.NewObjectID().Hex(), command.Name, command.Permissions, command.Tags, command.Info, time.Now(), 1)
 	if err := roleModel.Validate(); err != nil {
 		return roleModel, err
 	}
@@ -67,7 +67,11 @@ func (s RoleService) GetRole(id string, authContext auth.PermissionContext) (rol
 		return role.Model{}, constants.ErrorPermissionDenied
 	}
 
-	roleModel, err := s.roleRepository.GetRole(bson.ObjectIdHex(id))
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return role.Model{}, constants.ErrorBadRequest
+	}
+	roleModel, err := s.roleRepository.GetRole(objID)
 	if err != nil {
 		return role.Model{}, err
 	}
@@ -92,7 +96,11 @@ func (s RoleService) ExistsRole(id string, authContext auth.PermissionContext) (
 		return false, constants.ErrorPermissionDenied
 	}
 
-	exists, err := s.roleRepository.ExistsRole(bson.ObjectIdHex(id))
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return false, constants.ErrorBadRequest
+	}
+	exists, err := s.roleRepository.ExistsRole(objID)
 	if err != nil {
 		return false, err
 	}
@@ -104,7 +112,11 @@ func (s RoleService) DeleteRole(id string, authContext auth.PermissionContext) e
 		return constants.ErrorPermissionDenied
 	}
 
-	err := s.roleRepository.DeleteRole(bson.ObjectIdHex(id))
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return constants.ErrorBadRequest
+	}
+	err = s.roleRepository.DeleteRole(objID)
 	if err != nil {
 		return err
 	}

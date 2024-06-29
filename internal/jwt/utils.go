@@ -2,7 +2,6 @@ package jwt
 
 import (
 	"fmt"
-	"gopkg.in/mgo.v2/bson"
 	"os"
 	"strconv"
 	"strings"
@@ -10,6 +9,7 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 const (
@@ -28,7 +28,7 @@ type TokenPair struct {
 }
 
 // GenerateTokenPair generates a jwt and refresh token
-func GenerateTokenPair(userId bson.ObjectId) (TokenPair, error) {
+func GenerateTokenPair(userId primitive.ObjectID) (TokenPair, error) {
 
 	tokenLifespan, err := strconv.Atoi(os.Getenv(JwtExpirationKey))
 
@@ -48,7 +48,7 @@ func GenerateTokenPair(userId bson.ObjectId) (TokenPair, error) {
 	}
 
 	// Refresh token is a random string
-	refreshTokenStr := bson.NewObjectId().Hex()
+	refreshTokenStr := primitive.NewObjectID().Hex()
 
 	return TokenPair{Token: tokenStr, RefreshToken: refreshTokenStr}, nil
 }

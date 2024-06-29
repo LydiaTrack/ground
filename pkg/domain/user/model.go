@@ -2,44 +2,53 @@ package user
 
 import (
 	"errors"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"gopkg.in/mgo.v2/bson"
-	"net/mail"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Model user main model
 type Model struct {
-	ID          bson.ObjectId `json:"id" bson:"_id"`
-	Username    string        `json:"username" bson:"username"`
-	Password    string        `json:"-" bson:"password"`
-	PersonInfo  `json:"personInfo" bson:"personInfo"`
-	CreatedDate time.Time       `json:"createdDate" bson:"createdDate"`
-	Version     int             `json:"version" bson:"version"`
-	RoleIds     []bson.ObjectId `json:"roleIds" bson:"roleIds"`
+	ID          primitive.ObjectID   `json:"id" bson:"_id"`
+	Username    string               `json:"username" bson:"username"`
+	Password    string               `json:"-" bson:"password"`
+	PersonInfo  *PersonInfo          `json:"personInfo" bson:"personInfo"`
+	ContactInfo ContactInfo          `json:"contactInfo" bson:"contactInfo"`
+	CreatedDate time.Time            `json:"createdDate" bson:"createdDate"`
+	Version     int                  `json:"version" bson:"version"`
+	RoleIds     []primitive.ObjectID `json:"roleIds" bson:"roleIds"`
 }
 
-func NewUser(id string, username string, password string, personInfo PersonInfo, createdDate time.Time, version int) Model {
+func NewUser(id string, username string, password string,
+	personInfo *PersonInfo, contactInfo ContactInfo,
+	createdDate time.Time, version int) (Model, error) {
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return Model{}, err
+	}
 	return Model{
-		ID:          bson.ObjectIdHex(id),
+		ID:          objID,
 		Username:    username,
 		Password:    password,
 		PersonInfo:  personInfo,
+		ContactInfo: contactInfo,
 		CreatedDate: createdDate,
 		Version:     version,
-		RoleIds:     make([]bson.ObjectId, 0),
-	}
-
+		RoleIds:     []primitive.ObjectID{},
+	}, nil
 }
 
 func (u Model) Validate() error {
-
-	if len(u.Password) == 0 {
+	if u.Password == "" {
 		return errors.New("password is required")
 	}
 
-	if len(u.Username) == 0 {
+	if u.Username == "" {
 		return errors.New("username is required")
+	}
+
+	if u.PersonInfo == nil {
+		return nil
 	}
 
 	if err := u.PersonInfo.Validate(); err != nil {
@@ -49,33 +58,25 @@ func (u Model) Validate() error {
 	return nil
 }
 
+type ContactInfo struct {
+	Email       string       `json:"email,omitempty"`
+	PhoneNumber *PhoneNumber `json:"phoneNumber,omitempty"`
+}
+
 type PersonInfo struct {
-	FirstName   string             `json:"firstName"`
-	LastName    string             `json:"lastName"`
-	Email       string             `json:"email,omitempty"`
-	BirthDate   primitive.DateTime `json:"birthDate,omitempty"`
-	Address     string             `json:"address,omitempty"`
-	PhoneNumber `json:"phoneNumber,omitempty"`
+	FirstName string             `json:"firstName"`
+	LastName  string             `json:"lastName"`
+	BirthDate primitive.DateTime `json:"birthDate,omitempty"`
 }
 
 func (p PersonInfo) Validate() error {
-	if len(p.FirstName) == 0 {
+	if p.FirstName == "" {
 		return errors.New("first name is required")
 	}
 
-	if len(p.LastName) == 0 {
+	if p.LastName == "" {
 		return errors.New("last name is required")
 	}
-
-	if len(p.Email) > 0 {
-		if _, err := mail.ParseAddress(p.Email); err != nil {
-			return err
-		}
-	}
-
-	/*if err := p.PhoneNumber.Validate(); err != nil {
-		return err
-	}*/
 
 	return nil
 }
@@ -88,16 +89,15 @@ type PhoneNumber struct {
 
 // Validate validates a phone number
 func (p PhoneNumber) Validate() error {
-	//TODO: More detailed validation can be done here
-	if len(p.AreaCode) == 0 {
+	if p.AreaCode == "" {
 		return errors.New("area code is required")
 	}
 
-	if len(p.Number) == 0 {
+	if p.Number == "" {
 		return errors.New("number is required")
 	}
 
-	if len(p.CountryCode) == 0 {
+	if p.CountryCode == "" {
 		return errors.New("country code is required")
 	}
 

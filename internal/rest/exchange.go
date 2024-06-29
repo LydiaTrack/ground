@@ -3,8 +3,9 @@ package rest
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/LydiaTrack/lydia-base/internal/log"
 	"net/http"
+
+	"github.com/LydiaTrack/lydia-base/internal/log"
 )
 
 const (

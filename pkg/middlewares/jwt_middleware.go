@@ -1,8 +1,9 @@
 package middlewares
 
 import (
-	"github.com/LydiaTrack/lydia-base/internal/jwt"
 	"net/http"
+
+	"github.com/LydiaTrack/lydia-base/internal/jwt"
 
 	"github.com/gin-gonic/gin"
 )
