@@ -1,16 +1,14 @@
 package handlers
 
 import (
+	"github.com/LydiaTrack/lydia-base/internal/service"
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
 	"github.com/LydiaTrack/lydia-base/pkg/utils"
+	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 	"os"
-
-	"github.com/LydiaTrack/lydia-base/internal/service"
-
-	"github.com/gin-gonic/gin"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type UserHandler struct {
@@ -23,6 +21,26 @@ func NewUserHandler(userService service.UserService, authService auth.Service) U
 		userService: userService,
 		authService: authService,
 	}
+}
+
+// CheckUsername
+// @Summary Check username
+// @Description check username.
+// @Tags root
+// @Accept */*
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /users/checkUsername/:username [get]
+func (h UserHandler) CheckUsername(c *gin.Context) {
+	username := c.Param("username")
+	exists, err := h.userService.ExistsByUsername(username)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"exists": exists})
 }
 
 // GetUsers godoc
@@ -136,8 +154,13 @@ func (h UserHandler) DeleteUser(c *gin.Context) {
 		return
 	}
 
+	userID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		utils.EvaluateError(err, c)
+		return
+	}
 	deleteUserCommand := user.DeleteUserCommand{
-		ID: bson.ObjectIdHex(id),
+		ID: userID,
 	}
 	err = h.userService.DeleteUser(deleteUserCommand, authContext)
 	if err != nil {
@@ -220,7 +243,12 @@ func (h UserHandler) GetUserRoles(c *gin.Context) {
 		return
 	}
 
-	roles, err := h.userService.GetUserRoles(bson.ObjectIdHex(id), authContext)
+	userID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		utils.EvaluateError(err, c)
+		return
+	}
+	roles, err := h.userService.GetUserRoles(userID, authContext)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return

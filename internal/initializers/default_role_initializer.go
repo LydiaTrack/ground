@@ -1,9 +1,10 @@
 package initializers
 
 import (
+	"os"
+
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
-	"os"
 
 	"github.com/LydiaTrack/lydia-base/internal/log"
 	"github.com/LydiaTrack/lydia-base/internal/repository"

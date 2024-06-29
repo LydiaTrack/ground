@@ -1,6 +1,8 @@
 package lydia_base
 
 import (
+	"time"
+
 	"github.com/LydiaTrack/lydia-base/internal/api"
 	"github.com/LydiaTrack/lydia-base/internal/blocker"
 	"github.com/LydiaTrack/lydia-base/internal/initializers"
@@ -10,7 +12,6 @@ import (
 	"github.com/LydiaTrack/lydia-base/pkg/service_initializer"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"time"
 )
 
 // Initialize initializes the Lydia base server with r as the gin Engine

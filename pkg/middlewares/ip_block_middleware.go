@@ -1,9 +1,10 @@
 package middlewares
 
 import (
+	"net/http"
+
 	"github.com/LydiaTrack/lydia-base/internal/blocker"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 // IPBlockMiddleware checks if the IP is blocked

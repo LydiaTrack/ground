@@ -1,31 +1,31 @@
 package user
 
-import (
-	"gopkg.in/mgo.v2/bson"
-)
+import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type CreateUserCommand struct {
-	Username   string `json:"username"`
-	Password   string `json:"password"`
-	PersonInfo `json:"personInfo"`
+	Username    string      `json:"username"`
+	Password    string      `json:"password"`
+	PersonInfo  *PersonInfo `json:"personInfo"`
+	ContactInfo ContactInfo `json:"contactInfo"`
 }
 
 type UpdateUserCommand struct {
-	Username   string `json:"username"`
-	Password   string `json:"password"`
-	PersonInfo `json:"personInfo"`
+	Username    string      `json:"username"`
+	Password    string      `json:"password"`
+	PersonInfo  *PersonInfo `json:"personInfo"`
+	ContactInfo ContactInfo `json:"contactInfo"`
 }
 
 type DeleteUserCommand struct {
-	ID bson.ObjectId `json:"id" bson:"_id"`
+	ID primitive.ObjectID `json:"id" bson:"_id"`
 }
 
 type AddRoleToUserCommand struct {
-	UserID bson.ObjectId `json:"userId"`
-	RoleID bson.ObjectId `json:"roleId"`
+	UserID primitive.ObjectID `json:"userId"`
+	RoleID primitive.ObjectID `json:"roleId"`
 }
 
 type RemoveRoleFromUserCommand struct {
-	UserID bson.ObjectId `json:"userId"`
-	RoleID bson.ObjectId `json:"roleId"`
+	UserID primitive.ObjectID `json:"userId"`
+	RoleID primitive.ObjectID `json:"roleId"`
 }

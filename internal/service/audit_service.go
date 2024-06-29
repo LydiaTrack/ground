@@ -1,13 +1,13 @@
 package service
 
 import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
+
 	"github.com/LydiaTrack/lydia-base/internal/permissions"
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
 	"github.com/LydiaTrack/lydia-base/pkg/constants"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/audit"
-	"time"
-
-	"gopkg.in/mgo.v2/bson"
 )
 
 type AuditService struct {
@@ -24,9 +24,9 @@ type AuditRepository interface {
 	// SaveAudit saves an audit
 	SaveAudit(audit audit.Model) (audit.Model, error)
 	// GetAudit gets an audit by id
-	GetAudit(id bson.ObjectId) (audit.Model, error)
+	GetAudit(id primitive.ObjectID) (audit.Model, error)
 	// ExistsAudit checks if an audit exists
-	ExistsAudit(id bson.ObjectId) (bool, error)
+	ExistsAudit(id primitive.ObjectID) (bool, error)
 	// GetAudits gets all audits
 	GetAudits() ([]audit.Model, error)
 	// DeleteOlderThan deletes all audits older than a date
@@ -41,7 +41,7 @@ func (s AuditService) CreateAudit(command audit.CreateAuditCommand, authContext 
 		return audit.Model{}, constants.ErrorPermissionDenied
 	}
 
-	auditModel := audit.NewAudit(bson.NewObjectId().Hex(), command.Source, command.Operation,
+	auditModel := audit.NewAudit(primitive.NewObjectID().Hex(), command.Source, command.Operation,
 		time.Now(), audit.WithAdditionalData(command.AdditionalData), audit.WithRelatedPrincipal(command.RelatedPrincipal))
 	auditModel, err := s.auditRepository.SaveAudit(auditModel)
 	if err != nil {
@@ -56,7 +56,11 @@ func (s AuditService) GetAudit(id string, authContext auth.PermissionContext) (a
 		return audit.Model{}, constants.ErrorPermissionDenied
 	}
 
-	auditModel, err := s.auditRepository.GetAudit(bson.ObjectIdHex(id))
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return audit.Model{}, constants.ErrorBadRequest
+	}
+	auditModel, err := s.auditRepository.GetAudit(objID)
 	if err != nil {
 		return audit.Model{}, constants.ErrorInternalServerError
 	}
@@ -68,8 +72,11 @@ func (s AuditService) ExistsAudit(id string, authContext auth.PermissionContext)
 	if auth.CheckPermission(authContext.Permissions, permissions.AuditReadPermission) != nil {
 		return false, constants.ErrorPermissionDenied
 	}
-
-	exists, err := s.auditRepository.ExistsAudit(bson.ObjectIdHex(id))
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return false, constants.ErrorBadRequest
+	}
+	exists, err := s.auditRepository.ExistsAudit(objID)
 	if err != nil {
 		return false, constants.ErrorInternalServerError
 	}
