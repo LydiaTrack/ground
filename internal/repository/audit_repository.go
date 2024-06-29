@@ -2,11 +2,13 @@ package repository
 
 import (
 	"context"
+	"time"
+
 	"github.com/LydiaTrack/lydia-base/pkg/domain/audit"
 	"github.com/LydiaTrack/lydia-base/pkg/mongodb"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/mgo.v2/bson"
-	"time"
 )
 
 type AuditMongoRepository struct {
@@ -47,7 +49,7 @@ func (r AuditMongoRepository) SaveAudit(audit audit.Model) (audit.Model, error) 
 }
 
 // GetAudit gets an audit by id
-func (r AuditMongoRepository) GetAudit(id bson.ObjectId) (audit.Model, error) {
+func (r AuditMongoRepository) GetAudit(id primitive.ObjectID) (audit.Model, error) {
 	var audit audit.Model
 	err := r.collection.FindOne(context.Background(), bson.M{"_id": id}).Decode(&audit)
 	if err != nil {
@@ -58,7 +60,7 @@ func (r AuditMongoRepository) GetAudit(id bson.ObjectId) (audit.Model, error) {
 }
 
 // ExistsAudit checks if an audit exists
-func (r AuditMongoRepository) ExistsAudit(id bson.ObjectId) (bool, error) {
+func (r AuditMongoRepository) ExistsAudit(id primitive.ObjectID) (bool, error) {
 	var audit audit.Model
 	err := r.collection.FindOne(context.Background(), bson.M{"_id": id}).Decode(&audit)
 	if err != nil {

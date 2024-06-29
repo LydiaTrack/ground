@@ -2,7 +2,7 @@ package role
 
 import (
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type CreateRoleCommand struct {
@@ -17,5 +17,5 @@ type UpdateRoleCommand struct {
 }
 
 type DeleteRoleCommand struct {
-	ID bson.ObjectId `json:"id" bson:"_id"`
+	ID primitive.ObjectID `json:"id" bson:"_id"`
 }

@@ -1,6 +1,6 @@
 package auth
 
-import "gopkg.in/mgo.v2/bson"
+import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type Permission struct {
 	Domain string `json:"domain"`
@@ -8,6 +8,6 @@ type Permission struct {
 }
 
 type PermissionContext struct {
-	Permissions []Permission   `json:"permissions"`
-	UserId      *bson.ObjectId `json:"userId"`
+	Permissions []Permission        `json:"permissions"`
+	UserId      *primitive.ObjectID `json:"userId"`
 }

@@ -1,10 +1,11 @@
 package test
 
 import (
+	"testing"
+
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
 	"github.com/LydiaTrack/lydia-base/pkg/test_support"
-	"testing"
 
 	"github.com/LydiaTrack/lydia-base/internal/permissions"
 	"github.com/LydiaTrack/lydia-base/internal/repository"

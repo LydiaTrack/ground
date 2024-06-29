@@ -2,8 +2,10 @@ package repository
 
 import (
 	"context"
+
 	"github.com/LydiaTrack/lydia-base/pkg/domain/session"
 	"github.com/LydiaTrack/lydia-base/pkg/mongodb"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -44,7 +46,7 @@ func (s SessionMongoRepository) SaveSession(sessionModel session.InfoModel) (ses
 }
 
 // GetUserSession is a function that gets a user session
-func (s SessionMongoRepository) GetUserSession(id bson.ObjectId) (session.InfoModel, error) {
+func (s SessionMongoRepository) GetUserSession(id primitive.ObjectID) (session.InfoModel, error) {
 	var sessionModel session.InfoModel
 	err := s.collection.FindOne(context.Background(), bson.M{"userId": id}).Decode(&sessionModel)
 	if err != nil {
@@ -54,7 +56,7 @@ func (s SessionMongoRepository) GetUserSession(id bson.ObjectId) (session.InfoMo
 }
 
 // DeleteSessionByUserId is a function that deletes all sessions of a user
-func (s SessionMongoRepository) DeleteSessionByUserId(userId bson.ObjectId) error {
+func (s SessionMongoRepository) DeleteSessionByUserId(userId primitive.ObjectID) error {
 	_, err := s.collection.DeleteMany(context.Background(), bson.M{"userId": userId})
 	if err != nil {
 		return err
@@ -63,7 +65,7 @@ func (s SessionMongoRepository) DeleteSessionByUserId(userId bson.ObjectId) erro
 }
 
 // DeleteSessionById is a function that deletes a session by id
-func (s SessionMongoRepository) DeleteSessionById(sessionId bson.ObjectId) error {
+func (s SessionMongoRepository) DeleteSessionById(sessionId primitive.ObjectID) error {
 	_, err := s.collection.DeleteOne(context.Background(), bson.M{"_id": sessionId})
 	if err != nil {
 		return err

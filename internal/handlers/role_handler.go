@@ -1,11 +1,12 @@
 package handlers
 
 import (
+	"net/http"
+
 	"github.com/LydiaTrack/lydia-base/internal/service"
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
 	"github.com/LydiaTrack/lydia-base/pkg/utils"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
