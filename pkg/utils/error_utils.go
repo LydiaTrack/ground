@@ -2,9 +2,10 @@ package utils
 
 import (
 	"errors"
+	"net/http"
+
 	"github.com/LydiaTrack/lydia-base/pkg/constants"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 func EvaluateError(err error, c *gin.Context) {

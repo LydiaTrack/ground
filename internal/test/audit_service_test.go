@@ -1,11 +1,12 @@
 package test
 
 import (
+	"testing"
+	"time"
+
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/audit"
 	"github.com/LydiaTrack/lydia-base/pkg/test_support"
-	"testing"
-	"time"
 
 	"github.com/LydiaTrack/lydia-base/internal/repository"
 	"github.com/LydiaTrack/lydia-base/internal/service"

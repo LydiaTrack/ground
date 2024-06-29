@@ -1,12 +1,13 @@
 package test
 
 import (
+	"testing"
+	"time"
+
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
 	"github.com/LydiaTrack/lydia-base/pkg/test_support"
-	"testing"
-	"time"
 
 	"github.com/LydiaTrack/lydia-base/internal/repository"
 	"github.com/LydiaTrack/lydia-base/internal/service"
@@ -50,15 +51,16 @@ func testCreateUser(t *testing.T) {
 	command := user.CreateUserCommand{
 		Username: "test-create-user-001",
 		Password: "test123",
-		PersonInfo: user.PersonInfo{
+		PersonInfo: &user.PersonInfo{
 			FirstName: "TestName",
 			LastName:  "Test Lastname",
-			Email:     "exampletest@example.com",
-			Address:   "Test Address",
 			BirthDate: birthDate,
-			PhoneNumber: user.PhoneNumber{
-				AreaCode:    "500",
-				Number:      "5005050",
+		},
+		ContactInfo: user.ContactInfo{
+			Email: "test-create-user-001@example.com",
+			PhoneNumber: &user.PhoneNumber{
+				AreaCode:    "532",
+				Number:      "5232323",
 				CountryCode: "+90",
 			},
 		},
@@ -84,27 +86,23 @@ func testCreateUser(t *testing.T) {
 			t.Errorf("Error creating userModel: %v", err)
 		}
 
-		if userModel.PersonInfo.Email != "exampletest@example.com" {
-			t.Errorf("Error creating userModel: %v", err)
-		}
-
-		if userModel.PersonInfo.Address != "Test Address" {
-			t.Errorf("Error creating userModel: %v", err)
-		}
-
 		if userModel.PersonInfo.BirthDate != birthDate {
 			t.Errorf("Error creating userModel: %v", err)
 		}
 
-		if userModel.PersonInfo.PhoneNumber.AreaCode != "500" {
+		if userModel.ContactInfo.Email != "test-create-user-001@example.com" {
 			t.Errorf("Error creating userModel: %v", err)
 		}
 
-		if userModel.PersonInfo.PhoneNumber.Number != "5005050" {
+		if userModel.ContactInfo.PhoneNumber.AreaCode != "532" {
 			t.Errorf("Error creating userModel: %v", err)
 		}
 
-		if userModel.PersonInfo.PhoneNumber.CountryCode != "+90" {
+		if userModel.ContactInfo.PhoneNumber.Number != "5232323" {
+			t.Errorf("Error creating userModel: %v", err)
+		}
+
+		if userModel.ContactInfo.PhoneNumber.CountryCode != "+90" {
 			t.Errorf("Error creating userModel: %v", err)
 		}
 	}
@@ -124,10 +122,7 @@ func testCreateUser(t *testing.T) {
 	}
 
 	// Check user is exists by username
-	existsByUsername, err := userService.ExistsByUsername("test-create-user-001", auth.PermissionContext{
-		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
-	})
+	existsByUsername, err := userService.ExistsByUsername("test-create-user-001")
 
 	if err != nil {
 		t.Errorf("Error checking user exists by username: %v", err)
@@ -157,17 +152,14 @@ func testAddRoleToUser(t *testing.T) {
 	command := user.CreateUserCommand{
 		Username: "test-add-role-to-user-001",
 		Password: "test123",
-		PersonInfo: user.PersonInfo{
+		PersonInfo: &user.PersonInfo{
 			FirstName: "TestName",
 			LastName:  "Test Lastname",
-			Email:     "test@example.com",
-			Address:   "Test Address",
 			BirthDate: primitive.NewDateTimeFromTime(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)),
-			PhoneNumber: user.PhoneNumber{
-				AreaCode:    "500",
-				Number:      "5005050",
-				CountryCode: "+90",
-			},
+		},
+		ContactInfo: user.ContactInfo{
+			Email:       "test-add-role-to-user-001@example.com",
+			PhoneNumber: nil,
 		},
 	}
 
@@ -251,11 +243,13 @@ func testRemoveRoleFromUser(t *testing.T) {
 	command := user.CreateUserCommand{
 		Username: "test-remove-role-from-user-001",
 		Password: "test123",
-		PersonInfo: user.PersonInfo{
+		PersonInfo: &user.PersonInfo{
 			FirstName: "TestName",
 			LastName:  "Test Lastname",
-			Email:     "test@example.com",
-			Address:   "Test Address",
+		},
+		ContactInfo: user.ContactInfo{
+			Email:       "test-remove-role-from-user-001@example.com",
+			PhoneNumber: nil,
 		},
 	}
 
@@ -353,11 +347,13 @@ func testCreateAndVerifyUser(t *testing.T) {
 	command := user.CreateUserCommand{
 		Username: "test-create-verify-user-001",
 		Password: "test123",
-		PersonInfo: user.PersonInfo{
+		PersonInfo: &user.PersonInfo{
 			FirstName: "TestName",
 			LastName:  "Test Lastname",
-			Email:     "test@gmail.com",
-			Address:   "Test Address",
+		},
+		ContactInfo: user.ContactInfo{
+			Email:       "test-create-verify-user@example.com",
+			PhoneNumber: nil,
 		},
 	}
 
@@ -396,11 +392,13 @@ func testCreateAndDeleteUser(t *testing.T) {
 	command := user.CreateUserCommand{
 		Username: "test-create-delete-user-001",
 		Password: "test123",
-		PersonInfo: user.PersonInfo{
+		PersonInfo: &user.PersonInfo{
 			FirstName: "TestName",
 			LastName:  "Test Lastname",
-			Email:     "test@gmail.com",
-			Address:   "Test Address",
+		},
+		ContactInfo: user.ContactInfo{
+			Email:       "test-create-delete-user-001@example.com",
+			PhoneNumber: nil,
 		},
 	}
 

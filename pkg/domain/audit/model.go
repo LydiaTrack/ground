@@ -1,15 +1,15 @@
 package audit
 
 import (
-	"gopkg.in/mgo.v2/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
 
 type Option func(m Model) Model
 
 type Model struct {
-	ID               bson.ObjectId `json:"id" bson:"_id"`
-	Source           string        `json:"source" bson:"source"`
+	ID               primitive.ObjectID `json:"id" bson:"_id"`
+	Source           string             `json:"source" bson:"source"`
 	Operation        `json:"operation" bson:"operation"`
 	Instant          time.Time              `json:"instant" bson:"instant"`
 	AdditionalData   map[string]interface{} `json:"additionalData,omitempty" bson:"additionalData,omitempty"`
@@ -26,8 +26,12 @@ type Operation struct {
  * to customize the audit. (functional options pattern)
  */
 func NewAudit(id string, source string, operation Operation, instant time.Time, opts ...Option) Model {
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return Model{}
+	}
 	m := Model{
-		ID:        bson.ObjectIdHex(id),
+		ID:        objID,
 		Source:    source,
 		Operation: operation,
 		Instant:   instant,

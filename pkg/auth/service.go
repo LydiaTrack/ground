@@ -1,12 +1,13 @@
 package auth
 
 import (
-	"github.com/LydiaTrack/lydia-base/pkg/constants"
-	"github.com/LydiaTrack/lydia-base/pkg/domain/session"
-	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/LydiaTrack/lydia-base/pkg/constants"
+	"github.com/LydiaTrack/lydia-base/pkg/domain/session"
+	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
 
 	"github.com/LydiaTrack/lydia-base/internal/jwt"
 	"github.com/gin-gonic/gin"
@@ -14,7 +15,7 @@ import (
 
 type UserService interface {
 	CreateUser(command user.CreateUserCommand, authContext PermissionContext) (user.CreateResponse, error)
-	ExistsByUsername(username string, authContext PermissionContext) (bool, error)
+	ExistsByUsername(username string) (bool, error)
 	VerifyUser(username, password string, authContext PermissionContext) (user.Model, error)
 	GetUser(id string, authContext PermissionContext) (user.Model, error)
 }
@@ -53,10 +54,7 @@ func NewAuthService(userService UserService, sessionService SessionService) *Ser
 // Login is a function that handles the login process
 func (s Service) Login(request Request) (Response, error) {
 	// Check if user exists
-	exists, err := s.userService.ExistsByUsername(request.Username, PermissionContext{
-		Permissions: []Permission{AdminPermission},
-		UserId:      nil,
-	})
+	exists, err := s.userService.ExistsByUsername(request.Username)
 	if err != nil {
 		return Response{}, constants.ErrorInternalServerError
 	}
@@ -92,10 +90,7 @@ func (s Service) Login(request Request) (Response, error) {
 // SignUp is a function that handles the signup process, creates a new user from the given request
 func (s Service) SignUp(cmd user.CreateUserCommand) (user.CreateResponse, error) {
 	// Check if user exists
-	exists, err := s.userService.ExistsByUsername(cmd.Username, PermissionContext{
-		Permissions: []Permission{AdminPermission},
-		UserId:      nil,
-	})
+	exists, err := s.userService.ExistsByUsername(cmd.Username)
 	if err != nil {
 		return user.CreateResponse{}, constants.ErrorInternalServerError
 	}

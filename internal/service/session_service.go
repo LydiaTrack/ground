@@ -1,12 +1,12 @@
 package service
 
 import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
+
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
 	"github.com/LydiaTrack/lydia-base/pkg/constants"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/session"
-	"time"
-
-	"gopkg.in/mgo.v2/bson"
 )
 
 // SessionService is an interface that contains the methods for the session service
@@ -20,11 +20,11 @@ type SessionRepository interface {
 	// SaveSession is a function that creates a session
 	SaveSession(model session.InfoModel) (session.InfoModel, error)
 	// GetUserSession is a function that gets a user session
-	GetUserSession(id bson.ObjectId) (session.InfoModel, error)
+	GetUserSession(id primitive.ObjectID) (session.InfoModel, error)
 	// DeleteSessionByUserId is a function that deletes a session
-	DeleteSessionByUserId(id bson.ObjectId) error
+	DeleteSessionByUserId(id primitive.ObjectID) error
 	// DeleteSessionById is a function that deletes a session by id
-	DeleteSessionById(sessionId bson.ObjectId) error
+	DeleteSessionById(sessionId primitive.ObjectID) error
 }
 
 func NewSessionService(sessionRepository SessionRepository, userService UserService) *SessionService {
@@ -37,10 +37,13 @@ func NewSessionService(sessionRepository SessionRepository, userService UserServ
 // CreateSession is a function that creates a session
 func (s SessionService) CreateSession(cmd session.CreateSessionCommand) (session.InfoModel, error) {
 	// Check if user exists
-	userId := bson.ObjectIdHex(cmd.UserId)
+	userID, err := primitive.ObjectIDFromHex(cmd.UserId)
+	if err != nil {
+		return session.InfoModel{}, err
+	}
 	exists, err := s.UserService.ExistsUser(cmd.UserId, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      &userId,
+		UserId:      &userID,
 	})
 	if err != nil {
 		return session.InfoModel{}, err
@@ -49,8 +52,8 @@ func (s SessionService) CreateSession(cmd session.CreateSessionCommand) (session
 		return session.InfoModel{}, constants.ErrorNotFound
 	}
 	sessionInfo := session.InfoModel{
-		ID:           bson.NewObjectId(),
-		UserId:       bson.ObjectIdHex(cmd.UserId),
+		ID:           primitive.NewObjectID(),
+		UserId:       userID,
 		ExpireTime:   cmd.ExpireTime,
 		RefreshToken: cmd.RefreshToken,
 	}
@@ -61,7 +64,10 @@ func (s SessionService) CreateSession(cmd session.CreateSessionCommand) (session
 // GetUserSession is a function that gets a user session
 func (s SessionService) GetUserSession(id string) (session.InfoModel, error) {
 	// Check if user exists
-	userId := bson.ObjectIdHex(id)
+	userId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return session.InfoModel{}, err
+	}
 	exists, err := s.UserService.ExistsUser(id, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserId:      &userId,
@@ -73,17 +79,25 @@ func (s SessionService) GetUserSession(id string) (session.InfoModel, error) {
 		return session.InfoModel{}, constants.ErrorNotFound
 	}
 
-	return s.sessionRepository.GetUserSession(bson.ObjectIdHex(id))
+	return s.sessionRepository.GetUserSession(userId)
 }
 
 // DeleteSessionByUser DeleteSession is a function that deletes a session
 func (s SessionService) DeleteSessionByUser(userId string) error {
-	return s.sessionRepository.DeleteSessionByUserId(bson.ObjectIdHex(userId))
+	objID, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		return err
+	}
+	return s.sessionRepository.DeleteSessionByUserId(objID)
 }
 
 // DeleteSessionById is a function that deletes a session by id
 func (s SessionService) DeleteSessionById(sessionId string) error {
-	return s.sessionRepository.DeleteSessionById(bson.ObjectIdHex(sessionId))
+	objID, err := primitive.ObjectIDFromHex(sessionId)
+	if err != nil {
+		return err
+	}
+	return s.sessionRepository.DeleteSessionById(objID)
 }
 
 // IsUserHasActiveSession is a function that checks if a user has an active session

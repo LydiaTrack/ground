@@ -2,9 +2,11 @@ package repository
 
 import (
 	"context"
+
 	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
 	"github.com/LydiaTrack/lydia-base/pkg/mongodb"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -65,7 +67,7 @@ func (r *UserMongoRepository) GetUsers() ([]user.Model, error) {
 }
 
 // GetUser gets a user by id
-func (r *UserMongoRepository) GetUser(id bson.ObjectId) (user.Model, error) {
+func (r *UserMongoRepository) GetUser(id primitive.ObjectID) (user.Model, error) {
 	var userModel user.Model
 	err := r.collection.FindOne(context.Background(), bson.M{"_id": id}).Decode(&userModel)
 	if err != nil {
@@ -75,7 +77,7 @@ func (r *UserMongoRepository) GetUser(id bson.ObjectId) (user.Model, error) {
 }
 
 // ExistsUser checks if a user exists
-func (r *UserMongoRepository) ExistsUser(id bson.ObjectId) (bool, error) {
+func (r *UserMongoRepository) ExistsUser(id primitive.ObjectID) (bool, error) {
 	var userModel user.Model
 	err := r.collection.FindOne(context.Background(), bson.M{"_id": id}).Decode(&userModel)
 	if err != nil {
@@ -85,12 +87,20 @@ func (r *UserMongoRepository) ExistsUser(id bson.ObjectId) (bool, error) {
 }
 
 // DeleteUser deletes a user by id
-func (r *UserMongoRepository) DeleteUser(id bson.ObjectId) error {
+func (r *UserMongoRepository) DeleteUser(id primitive.ObjectID) error {
 	_, err := r.collection.DeleteOne(context.Background(), bson.M{"_id": id})
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (r *UserMongoRepository) ExistsByUsernameAndEmail(username string, email string) bool {
+	count, err := r.collection.CountDocuments(context.Background(), bson.M{"$or": []bson.M{{"username": username}, {"contactInfo.email": email}}})
+	if err != nil {
+		return false
+	}
+	return count > 0
 }
 
 func (r *UserMongoRepository) ExistsByUsername(username string) bool {
@@ -110,7 +120,7 @@ func (r *UserMongoRepository) GetUserByUsername(username string) (user.Model, er
 	return userModel, nil
 }
 
-func (r *UserMongoRepository) AddRoleToUser(userID bson.ObjectId, roleID bson.ObjectId) error {
+func (r *UserMongoRepository) AddRoleToUser(userID primitive.ObjectID, roleID primitive.ObjectID) error {
 	_, err := r.collection.UpdateOne(context.Background(), bson.M{"_id": userID}, bson.M{"$push": bson.M{"roleIds": roleID}})
 	if err != nil {
 		return err
@@ -118,7 +128,7 @@ func (r *UserMongoRepository) AddRoleToUser(userID bson.ObjectId, roleID bson.Ob
 	return nil
 }
 
-func (r *UserMongoRepository) RemoveRoleFromUser(userID bson.ObjectId, roleID bson.ObjectId) error {
+func (r *UserMongoRepository) RemoveRoleFromUser(userID primitive.ObjectID, roleID primitive.ObjectID) error {
 	_, err := r.collection.UpdateOne(context.Background(), bson.M{"_id": userID}, bson.M{"$pull": bson.M{"roleIds": roleID}})
 	if err != nil {
 		return err
@@ -126,7 +136,7 @@ func (r *UserMongoRepository) RemoveRoleFromUser(userID bson.ObjectId, roleID bs
 	return nil
 }
 
-func (r *UserMongoRepository) GetUserRoles(userID bson.ObjectId) ([]role.Model, error) {
+func (r *UserMongoRepository) GetUserRoles(userID primitive.ObjectID) ([]role.Model, error) {
 	userModel, err := r.GetUser(userID)
 	if err != nil {
 		return nil, err

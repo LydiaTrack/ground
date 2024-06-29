@@ -1,9 +1,10 @@
 package handlers
 
 import (
+	"net/http"
+
 	"github.com/LydiaTrack/lydia-base/internal/service"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type HealthHandler struct{}

@@ -2,8 +2,10 @@ package repository
 
 import (
 	"context"
+
 	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
 	"github.com/LydiaTrack/lydia-base/pkg/mongodb"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -47,7 +49,7 @@ func (r *RoleMongoRepository) SaveRole(roleModel role.Model) (role.Model, error)
 }
 
 // GetRole gets a role by id
-func (r *RoleMongoRepository) GetRole(id bson.ObjectId) (role.Model, error) {
+func (r *RoleMongoRepository) GetRole(id primitive.ObjectID) (role.Model, error) {
 	var roleModel role.Model
 	err := r.collection.FindOne(context.Background(), bson.M{"_id": id}).Decode(&roleModel)
 	if err != nil {
@@ -72,7 +74,7 @@ func (r *RoleMongoRepository) GetRoles() ([]role.Model, error) {
 }
 
 // ExistsRole checks if a role exists by role id
-func (r *RoleMongoRepository) ExistsRole(id bson.ObjectId) (bool, error) {
+func (r *RoleMongoRepository) ExistsRole(id primitive.ObjectID) (bool, error) {
 	var roleModel role.Model
 	err := r.collection.FindOne(context.Background(), bson.M{"_id": id}).Decode(&roleModel)
 	if err != nil {
@@ -82,7 +84,7 @@ func (r *RoleMongoRepository) ExistsRole(id bson.ObjectId) (bool, error) {
 }
 
 // DeleteRole deletes a role by id
-func (r *RoleMongoRepository) DeleteRole(id bson.ObjectId) error {
+func (r *RoleMongoRepository) DeleteRole(id primitive.ObjectID) error {
 	_, err := r.collection.DeleteOne(context.Background(), bson.M{"_id": id})
 	if err != nil {
 		return err
