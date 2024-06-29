@@ -8,8 +8,6 @@ import (
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
 	"github.com/LydiaTrack/lydia-base/pkg/constants"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/audit"
-
-	"gopkg.in/mgo.v2/bson"
 )
 
 type AuditService struct {
@@ -43,7 +41,7 @@ func (s AuditService) CreateAudit(command audit.CreateAuditCommand, authContext 
 		return audit.Model{}, constants.ErrorPermissionDenied
 	}
 
-	auditModel := audit.NewAudit(bson.NewObjectId().Hex(), command.Source, command.Operation,
+	auditModel := audit.NewAudit(primitive.NewObjectID().Hex(), command.Source, command.Operation,
 		time.Now(), audit.WithAdditionalData(command.AdditionalData), audit.WithRelatedPrincipal(command.RelatedPrincipal))
 	auditModel, err := s.auditRepository.SaveAudit(auditModel)
 	if err != nil {

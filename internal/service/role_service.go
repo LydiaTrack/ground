@@ -8,8 +8,6 @@ import (
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
 	"github.com/LydiaTrack/lydia-base/pkg/constants"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
-
-	"gopkg.in/mgo.v2/bson"
 )
 
 type RoleService struct {
@@ -46,7 +44,7 @@ func (s RoleService) CreateRole(command role.CreateRoleCommand, authContext auth
 
 	// Validate role
 	// Map command to role
-	roleModel := role.NewRole(bson.NewObjectId().Hex(), command.Name, command.Permissions, command.Tags, command.Info, time.Now(), 1)
+	roleModel := role.NewRole(primitive.NewObjectID().Hex(), command.Name, command.Permissions, command.Tags, command.Info, time.Now(), 1)
 	if err := roleModel.Validate(); err != nil {
 		return roleModel, err
 	}

@@ -8,7 +8,6 @@ import (
 	"github.com/LydiaTrack/lydia-base/pkg/mongodb"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type AuditMongoRepository struct {
@@ -51,7 +50,7 @@ func (r AuditMongoRepository) SaveAudit(audit audit.Model) (audit.Model, error) 
 // GetAudit gets an audit by id
 func (r AuditMongoRepository) GetAudit(id primitive.ObjectID) (audit.Model, error) {
 	var audit audit.Model
-	err := r.collection.FindOne(context.Background(), bson.M{"_id": id}).Decode(&audit)
+	err := r.collection.FindOne(context.Background(), primitive.M{"_id": id}).Decode(&audit)
 	if err != nil {
 		return audit, err
 	}
@@ -62,7 +61,7 @@ func (r AuditMongoRepository) GetAudit(id primitive.ObjectID) (audit.Model, erro
 // ExistsAudit checks if an audit exists
 func (r AuditMongoRepository) ExistsAudit(id primitive.ObjectID) (bool, error) {
 	var audit audit.Model
-	err := r.collection.FindOne(context.Background(), bson.M{"_id": id}).Decode(&audit)
+	err := r.collection.FindOne(context.Background(), primitive.M{"_id": id}).Decode(&audit)
 	if err != nil {
 		return false, err
 	}
@@ -73,7 +72,7 @@ func (r AuditMongoRepository) ExistsAudit(id primitive.ObjectID) (bool, error) {
 // GetAudits gets all audits
 func (r AuditMongoRepository) GetAudits() ([]audit.Model, error) {
 	var audits []audit.Model
-	cursor, err := r.collection.Find(context.Background(), bson.M{})
+	cursor, err := r.collection.Find(context.Background(), primitive.M{})
 	if err != nil {
 		return audits, err
 	}
@@ -88,7 +87,7 @@ func (r AuditMongoRepository) GetAudits() ([]audit.Model, error) {
 
 // DeleteOlderThan deletes all audits older than a date
 func (r AuditMongoRepository) DeleteOlderThan(date time.Time) error {
-	_, err := r.collection.DeleteMany(context.Background(), bson.M{"instant": bson.M{"$lt": date}})
+	_, err := r.collection.DeleteMany(context.Background(), primitive.M{"instant": primitive.M{"$lt": date}})
 	if err != nil {
 		return err
 	}
@@ -98,7 +97,7 @@ func (r AuditMongoRepository) DeleteOlderThan(date time.Time) error {
 
 // DeleteInterval deletes all audits between two dates
 func (r AuditMongoRepository) DeleteInterval(from time.Time, to time.Time) error {
-	_, err := r.collection.DeleteMany(context.Background(), bson.M{"instant": bson.M{"$gte": from, "$lte": to}})
+	_, err := r.collection.DeleteMany(context.Background(), primitive.M{"instant": primitive.M{"$gte": from, "$lte": to}})
 	if err != nil {
 		return err
 	}
