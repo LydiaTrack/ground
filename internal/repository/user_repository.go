@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
@@ -80,9 +81,12 @@ func (r *UserMongoRepository) ExistsUser(id primitive.ObjectID) (bool, error) {
 	var userModel user.Model
 	err := r.collection.FindOne(context.Background(), primitive.M{"_id": id}).Decode(&userModel)
 	if err != nil {
-		return false, err
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return false, nil // No documents found, so user does not exist
+		}
+		return false, err // An actual error occurred
 	}
-	return true, nil
+	return true, nil // User exists
 }
 
 // DeleteUser deletes a user by id
