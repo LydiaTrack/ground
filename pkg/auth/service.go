@@ -24,6 +24,7 @@ type SessionService interface {
 	DeleteSessionByUser(userId string) error
 	CreateSession(command session.CreateSessionCommand) (session.InfoModel, error)
 	GetUserSession(userId string) (session.InfoModel, error)
+	GetSessionByRefreshToken(refreshToken string) (session.InfoModel, error)
 }
 
 type Service struct {
@@ -139,7 +140,7 @@ func (s Service) SetSession(userId string, tokenPair jwt.TokenPair) error {
 func (s Service) GetCurrentUser(c *gin.Context) (user.Model, error) {
 	userId, err := jwt.ExtractUserIdFromContext(c)
 	if err != nil {
-		return user.Model{}, constants.ErrorInternalServerError
+		return user.Model{}, constants.ErrorUnauthorized
 	}
 
 	userModel, err := s.userService.GetUser(userId, PermissionContext{
@@ -161,14 +162,8 @@ func (s Service) RefreshTokenPair(c *gin.Context) (jwt.TokenPair, error) {
 		return jwt.TokenPair{}, constants.ErrorInternalServerError
 	}
 
-	// Get current user id
-	currentUser, err := s.GetCurrentUser(c)
-	if err != nil {
-		return jwt.TokenPair{}, constants.ErrorInternalServerError
-	}
-
 	// Get the session by user id
-	sessionInfo, err := s.sessionService.GetUserSession(currentUser.ID.Hex())
+	sessionInfo, err := s.sessionService.GetSessionByRefreshToken(refreshTokenRequest.RefreshToken)
 	if err != nil {
 		return jwt.TokenPair{}, constants.ErrorInternalServerError
 	}
@@ -179,12 +174,12 @@ func (s Service) RefreshTokenPair(c *gin.Context) (jwt.TokenPair, error) {
 	}
 
 	// Now that we know the token is valid, we can extract the user id from it
-	tokenPair, err := jwt.GenerateTokenPair(currentUser.ID)
+	tokenPair, err := jwt.GenerateTokenPair(sessionInfo.UserId)
 	if err != nil {
 		return jwt.TokenPair{}, constants.ErrorInternalServerError
 	}
 
-	err = s.SetSession(currentUser.ID.Hex(), tokenPair)
+	err = s.SetSession(sessionInfo.UserId.Hex(), tokenPair)
 	if err != nil {
 		return jwt.TokenPair{}, constants.ErrorInternalServerError
 	}
