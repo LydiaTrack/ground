@@ -71,3 +71,13 @@ func (s SessionMongoRepository) DeleteSessionById(sessionId primitive.ObjectID) 
 	}
 	return nil
 }
+
+// GetSessionByRefreshToken is a function that gets a session by refresh token
+func (s SessionMongoRepository) GetSessionByRefreshToken(refreshToken string) (session.InfoModel, error) {
+	var sessionModel session.InfoModel
+	err := s.collection.FindOne(context.Background(), primitive.M{"refreshToken": refreshToken}).Decode(&sessionModel)
+	if err != nil {
+		return session.InfoModel{}, err
+	}
+	return sessionModel, nil
+}

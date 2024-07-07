@@ -25,6 +25,8 @@ type SessionRepository interface {
 	DeleteSessionByUserId(id primitive.ObjectID) error
 	// DeleteSessionById is a function that deletes a session by id
 	DeleteSessionById(sessionId primitive.ObjectID) error
+	// GetSessionByRefreshToken is a function that gets a session by refresh token
+	GetSessionByRefreshToken(refreshToken string) (session.InfoModel, error)
 }
 
 func NewSessionService(sessionRepository SessionRepository, userService UserService) *SessionService {
@@ -110,4 +112,9 @@ func (s SessionService) IsUserHasActiveSession(userId string) bool {
 	// Check if session still valid by comparing the expire time with the current time
 	currentTime := time.Now().Unix()
 	return sessionModel.ExpireTime >= currentTime
+}
+
+// GetSessionByRefreshToken is a function that gets a session by refresh token
+func (s SessionService) GetSessionByRefreshToken(refreshToken string) (session.InfoModel, error) {
+	return s.sessionRepository.GetSessionByRefreshToken(refreshToken)
 }
