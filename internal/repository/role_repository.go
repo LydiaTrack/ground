@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-
 	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
 	"github.com/LydiaTrack/lydia-base/pkg/mongodb"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -21,9 +20,12 @@ var (
 // NewRoleMongoRepository creates a new RoleMongoRepository instance
 // which implements RoleRepository
 func newRoleMongoRepository() *RoleMongoRepository {
-	ctx := context.Background()
+
 	// FIXME: Burada ileride uzaktaki bir mongodb instance'ına bağlanmak gerekecek
-	collection := mongodb.GetCollection("roles", ctx)
+	collection, err := mongodb.GetCollection("roles")
+	if err != nil {
+		panic(err)
+	}
 
 	return &RoleMongoRepository{
 		collection: collection,
@@ -32,7 +34,7 @@ func newRoleMongoRepository() *RoleMongoRepository {
 
 // GetRoleRepository returns a RoleRepository
 func GetRoleRepository() *RoleMongoRepository {
-	if roleRepository == nil {
+	if roleRepository == nil || roleRepository.collection == nil {
 		roleRepository = newRoleMongoRepository()
 	}
 	return roleRepository
@@ -94,9 +96,9 @@ func (r *RoleMongoRepository) DeleteRole(id primitive.ObjectID) error {
 // ExistsByName checks if a role exists by role name
 func (r *RoleMongoRepository) ExistsByName(name string) bool {
 	// Check if role exists by name
-	count, err := r.collection.CountDocuments(context.Background(), primitive.M{"name": name})
+	count, err := r.collection.CountDocuments(context.TODO(), primitive.M{"name": name})
 	if err != nil {
-		return false
+		panic(err)
 	}
 	return count > 0
 }
