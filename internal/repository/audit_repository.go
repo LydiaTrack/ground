@@ -19,9 +19,11 @@ var (
 )
 
 func newAuditRepository() *AuditMongoRepository {
-	ctx := context.Background()
 	// FIXME: Burada ileride uzaktaki bir mongodb instance'ına bağlanmak gerekecek
-	collection := mongodb.GetCollection("audits", ctx)
+	collection, err := mongodb.GetCollection("audits")
+	if err != nil {
+		panic(err)
+	}
 
 	return &AuditMongoRepository{
 		collection: collection,
