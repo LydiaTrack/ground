@@ -18,10 +18,12 @@ var (
 )
 
 func newSessionMongoRepository() *SessionMongoRepository {
-	ctx := context.Background()
 	// FIXME: Burada ileride uzaktaki bir mongodb instance'ına bağlanmak gerekecek
 
-	collection := mongodb.GetCollection("sessions", ctx)
+	collection, err := mongodb.GetCollection("sessions")
+	if err != nil {
+		panic(err)
+	}
 
 	return &SessionMongoRepository{
 		collection: collection,
