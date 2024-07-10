@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-
 	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
 	"github.com/LydiaTrack/lydia-base/pkg/mongodb"
@@ -23,10 +22,12 @@ var (
 // NewUserMongoRepository creates a new UserMongoRepository instance
 // which implements UserRepository
 func initializeUserRepository() *UserMongoRepository {
-	ctx := context.Background()
 	// FIXME: Burada ileride uzaktaki bir mongodb instance'ına bağlanmak gerekecek
 
-	collection := mongodb.GetCollection("users", ctx)
+	collection, err := mongodb.GetCollection("users")
+	if err != nil {
+		panic(err)
+	}
 	roleRepository = GetRoleRepository()
 
 	return &UserMongoRepository{

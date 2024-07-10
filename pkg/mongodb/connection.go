@@ -85,33 +85,38 @@ func getContainer() *mongodbContainer {
 }
 
 // GetCollection returns the mongodb collection that is connected with a mongoDB container
-func GetCollection(collectionName string, ctx context.Context) *mongo.Collection {
+func GetCollection(collectionName string) (*mongo.Collection, error) {
+	ctx := context.Background()
 	if connectionType == ContainerConnection {
 		container := getContainer()
 		host, err := container.Host(ctx)
 		if err != nil {
-			return nil
+			return nil, err
+
 		}
 		portNumber := os.Getenv("LYDIA_DB_PORT")
 		port, err := container.MappedPort(ctx, nat.Port(portNumber))
 		if err != nil {
-			return nil
+			return nil, err
 		}
 
 		client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+host+":"+port.Port()))
 		if err != nil {
-			return nil
+			return nil, err
 		}
 
-		return client.Database(os.Getenv("LYDIA_DB_NAME")).Collection(collectionName)
+		return client.Database(os.Getenv("LYDIA_DB_NAME")).Collection(collectionName), nil
 	} else if connectionType == RemoteConnection {
-		client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("LYDIA_DB_URI")))
+		serverAPI := options.ServerAPI(options.ServerAPIVersion1)
+		opts := options.Client().ApplyURI(os.Getenv("LYDIA_DB_URI")).SetServerAPIOptions(serverAPI)
+		// Create a new client and connect to the server
+		client, err := mongo.Connect(context.TODO(), opts)
 		if err != nil {
-			return nil
+			return nil, err
 		}
 
-		return client.Database(os.Getenv("LYDIA_DB_NAME")).Collection(collectionName)
+		return client.Database(os.Getenv("LYDIA_DB_NAME")).Collection(collectionName), nil
 	}
 	log.LogFatal("Invalid connection type for mongodb container!")
-	return nil
+	return nil, nil
 }
