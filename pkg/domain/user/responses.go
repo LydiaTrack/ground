@@ -7,11 +7,12 @@ import (
 )
 
 type CreateResponse struct {
-	ID          primitive.ObjectID   `json:"id" bson:"_id"`
-	Username    string               `json:"username" bson:"username"`
-	PersonInfo  *PersonInfo          `json:"personInfo"`
-	ContactInfo ContactInfo          `json:"contactInfo"`
-	CreatedDate time.Time            `json:"createdDate" bson:"createdDate"`
-	Version     int                  `json:"version" bson:"version"`
-	RoleIds     []primitive.ObjectID `json:"roleIds" bson:"roleIds"`
+	ID                       primitive.ObjectID   `json:"id" bson:"_id"`
+	Username                 string               `json:"username" bson:"username"`
+	PersonInfo               *PersonInfo          `json:"personInfo"`
+	ContactInfo              ContactInfo          `json:"contactInfo"`
+	CreatedDate              time.Time            `json:"createdDate" bson:"createdDate"`
+	Version                  int                  `json:"version" bson:"version"`
+	RoleIds                  []primitive.ObjectID `json:"roleIds" bson:"roleIds"`
+	LastSeenChangelogVersion string               `json:"lastSeenChangelogVersion" bson:"lastSeenChangelogVersion"`
 }

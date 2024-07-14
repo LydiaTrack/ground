@@ -1,6 +1,11 @@
 package lydia_base
 
 import (
+	"github.com/LydiaTrack/lydia-base/internal/permissions"
+	"github.com/LydiaTrack/lydia-base/internal/provider"
+	"github.com/LydiaTrack/lydia-base/pkg/auth"
+	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
+	"github.com/LydiaTrack/lydia-base/pkg/manager"
 	"time"
 
 	"github.com/LydiaTrack/lydia-base/internal/api"
@@ -45,6 +50,12 @@ func Initialize(r *gin.Engine) {
 		log.LogFatal("Error initializing default user")
 	}
 
+	// Create default roles
+	createDefaultRoles()
+
+	// Register the self role provider
+	manager.RegisterRoleProvider(provider.SelfRoleProvider{})
+
 	// Initialize default user
 	err = initializers.InitializeDefaultUser()
 	if err != nil {
@@ -73,4 +84,27 @@ func initializeRoutes(r *gin.Engine, services service_initializer.Services) {
 			blocker.GlobalBlocker.RemoveExpired()
 		}
 	}()
+}
+
+func createDefaultRoles() {
+	authContext := auth.PermissionContext{
+		Permissions: []auth.Permission{auth.AdminPermission},
+		UserId:      nil,
+	}
+	selfServiceRoleCmd := role.CreateRoleCommand{
+		Name: "Lydia Self Service Role",
+		Tags: []string{"self-service"},
+		Info: "This role is for the users who can manage their own tasks and projects",
+		Permissions: []auth.Permission{
+			permissions.UserSelfUpdatePermission,
+		},
+	}
+
+	isExists := service_initializer.GetServices().RoleService.ExistsByName(selfServiceRoleCmd.Name, authContext)
+	if isExists {
+		return
+	}
+
+	// Create the role if it does not exist
+	service_initializer.GetServices().RoleService.CreateRole(selfServiceRoleCmd, authContext)
 }

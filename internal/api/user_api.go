@@ -18,6 +18,7 @@ func InitUser(r *gin.Engine, services service_initializer.Services) {
 		POST("", userHandler.CreateUser).
 		GET("", userHandler.GetUsers).
 		GET("/:id", userHandler.GetUser).
+		PUT("/:id", userHandler.UpdateUser).
 		DELETE("/:id", userHandler.DeleteUser).
 		GET("/roles/:id", userHandler.GetUserRoles).
 		POST("/roles", userHandler.AddRoleToUser).
@@ -25,5 +26,8 @@ func InitUser(r *gin.Engine, services service_initializer.Services) {
 	checkUsernameGroup := r.Group("/users/checkUsername")
 	checkUsernameGroup.GET("/:username", userHandler.CheckUsername)
 
+	selfRouterGroup := r.Group("/users-self")
+	selfRouterGroup.Use(middlewares.JwtAuthMiddleware()).
+		PUT("", userHandler.UpdateUserSelf)
 	log.Log("User routes initialized")
 }

@@ -131,7 +131,7 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 
 	createdUser, err := h.userService.CreateUser(createUserCommand, authContext)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.EvaluateError(err, c)
 		return
 	}
 	c.JSON(http.StatusOK, createdUser)
@@ -254,4 +254,68 @@ func (h UserHandler) GetUserRoles(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, roles)
+}
+
+// UpdateUser godoc
+// @Summary Update user
+// @Description update user.
+// @Tags root
+// @Accept */*
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /users/:id [put]
+func (h UserHandler) UpdateUser(c *gin.Context) {
+	id := c.Param("id")
+	var updateUserCommand user.UpdateUserCommand
+	if err := c.ShouldBindJSON(&updateUserCommand); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	if err != nil {
+		utils.EvaluateError(err, c)
+		return
+	}
+
+	userID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		utils.EvaluateError(err, c)
+		return
+	}
+	updatedUser, err := h.userService.UpdateUser(userID.Hex(), updateUserCommand, authContext)
+	if err != nil {
+		utils.EvaluateError(err, c)
+		return
+	}
+	c.JSON(http.StatusOK, updatedUser)
+}
+
+// UpdateUserSelf godoc
+// @Summary Update user self
+// @Description update user self.
+// @Tags root
+// @Accept */*
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /users-self [put]
+func (h UserHandler) UpdateUserSelf(c *gin.Context) {
+	var updateUserCommand user.UpdateUserCommand
+	if err := c.ShouldBindJSON(&updateUserCommand); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	if err != nil {
+		utils.EvaluateError(err, c)
+		return
+	}
+
+	updatedUser, err := h.userService.UpdateUserSelf(updateUserCommand, authContext)
+	if err != nil {
+		utils.EvaluateError(err, c)
+		return
+	}
+	c.JSON(http.StatusOK, updatedUser)
 }
