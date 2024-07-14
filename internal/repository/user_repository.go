@@ -158,3 +158,17 @@ func (r *UserMongoRepository) GetUserRoles(userID primitive.ObjectID) ([]role.Mo
 
 	return roles, nil
 }
+
+func (r *UserMongoRepository) UpdateUser(id primitive.ObjectID, updateCommand user.UpdateUserCommand) (user.Model, error) {
+	update := primitive.M{
+		"username":                 updateCommand.Username,
+		"personInfo":               updateCommand.PersonInfo,
+		"contactInfo":              updateCommand.ContactInfo,
+		"lastSeenChangelogVersion": updateCommand.LastSeenChangelogVersion,
+	}
+	_, err := r.collection.UpdateOne(context.Background(), primitive.M{"_id": id}, primitive.M{"$set": update})
+	if err != nil {
+		return user.Model{}, err
+	}
+	return r.GetUser(id)
+}
