@@ -49,6 +49,8 @@ type UserRepository interface {
 	RemoveRoleFromUser(userID primitive.ObjectID, roleID primitive.ObjectID) error
 	// GetUserRoles gets the roles of a user
 	GetUserRoles(userID primitive.ObjectID) ([]role.Model, error)
+	// UpdateUser updates a user and returns the updated user
+	UpdateUser(id primitive.ObjectID, updateCommand user.UpdateUserCommand) (user.Model, error)
 }
 
 func (s UserService) CreateUser(command user.CreateUserCommand, authContext auth.PermissionContext) (user.CreateResponse, error) {
@@ -88,13 +90,14 @@ func (s UserService) CreateUser(command user.CreateUserCommand, authContext auth
 		return user.CreateResponse{}, err
 	}
 	response := user.CreateResponse{
-		ID:          userAfterCreate.ID,
-		Username:    userAfterCreate.Username,
-		PersonInfo:  userAfterCreate.PersonInfo,
-		ContactInfo: userAfterCreate.ContactInfo,
-		CreatedDate: userAfterCreate.CreatedDate,
-		Version:     userAfterCreate.Version,
-		RoleIds:     userAfterCreate.RoleIds,
+		ID:                       userAfterCreate.ID,
+		Username:                 userAfterCreate.Username,
+		PersonInfo:               userAfterCreate.PersonInfo,
+		ContactInfo:              userAfterCreate.ContactInfo,
+		CreatedDate:              userAfterCreate.CreatedDate,
+		Version:                  userAfterCreate.Version,
+		RoleIds:                  userAfterCreate.RoleIds,
+		LastSeenChangelogVersion: userAfterCreate.LastSeenChangelogVersion,
 	}
 	log.Log("User %s created successfully", response.Username)
 	return response, nil
@@ -257,4 +260,42 @@ func (s UserService) GetUserPermissionList(userID primitive.ObjectID) ([]auth.Pe
 	}
 
 	return userPermissionList, nil
+}
+
+// UpdateUser updates a user
+func (s UserService) UpdateUser(id string, command user.UpdateUserCommand, authContext auth.PermissionContext) (user.Model, error) {
+	if auth.CheckPermission(authContext.Permissions, permissions.UserUpdatePermission) != nil {
+		return user.Model{}, constants.ErrorPermissionDenied
+	}
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return user.Model{}, constants.ErrorBadRequest
+	}
+
+	// Update user
+	userModel, err := s.userRepository.UpdateUser(objID, command)
+	if err != nil {
+		return user.Model{}, err
+	}
+	return userModel, nil
+}
+
+// UpdateUserSelf updates a user by itself
+func (s UserService) UpdateUserSelf(command user.UpdateUserCommand, authContext auth.PermissionContext) (user.Model, error) {
+	if auth.CheckPermission(authContext.Permissions, permissions.UserSelfUpdatePermission) != nil {
+		return user.Model{}, constants.ErrorPermissionDenied
+	}
+
+	objID, err := primitive.ObjectIDFromHex(authContext.UserId.Hex())
+	if err != nil {
+		return user.Model{}, constants.ErrorBadRequest
+	}
+
+	// Update user
+	userModel, err := s.userRepository.UpdateUser(objID, command)
+	if err != nil {
+		return user.Model{}, err
+	}
+	return userModel, nil
 }

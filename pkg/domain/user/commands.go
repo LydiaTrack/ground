@@ -10,10 +10,10 @@ type CreateUserCommand struct {
 }
 
 type UpdateUserCommand struct {
-	Username    string      `json:"username"`
-	Password    string      `json:"password"`
-	PersonInfo  *PersonInfo `json:"personInfo"`
-	ContactInfo ContactInfo `json:"contactInfo"`
+	Username                 string      `json:"username"`
+	PersonInfo               *PersonInfo `json:"personInfo"`
+	ContactInfo              ContactInfo `json:"contactInfo"`
+	LastSeenChangelogVersion string      `json:"lastSeenChangelogVersion"`
 }
 
 type DeleteUserCommand struct {
