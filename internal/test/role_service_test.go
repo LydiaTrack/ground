@@ -40,56 +40,56 @@ func TestRoleService(t *testing.T) {
 func testCreateRole(t *testing.T) {
 
 	command := role.CreateRoleCommand{
-		Name: "testCreate123",
+		Name: "testCreateRole",
 		Tags: []string{"testTag"},
 		Info: "Test Tag Create",
 	}
 
-	role, err := roleService.CreateRole(command, auth.PermissionContext{
+	roleModel, err := roleService.CreateRole(command, auth.PermissionContext{
 		Permissions: []auth.Permission{permissions.RoleCreatePermission},
 		UserId:      nil,
 	})
 
 	if err != nil {
-		t.Errorf("Error creating role: %s", err)
+		t.Errorf("Error creating roleModel: %s", err)
 	}
 
-	if role.Name != command.Name {
-		t.Errorf("Expected role name: %s, got: %s", command.Name, role.Name)
+	if roleModel.Name != command.Name {
+		t.Errorf("Expected roleModel name: %s, got: %s", command.Name, roleModel.Name)
 	}
 
-	// Check if the role is created or not by existence control
-	exists, err := roleService.ExistsRole(role.ID.Hex(), auth.PermissionContext{
+	// Check if the roleModel is created or not by existence control
+	exists, err := roleService.ExistsRole(roleModel.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserId:      nil,
 	})
 
 	if err != nil {
-		t.Errorf("Error checking role: %s", err)
+		t.Errorf("Error checking roleModel: %s", err)
 	}
 
 	if !exists {
-		t.Errorf("Expected role not exists")
+		t.Errorf("Expected roleModel not exists")
 	}
 
-	// Check if the role is created or not by getting the role
-	role, err = roleService.GetRole(role.ID.Hex(), auth.PermissionContext{
+	// Check if the roleModel is created or not by getting the roleModel
+	roleModel, err = roleService.GetRole(roleModel.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserId:      nil,
 	})
 
 	if err != nil {
-		t.Errorf("Error getting role: %s", err)
+		t.Errorf("Error getting roleModel: %s", err)
 	}
 
-	if role.Name != command.Name {
-		t.Errorf("Expected role name: %s, got: %s", command.Name, role.Name)
+	if roleModel.Name != command.Name {
+		t.Errorf("Expected roleModel name: %s, got: %s", command.Name, roleModel.Name)
 	}
 }
 
 func testCannotCreateRoleWithSameName(t *testing.T) {
 	command := role.CreateRoleCommand{
-		Name: "testCreate123",
+		Name: "testCannotCreateRole",
 		Tags: []string{"testTag"},
 		Info: "Test Tag Create",
 	}
@@ -99,13 +99,13 @@ func testCannotCreateRoleWithSameName(t *testing.T) {
 		UserId:      nil,
 	})
 
-	if err == nil {
-		t.Errorf("Expected error creating role")
+	if err != nil {
+		t.Errorf("Error creating roleModel: %s", err)
 	}
 
 	// Create a new role with the same name
 	command = role.CreateRoleCommand{
-		Name: "testCreate123",
+		Name: "testCannotCreateRole",
 		Tags: []string{"testTag1", "testTag2"},
 		Info: "Test Tag Create123",
 	}
@@ -127,31 +127,31 @@ func testDeleteRole(t *testing.T) {
 		Info: "Test Tag Delete",
 	}
 
-	role, err := roleService.CreateRole(command, auth.PermissionContext{
+	roleModel, err := roleService.CreateRole(command, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserId:      nil,
 	})
 
 	if err != nil {
-		t.Errorf("Error creating role: %s", err)
+		t.Errorf("Error creating roleModel: %s", err)
 	}
 
-	err = roleService.DeleteRole(role.ID.Hex(), auth.PermissionContext{
+	err = roleService.DeleteRole(roleModel.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserId:      nil,
 	})
 
 	if err != nil {
-		t.Errorf("Error deleting role: %s", err)
+		t.Errorf("Error deleting roleModel: %s", err)
 	}
 
-	// Check if the role is deleted or not by existence control
-	exists, err := roleService.ExistsRole(role.ID.Hex(), auth.PermissionContext{
+	// Check if the roleModel is deleted or not by existence control
+	exists, err := roleService.ExistsRole(roleModel.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserId:      nil,
 	})
 
 	if exists {
-		t.Errorf("Expected role exists")
+		t.Errorf("Expected roleModel exists")
 	}
 }

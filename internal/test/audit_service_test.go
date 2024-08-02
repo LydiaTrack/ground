@@ -43,8 +43,6 @@ func TestAuditService(t *testing.T) {
 // testCreateAudit Create a new Audit
 func testCreateAudit(t *testing.T) {
 
-	// Create a new Audit service instance
-	auditService := service.NewAuditService(repository.GetAuditRepository())
 	operation := audit.Operation{
 		Domain:  "testDomain",
 		Command: "CREATE",
@@ -89,8 +87,6 @@ func testCreateAudit(t *testing.T) {
 // testGetAudit Get an Audit
 func testGetAudit(t *testing.T) {
 
-	// Create a new Audit service instance
-	auditService := service.NewAuditService(repository.GetAuditRepository())
 	operation := audit.Operation{
 		Domain:  "testDomain",
 		Command: "CREATE",
@@ -132,7 +128,7 @@ func testGetAudit(t *testing.T) {
 	}
 
 	// Get an Audit
-	audit, err := auditService.GetAudit(auditModel.ID.Hex(), auth.PermissionContext{
+	auditModels, err := auditService.GetAudit(auditModel.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserId:      nil,
 	})
@@ -141,19 +137,19 @@ func testGetAudit(t *testing.T) {
 		t.Errorf("Error getting Audit test: %v", err)
 	} else {
 
-		if audit.Source != "test" {
+		if auditModels.Source != "test" {
 			t.Errorf("Error getting Audit: %v", err)
 		}
 
-		if audit.Operation != operation {
+		if auditModels.Operation != operation {
 			t.Errorf("Error getting Audit: %v", err)
 		}
 
-		if audit.AdditionalData["testStr"] != "test" {
+		if auditModels.AdditionalData["testStr"] != "test" {
 			t.Errorf("Error getting Audit: %v", err)
 		}
 
-		if audit.RelatedPrincipal != "Test Lastname" {
+		if auditModels.RelatedPrincipal != "Test Lastname" {
 			t.Errorf("Error getting Audit: %v", err)
 		}
 	}
@@ -162,8 +158,6 @@ func testGetAudit(t *testing.T) {
 // testExistsAudit Check if an Audit exists
 func testExistsAudit(t *testing.T) {
 
-	// Create a new Audit service instance
-	auditService := service.NewAuditService(repository.GetAuditRepository())
 	operation := audit.Operation{
 		Domain:  "testDomain",
 		Command: "CREATE",
@@ -223,8 +217,6 @@ func testExistsAudit(t *testing.T) {
 // testGetAudits Get all Audits
 func testGetAudits(t *testing.T) {
 
-	// Create a new Audit service instance
-	auditService := service.NewAuditService(repository.GetAuditRepository())
 	operation := audit.Operation{
 		Domain:  "testDomain",
 		Command: "CREATE",
@@ -267,8 +259,6 @@ func testGetAudits(t *testing.T) {
 // testDeleteOlderThan Delete all Audits older than a date
 func testDeleteOlderThan(t *testing.T) {
 
-	// Create a new Audit service instance
-	auditService := service.NewAuditService(repository.GetAuditRepository())
 	operation := audit.Operation{
 		Domain:  "testDomain",
 		Command: "CREATE",
@@ -365,8 +355,6 @@ func testDeleteOlderThan(t *testing.T) {
 // testDeleteInterval Delete all Audits between two dates
 func testDeleteInterval(t *testing.T) {
 
-	// Create a new Audit service instance
-	auditService := service.NewAuditService(repository.GetAuditRepository())
 	operation := audit.Operation{
 		Domain:  "testDomain",
 		Command: "CREATE",
