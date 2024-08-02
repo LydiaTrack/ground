@@ -47,7 +47,7 @@ func Initialize(r *gin.Engine) {
 	// Initialize default role
 	err = initializers.InitializeDefaultRole()
 	if err != nil {
-		log.LogFatal("Error initializing default user")
+		log.LogFatal("Error initializing default role")
 	}
 
 	// Create default roles
@@ -59,7 +59,7 @@ func Initialize(r *gin.Engine) {
 	// Initialize default user
 	err = initializers.InitializeDefaultUser()
 	if err != nil {
-		log.LogFatal("Error initializing default user")
+		log.LogFatal("Error initializing default user: " + err.Error())
 		panic(err)
 	}
 
@@ -106,5 +106,9 @@ func createDefaultRoles() {
 	}
 
 	// Create the role if it does not exist
-	service_initializer.GetServices().RoleService.CreateRole(selfServiceRoleCmd, authContext)
+	_, err := service_initializer.GetServices().RoleService.CreateRole(selfServiceRoleCmd, authContext)
+	if err != nil {
+		log.LogFatal("Error creating default roles: " + err.Error())
+		return
+	}
 }
