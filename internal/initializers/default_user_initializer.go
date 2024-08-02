@@ -48,9 +48,13 @@ func InitializeDefaultUser() error {
 				LastName:  "Admin",
 				BirthDate: primitive.NewDateTimeFromTime(time.Now()),
 			},
+			ContactInfo: user.ContactInfo{
+				Email:       "lydia@lydiaadmin.com",
+				PhoneNumber: nil,
+			},
 		}
 
-		userCreateResponse, err := userService.CreateUser(userCreateCmd, auth.PermissionContext{
+		createdUser, err := userService.CreateUser(userCreateCmd, auth.PermissionContext{
 			Permissions: []auth.Permission{auth.AdminPermission},
 			UserId:      nil,
 		})
@@ -58,18 +62,8 @@ func InitializeDefaultUser() error {
 			return err
 		}
 
-		userModel := user.Model{
-			ID:          userCreateResponse.ID,
-			Username:    userCreateResponse.Username,
-			Password:    "",
-			PersonInfo:  &user.PersonInfo{},
-			CreatedDate: time.Time{},
-			Version:     0,
-			RoleIds:     nil,
-		}
-
 		// Add admin roles to the default user
-		err = addAdminRolesToUser(userModel, *roleService, *userService)
+		err = addAdminRolesToUser(createdUser, *roleService, *userService)
 		if err != nil {
 			return err
 		}
@@ -87,7 +81,7 @@ func addAdminRolesToUser(userModel user.Model, roleService service.RoleService, 
 	if userRoleIds == nil {
 		log.Log("Default user does not have any roles, adding admin roles...")
 	} else {
-		for _, roleId := range userRoleIds {
+		for _, roleId := range *userRoleIds {
 			roleModel, err := roleService.GetRole(roleId.Hex(), auth.PermissionContext{
 				Permissions: []auth.Permission{auth.AdminPermission},
 				UserId:      nil,
@@ -95,14 +89,17 @@ func addAdminRolesToUser(userModel user.Model, roleService service.RoleService, 
 			if err != nil {
 				return err
 			}
-			if roleModel.Name == "LYDIA_ADMIN" {
-				log.Log("Default user has Lydia Admin role")
-				hasAdminRoles = true
-				break
+			permissions := roleModel.Permissions
+			for _, permission := range permissions {
+				if permission == auth.AdminPermission {
+					hasAdminRoles = true
+					break
+				}
 			}
 		}
 	}
 
+	// After checking if the user has admin roles, return if the user has admin roles
 	if hasAdminRoles {
 		return nil
 	}
@@ -122,6 +119,17 @@ func addAdminRolesToUser(userModel user.Model, roleService service.RoleService, 
 			return err
 		}
 		roleModel = rm
+	} else {
+		// If admin role exists, get the role
+		model, err := roleService.GetRoleByName("LYDIA_ADMIN", auth.PermissionContext{
+			Permissions: []auth.Permission{auth.AdminPermission},
+			UserId:      nil,
+		})
+		if err != nil {
+			return err
+		}
+		roleModel = model
+
 	}
 
 	addRoleCmd := user.AddRoleToUserCommand{

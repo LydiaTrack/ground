@@ -53,9 +53,9 @@ type UserRepository interface {
 	UpdateUser(id primitive.ObjectID, updateCommand user.UpdateUserCommand) (user.Model, error)
 }
 
-func (s UserService) CreateUser(command user.CreateUserCommand, authContext auth.PermissionContext) (user.CreateResponse, error) {
+func (s UserService) CreateUser(command user.CreateUserCommand, authContext auth.PermissionContext) (user.Model, error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.UserCreatePermission) != nil {
-		return user.CreateResponse{}, constants.ErrorPermissionDenied
+		return user.Model{}, constants.ErrorPermissionDenied
 	}
 
 	// Validate user
@@ -63,23 +63,23 @@ func (s UserService) CreateUser(command user.CreateUserCommand, authContext auth
 	userModel, err := user.NewUser(primitive.NewObjectID().Hex(), command.Username,
 		command.Password, command.PersonInfo, command.ContactInfo, time.Now(), 1)
 	if err := userModel.Validate(); err != nil {
-		return user.CreateResponse{}, constants.ErrorBadRequest
+		return user.Model{}, constants.ErrorBadRequest
 	}
 	userExists := s.userRepository.ExistsByUsernameAndEmail(userModel.Username, userModel.ContactInfo.Email)
 
 	if userExists {
-		return user.CreateResponse{}, constants.ErrorConflict
+		return user.Model{}, constants.ErrorConflict
 	}
 
 	// Hash the password
 	err = hashPassword(&userModel)
 	if err != nil {
-		return user.CreateResponse{}, err
+		return user.Model{}, err
 	}
 
 	savedUser, err := s.userRepository.SaveUser(userModel)
 	if err != nil {
-		return user.CreateResponse{}, err
+		return user.Model{}, err
 	}
 
 	// Add default roles to user
@@ -87,20 +87,10 @@ func (s UserService) CreateUser(command user.CreateUserCommand, authContext auth
 
 	userAfterCreate, err := s.userRepository.GetUser(savedUser.ID)
 	if err != nil {
-		return user.CreateResponse{}, err
+		return user.Model{}, err
 	}
-	response := user.CreateResponse{
-		ID:                       userAfterCreate.ID,
-		Username:                 userAfterCreate.Username,
-		PersonInfo:               userAfterCreate.PersonInfo,
-		ContactInfo:              userAfterCreate.ContactInfo,
-		CreatedDate:              userAfterCreate.CreatedDate,
-		Version:                  userAfterCreate.Version,
-		RoleIds:                  userAfterCreate.RoleIds,
-		LastSeenChangelogVersion: userAfterCreate.LastSeenChangelogVersion,
-	}
-	log.Log("User %s created successfully", response.Username)
-	return response, nil
+	log.Log("User %s created successfully", userAfterCreate.Username)
+	return userAfterCreate, nil
 }
 
 // addDefaultRoles adds default roles to a user
