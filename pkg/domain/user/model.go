@@ -9,15 +9,15 @@ import (
 
 // Model user main model
 type Model struct {
-	ID                       primitive.ObjectID   `json:"id" bson:"_id"`
-	Username                 string               `json:"username" bson:"username"`
-	Password                 string               `json:"-" bson:"password"`
-	PersonInfo               *PersonInfo          `json:"personInfo" bson:"personInfo"`
-	ContactInfo              ContactInfo          `json:"contactInfo" bson:"contactInfo"`
-	CreatedDate              time.Time            `json:"createdDate" bson:"createdDate"`
-	Version                  int                  `json:"version" bson:"version"`
-	LastSeenChangelogVersion string               `json:"lastSeenChangelogVersion" bson:"lastSeenChangelogVersion"`
-	RoleIds                  []primitive.ObjectID `json:"roleIds" bson:"roleIds"`
+	ID                       primitive.ObjectID    `json:"id" bson:"_id"`
+	Username                 string                `json:"username" bson:"username"`
+	Password                 string                `json:"-" bson:"password"`
+	PersonInfo               *PersonInfo           `json:"personInfo" bson:"personInfo"`
+	ContactInfo              ContactInfo           `json:"contactInfo" bson:"contactInfo"`
+	CreatedDate              time.Time             `json:"createdDate" bson:"createdDate"`
+	Version                  int                   `json:"version" bson:"version"`
+	LastSeenChangelogVersion string                `json:"lastSeenChangelogVersion" bson:"lastSeenChangelogVersion"`
+	RoleIds                  *[]primitive.ObjectID `json:"roleIds" bson:"roleIds"`
 }
 
 func NewUser(id string, username string, password string,
@@ -35,7 +35,7 @@ func NewUser(id string, username string, password string,
 		ContactInfo: contactInfo,
 		CreatedDate: createdDate,
 		Version:     version,
-		RoleIds:     []primitive.ObjectID{},
+		RoleIds:     &[]primitive.ObjectID{},
 	}, nil
 }
 
