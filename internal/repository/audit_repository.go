@@ -19,7 +19,6 @@ var (
 )
 
 func newAuditRepository() *AuditMongoRepository {
-	// FIXME: Burada ileride uzaktaki bir mongodb instance'ına bağlanmak gerekecek
 	collection, err := mongodb.GetCollection("audits")
 	if err != nil {
 		panic(err)

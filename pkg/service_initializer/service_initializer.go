@@ -7,10 +7,11 @@ import (
 )
 
 type Services struct {
-	AuthService    *auth.Service
-	RoleService    *service.RoleService
-	SessionService *service.SessionService
-	UserService    *service.UserService
+	AuthService          *auth.Service
+	RoleService          *service.RoleService
+	SessionService       *service.SessionService
+	UserService          *service.UserService
+	ResetPasswordService *service.ResetPasswordService
 }
 
 var services Services
@@ -21,6 +22,12 @@ func InitializeServices() {
 	services.UserService = service.NewUserService(repository.GetUserRepository(), *services.RoleService)
 	services.SessionService = service.NewSessionService(repository.GetSessionRepository(), *services.UserService)
 	services.AuthService = auth.NewAuthService(*services.UserService, *services.SessionService)
+	emailService := service.NewSimpleEmailService(service.SMTPConfig{
+		Host: "smtp.gmail.com",
+		Port: 587,
+	})
+	services.ResetPasswordService = service.NewResetPasswordService(repository.GetResetPasswordRepository(), *emailService, *services.UserService)
+
 }
 
 // GetServices returns the services.

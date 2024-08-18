@@ -1,13 +1,17 @@
 package utils
 
 import (
-	"github.com/LydiaTrack/lydia-base/internal/service"
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
 	"github.com/LydiaTrack/lydia-base/pkg/constants"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func CreateAuthContext(c *gin.Context, authService auth.Service, userService service.UserService) (auth.PermissionContext, error) {
+type userService interface {
+	GetUserPermissionList(userId primitive.ObjectID) ([]auth.Permission, error)
+}
+
+func CreateAuthContext(c *gin.Context, authService auth.Service, userService userService) (auth.PermissionContext, error) {
 	currentUser, err := authService.GetCurrentUser(c)
 	if err != nil {
 		return auth.PermissionContext{}, constants.ErrorNotFound

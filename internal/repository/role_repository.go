@@ -21,7 +21,6 @@ var (
 // which implements RoleRepository
 func newRoleMongoRepository() *RoleMongoRepository {
 
-	// FIXME: Burada ileride uzaktaki bir mongodb instance'ına bağlanmak gerekecek
 	collection, err := mongodb.GetCollection("roles")
 	if err != nil {
 		panic(err)

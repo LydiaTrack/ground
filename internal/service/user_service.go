@@ -51,6 +51,10 @@ type UserRepository interface {
 	GetUserRoles(userID primitive.ObjectID) ([]role.Model, error)
 	// UpdateUser updates a user and returns the updated user
 	UpdateUser(id primitive.ObjectID, updateCommand user.UpdateUserCommand) (user.Model, error)
+	// UpdateUserPassword updates a user's password
+	UpdateUserPassword(id primitive.ObjectID, password string) error
+	// GetUserByEmailAddress gets a user by email address
+	GetUserByEmailAddress(email string) (user.Model, error)
 }
 
 func (s UserService) CreateUser(command user.CreateUserCommand, authContext auth.PermissionContext) (user.Model, error) {
@@ -72,7 +76,7 @@ func (s UserService) CreateUser(command user.CreateUserCommand, authContext auth
 	}
 
 	// Hash the password
-	err = hashPassword(&userModel)
+	err = hashUserPassword(&userModel)
 	if err != nil {
 		return user.Model{}, err
 	}
@@ -138,6 +142,19 @@ func (s UserService) GetUser(id string, authContext auth.PermissionContext) (use
 	return userModel, nil
 }
 
+func (s UserService) GetUserByEmail(email string, authContext auth.PermissionContext) (user.Model, error) {
+	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
+		return user.Model{}, constants.ErrorPermissionDenied
+	}
+
+	userModel, err := s.userRepository.GetUserByEmailAddress(email)
+	if err != nil {
+		return user.Model{}, err
+
+	}
+	return userModel, nil
+}
+
 func (s UserService) ExistsUser(id string, authContext auth.PermissionContext) (bool, error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
 		return false, constants.ErrorPermissionDenied
@@ -174,8 +191,8 @@ func (s UserService) DeleteUser(command user.DeleteUserCommand, authContext auth
 	return nil
 }
 
-// hashPassword hashes a password using bcrypt and assigns it to the user
-func hashPassword(userModel *user.Model) error {
+// hashUserPassword hashes a password using bcrypt and assigns it to the user
+func hashUserPassword(userModel *user.Model) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userModel.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return constants.ErrorInternalServerError
@@ -288,4 +305,42 @@ func (s UserService) UpdateUserSelf(command user.UpdateUserCommand, authContext 
 		return user.Model{}, err
 	}
 	return userModel, nil
+}
+
+// UpdateUserPassword updates a user's password
+func (s UserService) UpdateUserPassword(id string, cmd user.UpdatePasswordCommand) error {
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return constants.ErrorBadRequest
+	}
+
+	userModel, err := s.GetUser(id, auth.PermissionContext{
+		Permissions: []auth.Permission{auth.AdminPermission},
+		UserId:      &objID,
+	})
+	if err != nil {
+		return err
+	}
+
+	// Check if the current password is correct
+	err = bcrypt.CompareHashAndPassword([]byte(userModel.Password), []byte(cmd.CurrentPassword))
+	if err != nil {
+		return constants.ErrorUnauthorized
+	}
+
+	// Assign the new password, theres no need to store old passwords
+	userModel.Password = cmd.NewPassword
+
+	// Hash the password
+	err = hashUserPassword(&userModel)
+	if err != nil {
+		return err
+	}
+
+	// Update password
+	err = s.userRepository.UpdateUserPassword(objID, userModel.Password)
+	if err != nil {
+		return err
+	}
+	return nil
 }

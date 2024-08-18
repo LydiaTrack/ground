@@ -319,3 +319,27 @@ func (h UserHandler) UpdateUserSelf(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, updatedUser)
 }
+
+// UpdateUserPassword godoc
+// @Summary Update user password
+// @Description update user password.
+// @Tags root
+// @Accept */*
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /users/password:id [put]
+func (h UserHandler) UpdateUserPassword(c *gin.Context) {
+	id := c.Param("id")
+	var updatePasswordCommand user.UpdatePasswordCommand
+	if err := c.ShouldBindJSON(&updatePasswordCommand); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := h.userService.UpdateUserPassword(id, updatePasswordCommand)
+	if err != nil {
+		utils.EvaluateError(err, c)
+		return
+	}
+	c.Status(http.StatusOK)
+}
