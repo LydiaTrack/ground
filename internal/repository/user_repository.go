@@ -22,7 +22,6 @@ var (
 // NewUserMongoRepository creates a new UserMongoRepository instance
 // which implements UserRepository
 func initializeUserRepository() *UserMongoRepository {
-	// FIXME: Burada ileride uzaktaki bir mongodb instance'ına bağlanmak gerekecek
 
 	collection, err := mongodb.GetCollection("users")
 	if err != nil {
@@ -172,4 +171,21 @@ func (r *UserMongoRepository) UpdateUser(id primitive.ObjectID, updateCommand us
 		return user.Model{}, err
 	}
 	return r.GetUser(id)
+}
+
+func (r *UserMongoRepository) UpdateUserPassword(id primitive.ObjectID, password string) error {
+	_, err := r.collection.UpdateOne(context.Background(), primitive.M{"_id": id}, primitive.M{"$set": primitive.M{"password": password}})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *UserMongoRepository) GetUserByEmailAddress(email string) (user.Model, error) {
+	var userModel user.Model
+	err := r.collection.FindOne(context.Background(), primitive.M{"contactInfo.email": email}).Decode(&userModel)
+	if err != nil {
+		return user.Model{}, err
+	}
+	return userModel, nil
 }

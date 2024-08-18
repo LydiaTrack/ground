@@ -29,3 +29,8 @@ type RemoveRoleFromUserCommand struct {
 	UserID primitive.ObjectID `json:"userId"`
 	RoleID primitive.ObjectID `json:"roleId"`
 }
+
+type UpdatePasswordCommand struct {
+	CurrentPassword string `json:"currentPassword"`
+	NewPassword     string `json:"newPassword"`
+}

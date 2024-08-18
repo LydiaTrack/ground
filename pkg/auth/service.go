@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"github.com/LydiaTrack/lydia-base/internal/log"
 	"os"
 	"strconv"
 	"time"
@@ -57,9 +58,11 @@ func (s Service) Login(request Request) (Response, error) {
 	// Check if user exists
 	exists, err := s.userService.ExistsByUsername(request.Username)
 	if err != nil {
+		log.Log("Error checking if user exists", err)
 		return Response{}, constants.ErrorInternalServerError
 	}
 	if !exists {
+		log.Log("User does not exist", request.Username)
 		return Response{}, constants.ErrorNotFound
 	}
 
@@ -69,14 +72,17 @@ func (s Service) Login(request Request) (Response, error) {
 		UserId:      nil,
 	})
 	if err != nil {
+		log.Log("Error verifying user", err)
 		return Response{}, constants.ErrorInternalServerError
 	}
 
 	// Generate token
 	tokenPair, err := jwt.GenerateTokenPair(userModel.ID)
 	if err != nil {
+		log.Log("Error generating token pair", err)
 		return Response{}, constants.ErrorInternalServerError
 	}
+	log.Log("Token pair", tokenPair)
 
 	err = s.SetSession(userModel.ID.Hex(), tokenPair)
 	if err != nil {
