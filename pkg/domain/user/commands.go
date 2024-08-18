@@ -14,6 +14,7 @@ type UpdateUserCommand struct {
 	PersonInfo               *PersonInfo `json:"personInfo"`
 	ContactInfo              ContactInfo `json:"contactInfo"`
 	LastSeenChangelogVersion string      `json:"lastSeenChangelogVersion"`
+	Properties               map[string]interface{}
 }
 
 type DeleteUserCommand struct {
