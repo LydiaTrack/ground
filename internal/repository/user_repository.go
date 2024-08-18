@@ -165,6 +165,7 @@ func (r *UserMongoRepository) UpdateUser(id primitive.ObjectID, updateCommand us
 		"personInfo":               updateCommand.PersonInfo,
 		"contactInfo":              updateCommand.ContactInfo,
 		"lastSeenChangelogVersion": updateCommand.LastSeenChangelogVersion,
+		"properties":               updateCommand.Properties,
 	}
 	_, err := r.collection.UpdateOne(context.Background(), primitive.M{"_id": id}, primitive.M{"$set": update})
 	if err != nil {
