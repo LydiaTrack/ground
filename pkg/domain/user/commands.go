@@ -1,20 +1,46 @@
 package user
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"errors"
+	"github.com/LydiaTrack/lydia-base/internal/utils"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type CreateUserCommand struct {
-	Username    string      `json:"username"`
-	Password    string      `json:"password"`
-	PersonInfo  *PersonInfo `json:"personInfo"`
-	ContactInfo ContactInfo `json:"contactInfo"`
+	Username    string                 `json:"username"`
+	Password    string                 `json:"password"`
+	PersonInfo  *PersonInfo            `json:"personInfo"`
+	ContactInfo ContactInfo            `json:"contactInfo"`
+	Properties  map[string]interface{} `json:"properties"`
 }
 
 type UpdateUserCommand struct {
 	Username                 string      `json:"username"`
+	Avatar                   string      `json:"avatar,omitempty"`
 	PersonInfo               *PersonInfo `json:"personInfo"`
 	ContactInfo              ContactInfo `json:"contactInfo"`
 	LastSeenChangelogVersion string      `json:"lastSeenChangelogVersion"`
 	Properties               map[string]interface{}
+}
+
+func (cmd UpdateUserCommand) Validate() error {
+	if cmd.Username == "" {
+		return errors.New("username is required")
+	}
+
+	if cmd.PersonInfo != nil {
+		if err := cmd.PersonInfo.Validate(); err != nil {
+			return err
+		}
+	}
+
+	if cmd.Avatar != "" {
+		if err := utils.ValidateBase64Image(cmd.Avatar); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 type DeleteUserCommand struct {

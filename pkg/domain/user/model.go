@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+	"github.com/LydiaTrack/lydia-base/internal/utils"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -12,6 +13,7 @@ type Model struct {
 	ID                       primitive.ObjectID     `json:"id" bson:"_id"`
 	Username                 string                 `json:"username" bson:"username"`
 	Password                 string                 `json:"-" bson:"password"`
+	Avatar                   string                 `json:"avatar,omitempty" bson:"avatar,omitempty"`
 	PersonInfo               *PersonInfo            `json:"personInfo" bson:"personInfo"`
 	ContactInfo              ContactInfo            `json:"contactInfo" bson:"contactInfo"`
 	CreatedDate              time.Time              `json:"createdDate" bson:"createdDate"`
@@ -23,7 +25,7 @@ type Model struct {
 
 func NewUser(id string, username string, password string,
 	personInfo *PersonInfo, contactInfo ContactInfo,
-	createdDate time.Time, version int) (Model, error) {
+	createdDate time.Time, properties map[string]interface{}, version int) (Model, error) {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return Model{}, err
@@ -37,7 +39,8 @@ func NewUser(id string, username string, password string,
 		CreatedDate: createdDate,
 		Version:     version,
 		RoleIds:     &[]primitive.ObjectID{},
-		Properties:  map[string]interface{}{},
+		Properties:  properties,
+		Avatar:      "",
 	}, nil
 }
 
@@ -50,12 +53,16 @@ func (u Model) Validate() error {
 		return errors.New("username is required")
 	}
 
-	if u.PersonInfo == nil {
-		return nil
+	if u.PersonInfo != nil {
+		if err := u.PersonInfo.Validate(); err != nil {
+			return err
+		}
 	}
 
-	if err := u.PersonInfo.Validate(); err != nil {
-		return err
+	if u.Avatar != "" {
+		if err := utils.ValidateBase64Image(u.Avatar); err != nil {
+			return err
+		}
 	}
 
 	return nil
