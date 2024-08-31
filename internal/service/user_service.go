@@ -65,7 +65,7 @@ func (s UserService) CreateUser(command user.CreateUserCommand, authContext auth
 	// Validate user
 	// Map command to user
 	userModel, err := user.NewUser(primitive.NewObjectID().Hex(), command.Username,
-		command.Password, command.PersonInfo, command.ContactInfo, time.Now(), 1)
+		command.Password, command.PersonInfo, command.ContactInfo, time.Now(), command.Properties, 1)
 	if err := userModel.Validate(); err != nil {
 		return user.Model{}, constants.ErrorBadRequest
 	}
@@ -275,6 +275,11 @@ func (s UserService) UpdateUser(id string, command user.UpdateUserCommand, authC
 		return user.Model{}, constants.ErrorPermissionDenied
 	}
 
+	// Validate UpdateUserCommand
+	if err := command.Validate(); err != nil {
+		return user.Model{}, constants.ErrorBadRequest
+	}
+
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return user.Model{}, constants.ErrorBadRequest
@@ -292,6 +297,11 @@ func (s UserService) UpdateUser(id string, command user.UpdateUserCommand, authC
 func (s UserService) UpdateUserSelf(command user.UpdateUserCommand, authContext auth.PermissionContext) (user.Model, error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.UserSelfUpdatePermission) != nil {
 		return user.Model{}, constants.ErrorPermissionDenied
+	}
+
+	// Validate UpdateUserCommand
+	if err := command.Validate(); err != nil {
+		return user.Model{}, constants.ErrorBadRequest
 	}
 
 	objID, err := primitive.ObjectIDFromHex(authContext.UserId.Hex())
