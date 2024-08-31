@@ -162,6 +162,7 @@ func (r *UserMongoRepository) GetUserRoles(userID primitive.ObjectID) ([]role.Mo
 func (r *UserMongoRepository) UpdateUser(id primitive.ObjectID, updateCommand user.UpdateUserCommand) (user.Model, error) {
 	update := primitive.M{
 		"username":                 updateCommand.Username,
+		"avatar":                   updateCommand.Avatar,
 		"personInfo":               updateCommand.PersonInfo,
 		"contactInfo":              updateCommand.ContactInfo,
 		"lastSeenChangelogVersion": updateCommand.LastSeenChangelogVersion,
