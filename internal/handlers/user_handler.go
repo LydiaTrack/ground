@@ -336,7 +336,13 @@ func (h UserHandler) UpdateUserPassword(c *gin.Context) {
 		return
 	}
 
-	err := h.userService.UpdateUserPassword(id, updatePasswordCommand)
+	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	if err != nil {
+		utils.EvaluateError(err, c)
+		return
+	}
+
+	err = h.userService.UpdateUserPassword(id, updatePasswordCommand, authContext)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return

@@ -138,12 +138,11 @@ func (s ResetPasswordService) ResetPassword(c *gin.Context, cmd resetPassword.Do
 	if err != nil {
 		return err
 	}
-	updatePasswordCmd := user.UpdatePasswordCommand{
-		CurrentPassword: userToUpdate.Password,
-		NewPassword:     cmd.NewPassword,
+	updatePasswordCmd := user.ResetPasswordCommand{
+		NewPassword: cmd.NewPassword,
 	}
 
-	err = s.userService.UpdateUserPassword(userToUpdate.ID.Hex(), updatePasswordCmd)
+	err = s.userService.ResetUserPassword(userToUpdate.ID.Hex(), updatePasswordCmd)
 	if err != nil {
 		return err
 	}
