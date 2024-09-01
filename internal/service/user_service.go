@@ -318,7 +318,16 @@ func (s UserService) UpdateUserSelf(command user.UpdateUserCommand, authContext 
 }
 
 // UpdateUserPassword updates a user's password
-func (s UserService) UpdateUserPassword(id string, cmd user.UpdatePasswordCommand) error {
+func (s UserService) UpdateUserPassword(id string, cmd user.UpdatePasswordCommand, authContext auth.PermissionContext) error {
+	if auth.CheckPermission(authContext.Permissions, permissions.UserSelfUpdatePermission) != nil {
+		return constants.ErrorPermissionDenied
+	}
+
+	// Check if the user is trying to update another user's password
+	if authContext.UserId.Hex() != id {
+		return constants.ErrorPermissionDenied
+	}
+
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return constants.ErrorBadRequest
@@ -339,6 +348,37 @@ func (s UserService) UpdateUserPassword(id string, cmd user.UpdatePasswordComman
 	}
 
 	// Assign the new password, theres no need to store old passwords
+	userModel.Password = cmd.NewPassword
+
+	// Hash the password
+	err = hashUserPassword(&userModel)
+	if err != nil {
+		return err
+	}
+
+	// Update password
+	err = s.userRepository.UpdateUserPassword(objID, userModel.Password)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// ResetUserPassword resets a user's password without knowing the current password
+func (s UserService) ResetUserPassword(id string, cmd user.ResetPasswordCommand) error {
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return constants.ErrorBadRequest
+	}
+
+	userModel, err := s.GetUser(id, auth.PermissionContext{
+		Permissions: []auth.Permission{auth.AdminPermission},
+		UserId:      &objID,
+	})
+	if err != nil {
+		return err
+	}
+
 	userModel.Password = cmd.NewPassword
 
 	// Hash the password

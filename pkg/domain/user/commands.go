@@ -61,3 +61,7 @@ type UpdatePasswordCommand struct {
 	CurrentPassword string `json:"currentPassword"`
 	NewPassword     string `json:"newPassword"`
 }
+
+type ResetPasswordCommand struct {
+	NewPassword string `json:"newPassword"`
+}
