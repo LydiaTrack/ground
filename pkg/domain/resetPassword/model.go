@@ -6,7 +6,7 @@ type Model struct {
 	ID        primitive.ObjectID `json:"id" bson:"_id"`
 	Email     string             `json:"email"`
 	Code      string             `json:"-"`
-	ExpiresAt primitive.DateTime `json:"expiresAt"`
+	ExpiresAt primitive.DateTime `json:"expiresAt" bson:"expiresAt"`
 }
 
 func NewModel(email, code string, expiresAt primitive.DateTime) Model {

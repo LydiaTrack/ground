@@ -6,6 +6,7 @@ import (
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
 	"github.com/LydiaTrack/lydia-base/pkg/manager"
+	"reflect"
 	"time"
 
 	"github.com/LydiaTrack/lydia-base/internal/api"
@@ -95,14 +96,41 @@ func createDefaultRoles() {
 	selfServiceRoleCmd := role.CreateRoleCommand{
 		Name: "Lydia Self Service Role",
 		Tags: []string{"self-service"},
-		Info: "This role is for the users who can manage their own tasks and projects",
+		Info: "This role is for the users who can manage their profiles",
 		Permissions: []auth.Permission{
 			permissions.UserSelfUpdatePermission,
+			permissions.UserSelfGetPermission,
 		},
 	}
 
 	isExists := service_initializer.GetServices().RoleService.ExistsByName(selfServiceRoleCmd.Name, authContext)
 	if isExists {
+		// If exists, check if the permissions are the same
+		roleModel, err := service_initializer.GetServices().RoleService.GetRoleByName(selfServiceRoleCmd.Name, authContext)
+		if err != nil {
+			log.LogFatal("Error creating default roles: " + err.Error())
+			return
+		}
+		currentRolePermissions := roleModel.Permissions
+		// Compare the permissions
+		isSamePermissions := reflect.DeepEqual(currentRolePermissions, selfServiceRoleCmd.Permissions)
+		if !isSamePermissions {
+			log.Log("Permissions are different for the role: " + selfServiceRoleCmd.Name)
+			// Update the role
+			cmd := role.UpdateRoleCommand{
+				Name:        roleModel.Name,
+				Info:        roleModel.Info,
+				Tags:        roleModel.Tags,
+				Permissions: selfServiceRoleCmd.Permissions,
+			}
+			log.Log("Updating the role's permissions: " + roleModel.Name)
+			_, err := service_initializer.GetServices().RoleService.UpdateRole(roleModel.ID.Hex(), cmd, authContext)
+			if err != nil {
+				log.LogFatal("Error creating default roles: " + err.Error())
+				return
+			}
+
+		}
 		return
 	}
 

@@ -20,10 +20,7 @@ func InitializeDefaultUser() error {
 	// In this case, the default user will not be created.
 	roleService := service.NewRoleService(repository.GetRoleRepository())
 	userService := service.NewUserService(repository.GetUserRepository(), *roleService)
-	isExists, err := userService.ExistsByUsername(os.Getenv("DEFAULT_USER_USERNAME"))
-	if err != nil {
-		return err
-	}
+	isExists := userService.ExistsByUsername(os.Getenv("DEFAULT_USER_USERNAME"))
 
 	if isExists {
 		log.Log("Default user already exists")

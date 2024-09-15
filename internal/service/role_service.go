@@ -35,6 +35,8 @@ type RoleRepository interface {
 	ExistsByName(name string) bool
 	// GetRoleByName gets a role by name
 	GetRoleByName(name string) (role.Model, error)
+	// UpdateRole updates a role
+	UpdateRole(id primitive.ObjectID, updateCommand role.UpdateRoleCommand) (role.Model, error)
 }
 
 func (s RoleService) CreateRole(command role.CreateRoleCommand, authContext auth.PermissionContext) (role.Model, error) {
@@ -135,6 +137,23 @@ func (s RoleService) GetRoleByName(name string, authContext auth.PermissionConte
 		return role.Model{}, constants.ErrorPermissionDenied
 	}
 	roleModel, err := s.roleRepository.GetRoleByName(name)
+	if err != nil {
+		return role.Model{}, err
+	}
+	return roleModel, nil
+}
+
+func (s RoleService) UpdateRole(id string, command role.UpdateRoleCommand, authContext auth.PermissionContext) (role.Model, error) {
+	if auth.CheckPermission(authContext.Permissions, permissions.RoleUpdatePermission) != nil {
+		return role.Model{}, constants.ErrorPermissionDenied
+	}
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return role.Model{}, constants.ErrorBadRequest
+	}
+
+	roleModel, err := s.roleRepository.UpdateRole(objID, command)
 	if err != nil {
 		return role.Model{}, err
 	}
