@@ -15,12 +15,12 @@ type CreateUserCommand struct {
 }
 
 type UpdateUserCommand struct {
-	Username                 string      `json:"username"`
-	Avatar                   string      `json:"avatar,omitempty"`
-	PersonInfo               *PersonInfo `json:"personInfo"`
-	ContactInfo              ContactInfo `json:"contactInfo"`
-	LastSeenChangelogVersion string      `json:"lastSeenChangelogVersion"`
-	Properties               map[string]interface{}
+	Username                 string                 `json:"username" bson:"username"`
+	Avatar                   string                 `json:"avatar,omitempty" bson:"avatar,omitempty"`
+	PersonInfo               *PersonInfo            `json:"personInfo" bson:"personInfo"`
+	ContactInfo              ContactInfo            `json:"contactInfo" bson:"contactInfo"`
+	LastSeenChangelogVersion string                 `json:"lastSeenChangelogVersion" bson:"lastSeenChangelogVersion"`
+	Properties               map[string]interface{} `json:"properties" bson:"properties"`
 }
 
 func (cmd UpdateUserCommand) Validate() error {

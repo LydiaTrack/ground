@@ -13,10 +13,10 @@ type CreateRoleCommand struct {
 }
 
 type UpdateRoleCommand struct {
-	Name        string            `json:"name"`
-	Info        string            `json:"info,omitempty"`
-	Tags        []string          `json:"tags,omitempty"`
-	Permissions []auth.Permission `json:"permissions"`
+	Name        string            `json:"name" bson:"name"`
+	Info        string            `json:"info,omitempty" bson:"info,omitempty"`
+	Tags        []string          `json:"tags,omitempty" bson:"tags,omitempty"`
+	Permissions []auth.Permission `json:"permissions" bson:"permissions"`
 }
 
 type DeleteRoleCommand struct {
