@@ -16,7 +16,8 @@ import (
 
 type UserService interface {
 	CreateUser(command user.CreateUserCommand, authContext PermissionContext) (user.Model, error)
-	ExistsByUsername(username string) (bool, error)
+	ExistsByUsername(username string) bool
+	ExistsByEmail(email string) bool
 	VerifyUser(username, password string, authContext PermissionContext) (user.Model, error)
 	GetUser(id string, authContext PermissionContext) (user.Model, error)
 }
@@ -56,11 +57,7 @@ func NewAuthService(userService UserService, sessionService SessionService) *Ser
 // Login is a function that handles the login process
 func (s Service) Login(request Request) (Response, error) {
 	// Check if user exists
-	exists, err := s.userService.ExistsByUsername(request.Username)
-	if err != nil {
-		log.Log("Error checking if user exists", err)
-		return Response{}, constants.ErrorInternalServerError
-	}
+	exists := s.userService.ExistsByUsername(request.Username)
 	if !exists {
 		log.Log("User does not exist", request.Username)
 		return Response{}, constants.ErrorNotFound
@@ -97,10 +94,7 @@ func (s Service) Login(request Request) (Response, error) {
 // SignUp is a function that handles the signup process, creates a new user from the given request
 func (s Service) SignUp(cmd user.CreateUserCommand) (user.Model, error) {
 	// Check if user exists
-	exists, err := s.userService.ExistsByUsername(cmd.Username)
-	if err != nil {
-		return user.Model{}, constants.ErrorInternalServerError
-	}
+	exists := s.userService.ExistsByUsername(cmd.Username)
 	if exists {
 		return user.Model{}, constants.ErrorConflict
 	}
@@ -149,6 +143,7 @@ func (s Service) GetCurrentUser(c *gin.Context) (user.Model, error) {
 		return user.Model{}, constants.ErrorUnauthorized
 	}
 
+	// TODO: Maybe we should (or must) use GetSelfUser instead of GetUser, but I'm not sure.
 	userModel, err := s.userService.GetUser(userId, PermissionContext{
 		Permissions: []Permission{AdminPermission},
 		UserId:      nil,

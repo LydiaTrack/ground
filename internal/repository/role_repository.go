@@ -109,5 +109,12 @@ func (r *RoleMongoRepository) GetRoleByName(name string) (role.Model, error) {
 		return role.Model{}, err
 	}
 	return roleModel, nil
+}
 
+func (r *RoleMongoRepository) UpdateRole(id primitive.ObjectID, updateCommand role.UpdateRoleCommand) (role.Model, error) {
+	_, err := r.collection.UpdateOne(context.Background(), primitive.M{"_id": id}, primitive.M{"$set": updateCommand})
+	if err != nil {
+		return role.Model{}, err
+	}
+	return r.GetRole(id)
 }

@@ -114,6 +114,14 @@ func (r *UserMongoRepository) ExistsByUsername(username string) bool {
 	return count > 0
 }
 
+func (r *UserMongoRepository) ExistsByEmail(email string) bool {
+	count, err := r.collection.CountDocuments(context.Background(), primitive.M{"contactInfo.email": email})
+	if err != nil {
+		return false
+	}
+	return count > 0
+}
+
 func (r *UserMongoRepository) GetUserByUsername(username string) (user.Model, error) {
 	var userModel user.Model
 	err := r.collection.FindOne(context.Background(), primitive.M{"username": username}).Decode(&userModel)
@@ -160,15 +168,7 @@ func (r *UserMongoRepository) GetUserRoles(userID primitive.ObjectID) ([]role.Mo
 }
 
 func (r *UserMongoRepository) UpdateUser(id primitive.ObjectID, updateCommand user.UpdateUserCommand) (user.Model, error) {
-	update := primitive.M{
-		"username":                 updateCommand.Username,
-		"avatar":                   updateCommand.Avatar,
-		"personInfo":               updateCommand.PersonInfo,
-		"contactInfo":              updateCommand.ContactInfo,
-		"lastSeenChangelogVersion": updateCommand.LastSeenChangelogVersion,
-		"properties":               updateCommand.Properties,
-	}
-	_, err := r.collection.UpdateOne(context.Background(), primitive.M{"_id": id}, primitive.M{"$set": update})
+	_, err := r.collection.UpdateOne(context.Background(), primitive.M{"_id": id}, primitive.M{"$set": updateCommand})
 	if err != nil {
 		return user.Model{}, err
 	}

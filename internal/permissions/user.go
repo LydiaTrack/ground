@@ -19,6 +19,11 @@ var UserSelfUpdatePermission = auth.Permission{
 	Action: "SELF_UPDATE",
 }
 
+var UserSelfGetPermission = auth.Permission{
+	Domain: "user",
+	Action: "SELF_GET",
+}
+
 var UserDeletePermission = auth.Permission{
 	Domain: "user",
 	Action: "DELETE",
