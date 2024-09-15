@@ -13,12 +13,12 @@ type Model struct {
 	Name        string             `json:"name" bson:"name"`
 	Permissions []auth.Permission  `json:"permissions" bson:"permissions"`
 	Tags        []string           `json:"tags,omitempty" bson:"tags,omitempty"`
-	RoleInfo    string             `json:"roleInfo,omitempty" bson:"roleInfo,omitempty"`
+	Info        string             `json:"info,omitempty" bson:"info,omitempty"`
 	CreatedDate time.Time          `json:"createdDate" bson:"createdDate"`
 	Version     int                `json:"version" bson:"version"`
 }
 
-func NewRole(id string, name string, permissions []auth.Permission, tags []string, roleInfo string, createdDate time.Time, version int) Model {
+func NewRole(id string, name string, permissions []auth.Permission, tags []string, info string, createdDate time.Time, version int) Model {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return Model{}
@@ -28,7 +28,7 @@ func NewRole(id string, name string, permissions []auth.Permission, tags []strin
 		Name:        name,
 		Tags:        tags,
 		Permissions: permissions,
-		RoleInfo:    roleInfo,
+		Info:        info,
 		CreatedDate: createdDate,
 		Version:     version,
 	}

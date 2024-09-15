@@ -39,10 +39,12 @@ type UserRepository interface {
 	ExistsUser(id primitive.ObjectID) (bool, error)
 	// DeleteUser deletes a user by id
 	DeleteUser(id primitive.ObjectID) error
-	// ExistsByUsername checks if a user exists by username
+	// ExistsByUsernameAndEmail checks if a user exists by username
 	ExistsByUsernameAndEmail(username string, email string) bool
 	// ExistsByUsername checks if a user exists by username
 	ExistsByUsername(username string) bool
+	// ExistsByEmail checks if a user exists by email address
+	ExistsByEmail(email string) bool
 	// AddRoleToUser adds a role to a user
 	AddRoleToUser(userID primitive.ObjectID, roleID primitive.ObjectID) error
 	// RemoveRoleFromUser removes a role from a user
@@ -142,6 +144,22 @@ func (s UserService) GetUser(id string, authContext auth.PermissionContext) (use
 	return userModel, nil
 }
 
+func (s UserService) GetSelfUser(authContext auth.PermissionContext) (user.Model, error) {
+	if auth.CheckPermission(authContext.Permissions, permissions.UserSelfGetPermission) != nil {
+		return user.Model{}, constants.ErrorPermissionDenied
+	}
+
+	objID, err := primitive.ObjectIDFromHex(authContext.UserId.Hex())
+	if err != nil {
+		return user.Model{}, constants.ErrorBadRequest
+	}
+	userModel, err := s.userRepository.GetUser(objID)
+	if err != nil {
+		return user.Model{}, err
+	}
+	return userModel, nil
+}
+
 func (s UserService) GetUserByEmail(email string, authContext auth.PermissionContext) (user.Model, error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
 		return user.Model{}, constants.ErrorPermissionDenied
@@ -222,9 +240,14 @@ func (s UserService) VerifyUser(username string, password string, authContext au
 	return userModel, nil
 }
 
-// ExistsByUsername gets a user by username
-func (s UserService) ExistsByUsername(username string) (bool, error) {
-	return s.userRepository.ExistsByUsername(username), nil
+// ExistsByUsername checks whether a user exists with specified username
+func (s UserService) ExistsByUsername(username string) bool {
+	return s.userRepository.ExistsByUsername(username)
+}
+
+// ExistsByEmail checks whether a user exists with specified email address
+func (s UserService) ExistsByEmail(email string) bool {
+	return s.userRepository.ExistsByEmail(email)
 }
 
 // AddRoleToUser adds a role to a user
@@ -309,6 +332,19 @@ func (s UserService) UpdateUserSelf(command user.UpdateUserCommand, authContext 
 		return user.Model{}, constants.ErrorBadRequest
 	}
 
+	userToUpdate, err := s.GetSelfUser(authContext)
+	if err != nil {
+		return user.Model{}, err
+	}
+
+	// Check if the user is trying to update another user's email
+	if userToUpdate.ContactInfo.Email != command.ContactInfo.Email {
+		// If the email is different, check if the new email is already in use
+		if s.ExistsByEmail(command.ContactInfo.Email) {
+			return user.Model{}, constants.ErrorConflict
+		}
+	}
+
 	// Update user
 	userModel, err := s.userRepository.UpdateUser(objID, command)
 	if err != nil {
@@ -362,6 +398,49 @@ func (s UserService) UpdateUserPassword(id string, cmd user.UpdatePasswordComman
 		return err
 	}
 	return nil
+}
+
+// UpdateUserPasswordSelf updates a user's password by itself
+func (s UserService) UpdateUserPasswordSelf(cmd user.UpdatePasswordCommand, authContext auth.PermissionContext) error {
+	if auth.CheckPermission(authContext.Permissions, permissions.UserSelfUpdatePermission) != nil {
+		return constants.ErrorPermissionDenied
+	}
+
+	objID, err := primitive.ObjectIDFromHex(authContext.UserId.Hex())
+	if err != nil {
+		return constants.ErrorBadRequest
+	}
+
+	userModel, err := s.GetUser(authContext.UserId.Hex(), auth.PermissionContext{
+		Permissions: []auth.Permission{auth.AdminPermission},
+		UserId:      &objID,
+	})
+	if err != nil {
+		return err
+	}
+
+	// Check if the current password is correct
+	err = bcrypt.CompareHashAndPassword([]byte(userModel.Password), []byte(cmd.CurrentPassword))
+	if err != nil {
+		return constants.ErrorBadRequest
+	}
+
+	// Assign the new password, theres no need to store old passwords
+	userModel.Password = cmd.NewPassword
+
+	// Hash the password
+	err = hashUserPassword(&userModel)
+	if err != nil {
+		return err
+	}
+
+	// Update password
+	err = s.userRepository.UpdateUserPassword(objID, userModel.Password)
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
 
 // ResetUserPassword resets a user's password without knowing the current password

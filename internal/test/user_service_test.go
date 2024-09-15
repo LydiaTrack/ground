@@ -122,14 +122,17 @@ func testCreateUser(t *testing.T) {
 	}
 
 	// Check user is exists by username
-	existsByUsername, err := userService.ExistsByUsername("test-create-user-001")
-
-	if err != nil {
-		t.Errorf("Error checking user exists by username: %v", err)
-	}
+	existsByUsername := userService.ExistsByUsername("test-create-user-001")
 
 	if !existsByUsername {
 		t.Errorf("Error checking user exists by username: %v", err)
+	}
+
+	// Check user exists by email address
+	existsByEmail := userService.ExistsByEmail("test-create-user-001@example.com")
+
+	if !existsByEmail {
+		t.Errorf("Error checking user exists by email: %v", err)
 	}
 
 	// Get user
