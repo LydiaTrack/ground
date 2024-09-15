@@ -8,12 +8,15 @@ import (
 type CreateRoleCommand struct {
 	Name        string            `json:"name"`
 	Tags        []string          `json:"tags,omitempty"`
-	Info        string            `json:"roleInfo,omitempty"`
+	Info        string            `json:"info,omitempty"`
 	Permissions []auth.Permission `json:"permissions"`
 }
 
 type UpdateRoleCommand struct {
-	Name string `json:"name"`
+	Name        string            `json:"name"`
+	Info        string            `json:"info,omitempty"`
+	Tags        []string          `json:"tags,omitempty"`
+	Permissions []auth.Permission `json:"permissions"`
 }
 
 type DeleteRoleCommand struct {

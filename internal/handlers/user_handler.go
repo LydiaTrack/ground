@@ -33,12 +33,22 @@ func NewUserHandler(userService service.UserService, authService auth.Service) U
 // @Router /users/checkUsername/:username [get]
 func (h UserHandler) CheckUsername(c *gin.Context) {
 	username := c.Param("username")
-	exists, err := h.userService.ExistsByUsername(username)
+	exists := h.userService.ExistsByUsername(username)
 
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+	c.JSON(http.StatusOK, gin.H{"exists": exists})
+}
+
+// CheckEmail
+// @Summary Check email
+// @Description check email address is exists.
+// @Tags root
+// @Accept */*
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /users/checkUsername/:username [get]
+func (h UserHandler) CheckEmail(c *gin.Context) {
+	username := c.Param("email")
+	exists := h.userService.ExistsByEmail(username)
 
 	c.JSON(http.StatusOK, gin.H{"exists": exists})
 }
@@ -343,6 +353,35 @@ func (h UserHandler) UpdateUserPassword(c *gin.Context) {
 	}
 
 	err = h.userService.UpdateUserPassword(id, updatePasswordCommand, authContext)
+	if err != nil {
+		utils.EvaluateError(err, c)
+		return
+	}
+	c.Status(http.StatusOK)
+}
+
+// UpdateUserSelfPassword godoc
+// @Summary Update user self password
+// @Description update user self password.
+// @Tags root
+// @Accept */*
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /users-self/password [put]
+func (h UserHandler) UpdateUserSelfPassword(c *gin.Context) {
+	var updatePasswordCommand user.UpdatePasswordCommand
+	if err := c.ShouldBindJSON(&updatePasswordCommand); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	if err != nil {
+		utils.EvaluateError(err, c)
+		return
+	}
+
+	err = h.userService.UpdateUserPasswordSelf(updatePasswordCommand, authContext)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
