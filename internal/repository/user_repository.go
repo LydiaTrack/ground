@@ -6,6 +6,7 @@ import (
 	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
 	"github.com/LydiaTrack/lydia-base/pkg/mongodb"
+	"github.com/LydiaTrack/lydia-base/pkg/responses"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -52,18 +53,21 @@ func (r *UserMongoRepository) SaveUser(userModel user.Model) (user.Model, error)
 	return userModel, nil
 }
 
-// GetUsers gets all users
-func (r *UserMongoRepository) GetUsers() ([]user.Model, error) {
+// GetUsers gets all users from the repository
+func (r *UserMongoRepository) GetUsers() (responses.QueryResult[user.Model], error) {
 	cursor, err := r.collection.Find(context.Background(), primitive.M{})
 	if err != nil {
-		return nil, err
+		return responses.QueryResult[user.Model]{}, err
 	}
+
 	var users []user.Model
 	err = cursor.All(context.Background(), &users)
 	if err != nil {
-		return nil, err
+		return responses.QueryResult[user.Model]{}, err
 	}
-	return users, nil
+
+	// Return the QueryResult by value
+	return *responses.NewQueryResult(len(users), users), nil
 }
 
 // GetUser gets a user by id
@@ -148,10 +152,10 @@ func (r *UserMongoRepository) RemoveRoleFromUser(userID primitive.ObjectID, role
 	return nil
 }
 
-func (r *UserMongoRepository) GetUserRoles(userID primitive.ObjectID) ([]role.Model, error) {
+func (r *UserMongoRepository) GetUserRoles(userID primitive.ObjectID) (responses.QueryResult[role.Model], error) {
 	userModel, err := r.GetUser(userID)
 	if err != nil {
-		return nil, err
+		return responses.QueryResult[role.Model]{}, err
 	}
 
 	// Resolve roleIds to roles
@@ -159,12 +163,13 @@ func (r *UserMongoRepository) GetUserRoles(userID primitive.ObjectID) ([]role.Mo
 	for _, roleID := range *userModel.RoleIds {
 		roleModel, err := GetRoleRepository().GetRole(roleID)
 		if err != nil {
-			return nil, err
+			return responses.QueryResult[role.Model]{}, err
 		}
 		roles = append(roles, roleModel)
 	}
 
-	return roles, nil
+	// Create the QueryResult with the roles and total count
+	return *responses.NewQueryResult(len(roles), roles), nil
 }
 
 func (r *UserMongoRepository) UpdateUser(id primitive.ObjectID, updateCommand user.UpdateUserCommand) (user.Model, error) {

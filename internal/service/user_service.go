@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/LydiaTrack/lydia-base/pkg/responses"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 
@@ -30,7 +31,7 @@ type UserRepository interface {
 	// SaveUser saves a user
 	SaveUser(user user.Model) (user.Model, error)
 	// GetUsers gets all users
-	GetUsers() ([]user.Model, error)
+	GetUsers() (responses.QueryResult[user.Model], error)
 	// GetUser gets a user by id
 	GetUser(id primitive.ObjectID) (user.Model, error)
 	// GetUserByUsername gets a user by username
@@ -50,7 +51,7 @@ type UserRepository interface {
 	// RemoveRoleFromUser removes a role from a user
 	RemoveRoleFromUser(userID primitive.ObjectID, roleID primitive.ObjectID) error
 	// GetUserRoles gets the roles of a user
-	GetUserRoles(userID primitive.ObjectID) ([]role.Model, error)
+	GetUserRoles(userID primitive.ObjectID) (responses.QueryResult[role.Model], error)
 	// UpdateUser updates a user and returns the updated user
 	UpdateUser(id primitive.ObjectID, updateCommand user.UpdateUserCommand) (user.Model, error)
 	// UpdateUserPassword updates a user's password
@@ -120,12 +121,15 @@ func (s UserService) addDefaultRoles(userId primitive.ObjectID, authContext auth
 }
 
 // GetUsers gets all users
-func (s UserService) GetUsers(authContext auth.PermissionContext) ([]user.Model, error) {
+func (s UserService) GetUsers(authContext auth.PermissionContext) (responses.QueryResult[user.Model], error) {
+	// Check if the user has the required permission
 	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
-		return nil, constants.ErrorPermissionDenied
+		// Return a pointer to an empty QueryResult and the permission denied error
+		return responses.QueryResult[user.Model]{}, constants.ErrorPermissionDenied
 	}
-	return s.userRepository.GetUsers()
 
+	// Fetch users from the repository
+	return s.userRepository.GetUsers()
 }
 
 func (s UserService) GetUser(id string, authContext auth.PermissionContext) (user.Model, error) {
@@ -267,16 +271,16 @@ func (s UserService) RemoveRoleFromUser(command user.RemoveRoleFromUserCommand, 
 }
 
 // GetUserRoles gets the roles of a user
-func (s UserService) GetUserRoles(userID primitive.ObjectID, authContext auth.PermissionContext) ([]role.Model, error) {
+func (s UserService) GetUserRoles(userID primitive.ObjectID, authContext auth.PermissionContext) (responses.QueryResult[role.Model], error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
-		return nil, constants.ErrorPermissionDenied
+		return responses.QueryResult[role.Model]{}, constants.ErrorPermissionDenied
 	}
 	return s.userRepository.GetUserRoles(userID)
 }
 
 // GetUserPermissionList gets the permissionList of a user
 func (s UserService) GetUserPermissionList(userID primitive.ObjectID) ([]auth.Permission, error) {
-	userRoles, err := s.GetUserRoles(userID, auth.PermissionContext{
+	result, err := s.GetUserRoles(userID, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserId:      nil,
 	})
@@ -285,7 +289,7 @@ func (s UserService) GetUserPermissionList(userID primitive.ObjectID) ([]auth.Pe
 	}
 
 	var userPermissionList []auth.Permission
-	for _, userRole := range userRoles {
+	for _, userRole := range result.Data {
 		userPermissionList = append(userPermissionList, userRole.Permissions...)
 	}
 
