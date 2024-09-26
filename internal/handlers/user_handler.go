@@ -4,6 +4,7 @@ import (
 	"github.com/LydiaTrack/lydia-base/internal/service"
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
+	"github.com/LydiaTrack/lydia-base/pkg/responses"
 	"github.com/LydiaTrack/lydia-base/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -73,7 +74,7 @@ func (h UserHandler) GetUsers(c *gin.Context) {
 		return
 	}
 
-	var users []user.Model
+	var users responses.QueryResult[user.Model]
 	if currentUser.Username == os.Getenv("DEFAULT_USER_USERNAME") {
 		users, err = h.userService.GetUsers(auth.PermissionContext{
 			Permissions: []auth.Permission{auth.AdminPermission},
@@ -258,12 +259,12 @@ func (h UserHandler) GetUserRoles(c *gin.Context) {
 		utils.EvaluateError(err, c)
 		return
 	}
-	roles, err := h.userService.GetUserRoles(userID, authContext)
+	result, err := h.userService.GetUserRoles(userID, authContext)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
 	}
-	c.JSON(http.StatusOK, roles)
+	c.JSON(http.StatusOK, result)
 }
 
 // UpdateUser godoc
