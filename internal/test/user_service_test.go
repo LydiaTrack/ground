@@ -212,7 +212,7 @@ func testAddRoleToUser(t *testing.T) {
 	}
 
 	// Check if the role is added to the user
-	roles, err := userService.GetUserRoles(userModel.ID, auth.PermissionContext{
+	result, err := userService.GetUserRoles(userModel.ID, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserId:      nil,
 	})
@@ -220,6 +220,7 @@ func testAddRoleToUser(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error getting user roles: %v", err)
 	}
+	roles := result.Data
 
 	if len(roles) == 0 {
 		t.Errorf("Error getting user roles: %v", err)
@@ -320,7 +321,7 @@ func testRemoveRoleFromUser(t *testing.T) {
 	}
 
 	// Check if the role is removed from the user
-	roles, err := userService.GetUserRoles(userModel.ID, auth.PermissionContext{
+	result, err := userService.GetUserRoles(userModel.ID, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserId:      nil,
 	})
@@ -328,6 +329,7 @@ func testRemoveRoleFromUser(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error getting user roles: %v", err)
 	}
+	roles := result.Data
 
 	if len(roles) != 0 {
 		t.Errorf("Error getting user roles: %v", err)
