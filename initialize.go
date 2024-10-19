@@ -1,13 +1,15 @@
 package lydia_base
 
 import (
+	"reflect"
+	"time"
+
 	"github.com/LydiaTrack/lydia-base/internal/permissions"
 	"github.com/LydiaTrack/lydia-base/internal/provider"
 	"github.com/LydiaTrack/lydia-base/pkg/auth"
 	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
 	"github.com/LydiaTrack/lydia-base/pkg/manager"
-	"reflect"
-	"time"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/LydiaTrack/lydia-base/internal/api"
 	"github.com/LydiaTrack/lydia-base/internal/blocker"
@@ -29,6 +31,9 @@ func Initialize(r *gin.Engine) {
 	}
 	// Initialize logging
 	log.InitLogging()
+
+	// Initialize metrics
+	initMetrics(r)
 
 	// Initialize IP Blocker
 	blocker.Initialize()
@@ -140,4 +145,8 @@ func createDefaultRoles() {
 		log.LogFatal("Error creating default roles: " + err.Error())
 		return
 	}
+}
+
+func initMetrics(r *gin.Engine) {
+	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 }
