@@ -1,9 +1,9 @@
 package service_initializer
 
 import (
-	"github.com/LydiaTrack/lydia-base/internal/repository"
-	"github.com/LydiaTrack/lydia-base/internal/service"
-	"github.com/LydiaTrack/lydia-base/pkg/auth"
+	"github.com/LydiaTrack/ground/internal/repository"
+	"github.com/LydiaTrack/ground/internal/service"
+	"github.com/LydiaTrack/ground/pkg/auth"
 )
 
 type Services struct {

@@ -3,10 +3,10 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/LydiaTrack/lydia-base/internal/service"
-	"github.com/LydiaTrack/lydia-base/pkg/auth"
-	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
-	"github.com/LydiaTrack/lydia-base/pkg/utils"
+	"github.com/LydiaTrack/ground/internal/service"
+	"github.com/LydiaTrack/ground/pkg/auth"
+	"github.com/LydiaTrack/ground/pkg/domain/role"
+	"github.com/LydiaTrack/ground/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 )

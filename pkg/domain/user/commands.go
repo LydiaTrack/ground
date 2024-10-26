@@ -2,7 +2,7 @@ package user
 
 import (
 	"errors"
-	"github.com/LydiaTrack/lydia-base/internal/utils"
+	"github.com/LydiaTrack/ground/internal/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

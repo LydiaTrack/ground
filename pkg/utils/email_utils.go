@@ -3,8 +3,8 @@ package utils
 import (
 	"bytes"
 	"fmt"
-	"github.com/LydiaTrack/lydia-base/internal/templates"
-	"github.com/LydiaTrack/lydia-base/pkg/domain/email"
+	"github.com/LydiaTrack/ground/internal/templates"
+	"github.com/LydiaTrack/ground/pkg/domain/email"
 	"html/template"
 	"os"
 	"strings"

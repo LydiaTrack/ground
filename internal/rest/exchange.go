@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/LydiaTrack/lydia-base/internal/log"
+	"github.com/LydiaTrack/ground/internal/log"
 )
 
 const (

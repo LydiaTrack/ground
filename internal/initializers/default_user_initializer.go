@@ -4,13 +4,13 @@ import (
 	"os"
 	"time"
 
-	"github.com/LydiaTrack/lydia-base/pkg/auth"
-	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
-	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
+	"github.com/LydiaTrack/ground/pkg/auth"
+	"github.com/LydiaTrack/ground/pkg/domain/role"
+	"github.com/LydiaTrack/ground/pkg/domain/user"
 
-	"github.com/LydiaTrack/lydia-base/internal/log"
-	"github.com/LydiaTrack/lydia-base/internal/repository"
-	"github.com/LydiaTrack/lydia-base/internal/service"
+	"github.com/LydiaTrack/ground/internal/log"
+	"github.com/LydiaTrack/ground/internal/repository"
+	"github.com/LydiaTrack/ground/internal/service"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

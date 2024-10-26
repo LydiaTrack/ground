@@ -1,7 +1,7 @@
 package role
 
 import (
-	"github.com/LydiaTrack/lydia-base/pkg/auth"
+	"github.com/LydiaTrack/ground/pkg/auth"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

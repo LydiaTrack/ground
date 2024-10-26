@@ -1,3 +1,3 @@
 # Deployment Directory
 
-This directory contains the deployment files for the `lydia-base` project.
+This directory contains the deployment files for the `ground` project.

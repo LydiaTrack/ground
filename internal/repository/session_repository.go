@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 
-	"github.com/LydiaTrack/lydia-base/pkg/domain/session"
-	"github.com/LydiaTrack/lydia-base/pkg/mongodb"
+	"github.com/LydiaTrack/ground/pkg/domain/session"
+	"github.com/LydiaTrack/ground/pkg/mongodb"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )

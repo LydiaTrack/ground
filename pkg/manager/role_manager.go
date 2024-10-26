@@ -1,7 +1,7 @@
 package manager
 
 import (
-	"github.com/LydiaTrack/lydia-base/pkg/provider"
+	"github.com/LydiaTrack/ground/pkg/provider"
 )
 
 var roleProviders []provider.RoleProvider

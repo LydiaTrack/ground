@@ -2,8 +2,8 @@ package service
 
 import (
 	"fmt"
-	"github.com/LydiaTrack/lydia-base/pkg/domain/email"
-	"github.com/LydiaTrack/lydia-base/pkg/utils"
+	"github.com/LydiaTrack/ground/pkg/domain/email"
+	"github.com/LydiaTrack/ground/pkg/utils"
 	"net/smtp"
 )
 

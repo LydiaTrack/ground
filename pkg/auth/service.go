@@ -1,16 +1,16 @@
 package auth
 
 import (
-	"github.com/LydiaTrack/lydia-base/internal/log"
+	"github.com/LydiaTrack/ground/internal/log"
 	"os"
 	"strconv"
 	"time"
 
-	"github.com/LydiaTrack/lydia-base/pkg/constants"
-	"github.com/LydiaTrack/lydia-base/pkg/domain/session"
-	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
+	"github.com/LydiaTrack/ground/pkg/constants"
+	"github.com/LydiaTrack/ground/pkg/domain/session"
+	"github.com/LydiaTrack/ground/pkg/domain/user"
 
-	"github.com/LydiaTrack/lydia-base/internal/jwt"
+	"github.com/LydiaTrack/ground/internal/jwt"
 	"github.com/gin-gonic/gin"
 )
 

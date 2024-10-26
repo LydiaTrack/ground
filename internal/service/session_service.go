@@ -4,9 +4,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 
-	"github.com/LydiaTrack/lydia-base/pkg/auth"
-	"github.com/LydiaTrack/lydia-base/pkg/constants"
-	"github.com/LydiaTrack/lydia-base/pkg/domain/session"
+	"github.com/LydiaTrack/ground/pkg/auth"
+	"github.com/LydiaTrack/ground/pkg/constants"
+	"github.com/LydiaTrack/ground/pkg/domain/session"
 )
 
 // SessionService is an interface that contains the methods for the session service

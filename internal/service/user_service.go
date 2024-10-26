@@ -1,17 +1,17 @@
 package service
 
 import (
-	"github.com/LydiaTrack/lydia-base/pkg/responses"
+	"github.com/LydiaTrack/ground/pkg/responses"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 
-	"github.com/LydiaTrack/lydia-base/internal/log"
-	"github.com/LydiaTrack/lydia-base/internal/permissions"
-	"github.com/LydiaTrack/lydia-base/pkg/auth"
-	"github.com/LydiaTrack/lydia-base/pkg/constants"
-	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
-	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
-	"github.com/LydiaTrack/lydia-base/pkg/manager"
+	"github.com/LydiaTrack/ground/internal/log"
+	"github.com/LydiaTrack/ground/internal/permissions"
+	"github.com/LydiaTrack/ground/pkg/auth"
+	"github.com/LydiaTrack/ground/pkg/constants"
+	"github.com/LydiaTrack/ground/pkg/domain/role"
+	"github.com/LydiaTrack/ground/pkg/domain/user"
+	"github.com/LydiaTrack/ground/pkg/manager"
 	"golang.org/x/crypto/bcrypt"
 )
 
