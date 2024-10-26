@@ -1,9 +1,9 @@
 package test
 
 import (
-	"github.com/LydiaTrack/lydia-base/internal/service"
-	"github.com/LydiaTrack/lydia-base/pkg/domain/email"
-	"github.com/LydiaTrack/lydia-base/pkg/utils"
+	"github.com/LydiaTrack/ground/internal/service"
+	"github.com/LydiaTrack/ground/pkg/domain/email"
+	"github.com/LydiaTrack/ground/pkg/utils"
 	"os"
 	"testing"
 )

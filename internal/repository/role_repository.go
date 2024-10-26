@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
-	"github.com/LydiaTrack/lydia-base/pkg/domain/role"
-	"github.com/LydiaTrack/lydia-base/pkg/mongodb"
+	"github.com/LydiaTrack/ground/pkg/domain/role"
+	"github.com/LydiaTrack/ground/pkg/mongodb"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )

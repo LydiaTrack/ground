@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/LydiaTrack/lydia-base/pkg/constants"
+	"github.com/LydiaTrack/ground/pkg/constants"
 	"github.com/gin-gonic/gin"
 )
 

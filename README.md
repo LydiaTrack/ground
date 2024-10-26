@@ -15,7 +15,7 @@ This is the base repository for the Lydia backend. It has written in Golang and 
 1. Clone the repository
 
 ```bash
-git clone git@github.com:Lydia/lydia-base.git
+git clone git@github.com:Lydia/ground.git
 ```
 
 2. Create a `.env` file in the root directory of the project and add the following variables:
@@ -40,7 +40,7 @@ DEFAULT_ROLE_INFO=Standard user role
 3. Run the following command to start the project
 
 ```bash
-go build lydia-base/cmd/lydia-base
+go build ground/cmd/ground
 ```
 
 ## Abilities

@@ -4,10 +4,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 
-	"github.com/LydiaTrack/lydia-base/internal/permissions"
-	"github.com/LydiaTrack/lydia-base/pkg/auth"
-	"github.com/LydiaTrack/lydia-base/pkg/constants"
-	"github.com/LydiaTrack/lydia-base/pkg/domain/audit"
+	"github.com/LydiaTrack/ground/internal/permissions"
+	"github.com/LydiaTrack/ground/pkg/auth"
+	"github.com/LydiaTrack/ground/pkg/constants"
+	"github.com/LydiaTrack/ground/pkg/domain/audit"
 )
 
 type AuditService struct {

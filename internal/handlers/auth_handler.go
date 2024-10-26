@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/LydiaTrack/lydia-base/internal/blocker"
-	"github.com/LydiaTrack/lydia-base/pkg/auth"
-	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
-	"github.com/LydiaTrack/lydia-base/pkg/utils"
+	"github.com/LydiaTrack/ground/internal/blocker"
+	"github.com/LydiaTrack/ground/pkg/auth"
+	"github.com/LydiaTrack/ground/pkg/domain/user"
+	"github.com/LydiaTrack/ground/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
 

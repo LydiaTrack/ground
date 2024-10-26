@@ -5,7 +5,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 
-	"github.com/LydiaTrack/lydia-base/pkg/auth"
+	"github.com/LydiaTrack/ground/pkg/auth"
 )
 
 type Model struct {

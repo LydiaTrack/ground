@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/LydiaTrack/lydia-base/internal/handlers"
-	"github.com/LydiaTrack/lydia-base/pkg/service_initializer"
+	"github.com/LydiaTrack/ground/internal/handlers"
+	"github.com/LydiaTrack/ground/pkg/service_initializer"
 	"github.com/gin-gonic/gin"
 )
 

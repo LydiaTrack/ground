@@ -2,12 +2,12 @@ package service
 
 import (
 	"errors"
-	"github.com/LydiaTrack/lydia-base/pkg/auth"
-	"github.com/LydiaTrack/lydia-base/pkg/constants"
-	"github.com/LydiaTrack/lydia-base/pkg/domain/email"
-	"github.com/LydiaTrack/lydia-base/pkg/domain/resetPassword"
-	"github.com/LydiaTrack/lydia-base/pkg/domain/user"
-	"github.com/LydiaTrack/lydia-base/pkg/utils"
+	"github.com/LydiaTrack/ground/pkg/auth"
+	"github.com/LydiaTrack/ground/pkg/constants"
+	"github.com/LydiaTrack/ground/pkg/domain/email"
+	"github.com/LydiaTrack/ground/pkg/domain/resetPassword"
+	"github.com/LydiaTrack/ground/pkg/domain/user"
+	"github.com/LydiaTrack/ground/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

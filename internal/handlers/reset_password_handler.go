@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"errors"
-	"github.com/LydiaTrack/lydia-base/internal/service"
-	"github.com/LydiaTrack/lydia-base/pkg/domain/resetPassword"
-	"github.com/LydiaTrack/lydia-base/pkg/utils"
+	"github.com/LydiaTrack/ground/internal/service"
+	"github.com/LydiaTrack/ground/pkg/domain/resetPassword"
+	"github.com/LydiaTrack/ground/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
 

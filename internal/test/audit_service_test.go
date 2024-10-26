@@ -4,12 +4,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/LydiaTrack/lydia-base/pkg/auth"
-	"github.com/LydiaTrack/lydia-base/pkg/domain/audit"
-	"github.com/LydiaTrack/lydia-base/pkg/test_support"
+	"github.com/LydiaTrack/ground/pkg/auth"
+	"github.com/LydiaTrack/ground/pkg/domain/audit"
+	"github.com/LydiaTrack/ground/pkg/test_support"
 
-	"github.com/LydiaTrack/lydia-base/internal/repository"
-	"github.com/LydiaTrack/lydia-base/internal/service"
+	"github.com/LydiaTrack/ground/internal/repository"
+	"github.com/LydiaTrack/ground/internal/service"
 )
 
 var (

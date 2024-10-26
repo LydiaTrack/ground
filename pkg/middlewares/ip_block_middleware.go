@@ -3,7 +3,7 @@ package middlewares
 import (
 	"net/http"
 
-	"github.com/LydiaTrack/lydia-base/internal/blocker"
+	"github.com/LydiaTrack/ground/internal/blocker"
 	"github.com/gin-gonic/gin"
 )
 

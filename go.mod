@@ -1,4 +1,4 @@
-module github.com/LydiaTrack/lydia-base
+module github.com/LydiaTrack/ground
 
 go 1.20
 
