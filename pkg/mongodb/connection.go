@@ -69,7 +69,7 @@ func InitializeMongoDBConnection() error {
 		log.Log("Connecting to remote host of mongodb container...")
 		connectionType = RemoteConnection
 	} else {
-		log.LogFatal("Invalid connection type for mongodb container!")
+		log.LogFatal("Invalid connection type for mongodb container: " + connectionTypeEnv)
 		return nil
 	}
 
@@ -117,6 +117,6 @@ func GetCollection(collectionName string) (*mongo.Collection, error) {
 
 		return client.Database(os.Getenv("LYDIA_DB_NAME")).Collection(collectionName), nil
 	}
-	log.LogFatal("Invalid connection type for mongodb container!")
+	log.LogFatal("Invalid connection type for mongodb container: " + connectionType)
 	return nil, nil
 }
