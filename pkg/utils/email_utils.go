@@ -3,31 +3,25 @@ package utils
 import (
 	"bytes"
 	"fmt"
-	"github.com/LydiaTrack/ground/internal/templates"
-	"github.com/LydiaTrack/ground/pkg/domain/email"
 	"html/template"
 	"os"
 	"strings"
+
+	"github.com/LydiaTrack/ground/internal/templates"
+	"github.com/LydiaTrack/ground/pkg/domain/email"
 )
 
-// LoadCredentials loads the email address and password from environment variables based on the email type.
+// LoadCredentialsWithEmailType loads the email address and password from environment variables based on the email type.
 // It currently supports "RESET_PASSWORD" as a recognized type.
-func LoadCredentials(emailType string) (email.EmailCredentials, error) {
-	var addressEnv, passwordEnv string
+func LoadCredentialsWithEmailType(emailType email.SupportedEmailType) (email.EmailCredentials, error) {
 
-	switch emailType {
-	case "RESET_PASSWORD":
-		addressEnv = "EMAIL_TYPE_RESET_PASSWORD_ADDRESS"
-		passwordEnv = "EMAIL_TYPE_RESET_PASSWORD_PASSWORD"
-	default:
-		return email.EmailCredentials{}, fmt.Errorf("unsupported email type: %s", emailType)
-	}
-
-	address := os.Getenv(addressEnv)
-	password := os.Getenv(passwordEnv)
+	addresKey := fmt.Sprintf("EMAIL_TYPE_%s_ADDRESS", strings.ToUpper(string(emailType)))
+	passwordKey := fmt.Sprintf("EMAIL_TYPE_%s_PASSWORD", strings.ToUpper(string(emailType)))
+	address := os.Getenv(addresKey)
+	password := os.Getenv(passwordKey)
 
 	if address == "" || password == "" {
-		return email.EmailCredentials{}, fmt.Errorf("environment variables %s or %s not set", addressEnv, passwordEnv)
+		return email.EmailCredentials{}, fmt.Errorf("environment variables %s or %s not set", addresKey, passwordKey)
 	}
 
 	return email.EmailCredentials{
@@ -36,15 +30,15 @@ func LoadCredentials(emailType string) (email.EmailCredentials, error) {
 	}, nil
 }
 
-// GenerateEmailBody parses the template and injects the data to generate the final email body.
-func GenerateEmailBody(emailType string, data email.EmailTemplateData) (string, error) {
+// GenerateEmailBodyFromTemplate parses the template and injects the data to generate the final email body.
+func GenerateEmailBodyFromTemplate(emailType email.SupportedEmailType, data interface{}) (string, error) {
 	// Use lowercase email type as the template name
-	tmpl, err := template.ParseFS(templates.FS, fmt.Sprintf("%s.html", strings.ToLower(emailType)))
+	tmpl, err := template.ParseFS(templates.FS, fmt.Sprintf("%s.html", strings.ToLower(string(emailType))))
 	if err != nil {
 		return "", fmt.Errorf("failed to parse template: %w", err)
 	}
 	if tmpl == nil {
-		return "", fmt.Errorf("template %s.html not found", strings.ToLower(emailType))
+		return "", fmt.Errorf("template %s.html not found", strings.ToLower(string(emailType)))
 	}
 
 	var body bytes.Buffer

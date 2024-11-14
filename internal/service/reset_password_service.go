@@ -98,15 +98,17 @@ func (s ResetPasswordService) SendResetPasswordEmail(c *gin.Context, cmd resetPa
 		return err
 	}
 
-	templateData := email.EmailTemplateData{
-		Code:     resetPasswordModel.Code,
-		Username: userModel.Username,
+	templateData := email.TemplateContext{
+		Data: resetPassword.EmailTemplateData{
+			Code:     resetPasswordModel.Code,
+			Username: userModel.Username,
+		},
 	}
 
 	err = s.emailService.SendEmail(email.SendEmailCommand{
 		To:      cmd.Email,
 		Subject: "Renoten Reset Password",
-	}, "RESET_PASSWORD", templateData)
+	}, email.EmailTypeResetPassword, templateData)
 	if err != nil {
 		return err
 	}

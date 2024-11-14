@@ -8,6 +8,7 @@ import (
 
 	"github.com/LydiaTrack/ground/internal/service"
 	"github.com/LydiaTrack/ground/pkg/domain/email"
+	"github.com/LydiaTrack/ground/pkg/domain/resetPassword"
 	"github.com/LydiaTrack/ground/pkg/utils"
 )
 
@@ -18,7 +19,7 @@ var (
 
 func initializeEmailService() {
 	if !initializedEmailService {
-		setEnvVariables()
+		setEmailServiceEnvVariables()
 
 		resetPwSmtp := os.Getenv("EMAIL_TYPE_RESET_PASSWORD_SMTP")
 		resetPwPort, err := strconv.Atoi(os.Getenv("EMAIL_TYPE_RESET_PASSWORD_PORT"))
@@ -37,7 +38,7 @@ func initializeEmailService() {
 	}
 }
 
-func setEnvVariables() {
+func setEmailServiceEnvVariables() {
 	// Set environment variables for testing
 	err := os.Setenv("EMAIL_TYPE_RESET_PASSWORD_ADDRESS", "no-reply@renoten.com")
 	if err != nil {
@@ -47,7 +48,8 @@ func setEnvVariables() {
 	if err != nil {
 		return
 	}
-	err = os.Setenv("EMAIL_TYPE_RESET_PASSWORD_SMTP", "smtp.secureserver.net")
+	err = os.Setenv("EMAIL_TYPE_RESET_PASSWORD_SMTP", "smtpout.secureserver.net")
+
 	if err != nil {
 		return
 	}
@@ -80,9 +82,11 @@ func testSendEmailWithResetPasswordType(t *testing.T) {
 		t.Errorf("Failed to generate code: %v", err)
 	}
 	fmt.Printf("Sending email with code: %s\n", code)
-	err = emailService.SendEmail(command, "RESET_PASSWORD", email.EmailTemplateData{
-		Code:     code,
-		Username: "testuser",
+	err = emailService.SendEmail(command, "RESET_PASSWORD", email.TemplateContext{
+		Data: resetPassword.EmailTemplateData{
+			Code:     code,
+			Username: "testUser",
+		},
 	})
 	fmt.Printf("Email sent\n")
 	if err != nil {
@@ -102,7 +106,7 @@ func testLoadEmailTypeResetPassword(t *testing.T) {
 	}
 
 	// Load the email type
-	emailTypeConfig, err := utils.LoadCredentials("RESET_PASSWORD")
+	emailTypeConfig, err := utils.LoadCredentialsWithEmailType(email.EmailTypeResetPassword)
 
 	if err != nil {
 		t.Errorf("Failed to load email type: %v", err)
