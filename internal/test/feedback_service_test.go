@@ -20,7 +20,7 @@ func initializeFeedbackService() {
 	if !initializedFeedback {
 		test_support.TestWithMongo()
 		repo := repository.GetFeedbackRepository()
-		feedbackService = service.NewFeedbackService(repo)
+		feedbackService = *service.NewFeedbackService(repo)
 		initializedFeedback = true
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/LydiaTrack/ground/pkg/auth"
 	"github.com/LydiaTrack/ground/pkg/domain/role"
 	"github.com/LydiaTrack/ground/pkg/test_support"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/LydiaTrack/ground/internal/permissions"
 	"github.com/LydiaTrack/ground/internal/repository"
@@ -151,7 +152,8 @@ func testDeleteRole(t *testing.T) {
 		UserId:      nil,
 	})
 
-	if err != nil {
+	// If error is not nil, and error is not mongo.ErrNoDocuments, then it is an unexpected error
+	if err != nil && err != mongo.ErrNoDocuments {
 		t.Errorf("Error checking roleModel: %s", err)
 	}
 
