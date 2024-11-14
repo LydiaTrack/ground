@@ -2,6 +2,10 @@ package service
 
 import (
 	"errors"
+	"os"
+	"strconv"
+	"time"
+
 	"github.com/LydiaTrack/ground/pkg/auth"
 	"github.com/LydiaTrack/ground/pkg/constants"
 	"github.com/LydiaTrack/ground/pkg/domain/email"
@@ -11,7 +15,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"time"
 )
 
 type ResetPasswordService struct {
@@ -20,10 +23,21 @@ type ResetPasswordService struct {
 	resetPasswordRepository ResetPasswordRepository
 }
 
-func NewResetPasswordService(resetPasswordRepository ResetPasswordRepository, emailService SimpleEmailService, userService UserService) *ResetPasswordService {
+func NewResetPasswordService(resetPasswordRepository ResetPasswordRepository, userService UserService) *ResetPasswordService {
+
+	// Gets the SMTP configuration from environment variables
+	resetPwSmtp := os.Getenv("EMAIL_TYPE_RESET_PASSWORD_SMTP")
+	resetPwPort, err := strconv.Atoi(os.Getenv("EMAIL_TYPE_RESET_PASSWORD_PORT"))
+	if err != nil {
+		panic(err)
+	}
+
 	return &ResetPasswordService{
-		userService:             userService,
-		emailService:            emailService,
+		userService: userService,
+		emailService: *NewSimpleEmailService(SMTPConfig{
+			Host: resetPwSmtp,
+			Port: resetPwPort,
+		}),
 		resetPasswordRepository: resetPasswordRepository,
 	}
 }
@@ -84,15 +98,17 @@ func (s ResetPasswordService) SendResetPasswordEmail(c *gin.Context, cmd resetPa
 		return err
 	}
 
-	templateData := email.EmailTemplateData{
-		Code:     resetPasswordModel.Code,
-		Username: userModel.Username,
+	templateData := email.TemplateContext{
+		Data: resetPassword.EmailTemplateData{
+			Code:     resetPasswordModel.Code,
+			Username: userModel.Username,
+		},
 	}
 
 	err = s.emailService.SendEmail(email.SendEmailCommand{
 		To:      cmd.Email,
 		Subject: "Renoten Reset Password",
-	}, "RESET_PASSWORD", templateData)
+	}, email.EmailTypeResetPassword, templateData)
 	if err != nil {
 		return err
 	}
