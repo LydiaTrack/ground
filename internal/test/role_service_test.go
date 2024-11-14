@@ -151,6 +151,10 @@ func testDeleteRole(t *testing.T) {
 		UserId:      nil,
 	})
 
+	if err != nil {
+		t.Errorf("Error checking roleModel: %s", err)
+	}
+
 	if exists {
 		t.Errorf("Expected roleModel exists")
 	}

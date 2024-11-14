@@ -2,8 +2,9 @@ package user
 
 import (
 	"errors"
-	"github.com/LydiaTrack/ground/internal/utils"
 	"time"
+
+	"github.com/LydiaTrack/ground/internal/utils"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -27,9 +28,11 @@ func NewUser(id string, username string, password string,
 	personInfo *PersonInfo, contactInfo ContactInfo,
 	createdDate time.Time, properties map[string]interface{}, version int) (Model, error) {
 	objID, err := primitive.ObjectIDFromHex(id)
+
 	if err != nil {
 		return Model{}, err
 	}
+
 	return Model{
 		ID:          objID,
 		Username:    username,

@@ -12,6 +12,7 @@ type Services struct {
 	SessionService       *service.SessionService
 	UserService          *service.UserService
 	ResetPasswordService *service.ResetPasswordService
+	FeedbackService      *service.FeedbackService
 }
 
 var services Services
@@ -23,6 +24,7 @@ func InitializeServices() {
 	services.SessionService = service.NewSessionService(repository.GetSessionRepository(), *services.UserService)
 	services.AuthService = auth.NewAuthService(*services.UserService, *services.SessionService)
 	services.ResetPasswordService = service.NewResetPasswordService(repository.GetResetPasswordRepository(), *services.UserService)
+	services.FeedbackService = service.NewFeedbackService(repository.GetFeedbackRepository())
 }
 
 // GetServices returns the services.

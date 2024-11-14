@@ -17,3 +17,8 @@ func NewModel(email, code string, expiresAt primitive.DateTime) Model {
 		ExpiresAt: expiresAt,
 	}
 }
+
+type EmailTemplateData struct {
+	Code     string
+	Username string
+}
