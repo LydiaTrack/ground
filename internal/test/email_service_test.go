@@ -2,6 +2,9 @@ package test
 
 import (
 	"fmt"
+	"github.com/LydiaTrack/ground/internal/templates"
+	"github.com/LydiaTrack/ground/pkg/registry"
+	"log"
 	"os"
 	"strconv"
 	"testing"
@@ -26,8 +29,7 @@ func initializeEmailService() {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("SMTP: %s, Port: %d\n", resetPwSmtp, resetPwPort)
-		// Set up SMTP configuration
+		registerResetPwEmailTemplate()
 		smtpConfig := service.SMTPConfig{
 			Host: resetPwSmtp,
 			Port: resetPwPort,
@@ -35,6 +37,21 @@ func initializeEmailService() {
 		// Initialize the SimpleEmailService
 		emailService = service.NewSimpleEmailService(smtpConfig)
 		initializedEmailService = true
+	}
+}
+
+// registerResetPwEmailTemplate registers the reset password email template from the embedded FS into the TemplateRegistry.
+func registerResetPwEmailTemplate() {
+	// Load the template content from the embedded FS
+	templateContent, err := templates.FS.ReadFile("reset_password.html")
+	if err != nil {
+		log.Fatalf("Failed to read reset password template from embedded FS: %v", err)
+	}
+
+	// Register the template content in the TemplateRegistry
+	err = registry.RegisterTemplateFromHTML("reset_password", string(templateContent))
+	if err != nil {
+		log.Fatalf("Failed to register reset password email template: %v", err)
 	}
 }
 

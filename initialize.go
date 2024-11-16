@@ -1,4 +1,4 @@
-package lydia_base
+package ground
 
 import (
 	"reflect"
@@ -8,7 +8,7 @@ import (
 	"github.com/LydiaTrack/ground/internal/provider"
 	"github.com/LydiaTrack/ground/pkg/auth"
 	"github.com/LydiaTrack/ground/pkg/domain/role"
-	"github.com/LydiaTrack/ground/pkg/manager"
+	"github.com/LydiaTrack/ground/pkg/registry"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/LydiaTrack/ground/internal/api"
@@ -60,7 +60,7 @@ func Initialize(r *gin.Engine) {
 	createDefaultRoles()
 
 	// Register the self role provider
-	manager.RegisterRoleProvider(provider.SelfRoleProvider{})
+	registry.RegisterRoleProvider(provider.SelfRoleProvider{})
 
 	// Initialize default user
 	err = initializers.InitializeDefaultUser()

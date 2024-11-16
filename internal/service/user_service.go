@@ -11,7 +11,7 @@ import (
 	"github.com/LydiaTrack/ground/pkg/constants"
 	"github.com/LydiaTrack/ground/pkg/domain/role"
 	"github.com/LydiaTrack/ground/pkg/domain/user"
-	"github.com/LydiaTrack/ground/pkg/manager"
+	"github.com/LydiaTrack/ground/pkg/registry"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -103,7 +103,7 @@ func (s UserService) CreateUser(command user.CreateUserCommand, authContext auth
 // addDefaultRoles adds default roles to a user
 func (s UserService) addDefaultRoles(userId primitive.ObjectID, authContext auth.PermissionContext) error {
 	// Get all default roles from all registered role providers
-	defaultRoleNames := manager.GetAllDefaultRoleNames()
+	defaultRoleNames := registry.GetAllDefaultRoleNames()
 	if len(defaultRoleNames) == 0 {
 		log.Log("No default roles found")
 		return nil
