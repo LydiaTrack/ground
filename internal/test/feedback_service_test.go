@@ -1,6 +1,9 @@
 package test
 
 import (
+	"github.com/LydiaTrack/ground/internal/templates"
+	"github.com/LydiaTrack/ground/pkg/registry"
+	"log"
 	"os"
 	"testing"
 
@@ -21,6 +24,7 @@ func initializeFeedbackService() {
 		test_support.TestWithMongo()
 		repo := repository.GetFeedbackRepository()
 		feedbackService = *service.NewFeedbackService(repo)
+		registerFeedbackEmailTemplate()
 		initializedFeedback = true
 	}
 }
@@ -55,6 +59,21 @@ func setFeedbackEnvVariables() {
 	err = os.Setenv("FEEDBACK_EMAIL_DESTINATION", "support@renoten.com")
 	if err != nil {
 		return
+	}
+}
+
+// registerFeedbackEmailTemplate registers the reset password email template from the embedded FS into the TemplateRegistry.
+func registerFeedbackEmailTemplate() {
+	// Load the template content from the embedded FS
+	templateContent, err := templates.FS.ReadFile("feedback.html")
+	if err != nil {
+		log.Fatalf("Failed to read feedback template from embedded FS: %v", err)
+	}
+
+	// Register the template content in the TemplateRegistry
+	err = registry.RegisterTemplateFromHTML("feedback", string(templateContent))
+	if err != nil {
+		log.Fatalf("Failed to register feedback email template: %v", err)
 	}
 }
 
