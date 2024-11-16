@@ -21,12 +21,12 @@ git clone git@github.com:Lydia/ground.git
 2. Create a `.env` file in the root directory of the project and add the following variables:
 
 ```bash
-LYDIA_DB_URI=example.mongodb.com
-LYDIA_DB_NAME=renoten-db
+DB_URI=example.mongodb.com
+DB_NAME=renoten-db
 # It defines the DB type for mongoDB, it can be either CONTAINER or REMOTE
-LYDIA_DB_CONNECTION_TYPE=CONTAINER
+DB_CONNECTION_TYPE=CONTAINER
 # DB Container connection port
-LYDIA_DB_PORT=27017
+DB_PORT=27017
 JWT_SECRET=youRS3cr3t
 JWT_EXPIRES_IN_HOUR=1
 JWT_REFRESH_EXPIRES_IN_HOUR=72

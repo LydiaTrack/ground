@@ -3,12 +3,11 @@ package utils
 import (
 	"bytes"
 	"fmt"
-	"html/template"
 	"os"
 	"strings"
 
-	"github.com/LydiaTrack/ground/internal/templates"
 	"github.com/LydiaTrack/ground/pkg/domain/email"
+	"github.com/LydiaTrack/ground/pkg/registry"
 )
 
 // LoadCredentialsWithEmailType loads the email address and password from environment variables based on the email type.
@@ -33,14 +32,15 @@ func LoadCredentialsWithEmailType(emailType email.SupportedEmailType) (email.Ema
 // GenerateEmailBodyFromTemplate parses the template and injects the data to generate the final email body.
 func GenerateEmailBodyFromTemplate(emailType email.SupportedEmailType, data interface{}) (string, error) {
 	// Use lowercase email type as the template name
-	tmpl, err := template.ParseFS(templates.FS, fmt.Sprintf("%s.html", strings.ToLower(string(emailType))))
+	templateName := strings.ToLower(string(emailType))
+
+	// Retrieve the template from the registry
+	tmpl, err := registry.GetTemplate(templateName)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse template: %w", err)
-	}
-	if tmpl == nil {
-		return "", fmt.Errorf("template %s.html not found", strings.ToLower(string(emailType)))
+		return "", fmt.Errorf("failed to retrieve template: %w", err)
 	}
 
+	// Render the template with the provided data
 	var body bytes.Buffer
 	err = tmpl.Execute(&body, data)
 	if err != nil {
