@@ -1,11 +1,11 @@
 package session
 
 type CreateSessionCommand struct {
-	UserId       string `json:"userId"`
+	UserID       string `json:"userID"`
 	ExpireTime   int64  `json:"expireTime"`
 	RefreshToken string `json:"refreshToken"`
 }
 
 type DeleteSessionCommand struct {
-	UserId string `json:"userId"`
+	UserID string `json:"userID"`
 }

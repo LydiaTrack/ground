@@ -32,7 +32,7 @@ const (
 // Model represents a feedback message submitted by a user
 type Model struct {
 	ID        primitive.ObjectID `json:"id" bson:"_id"`
-	UserID    primitive.ObjectID `json:"userId" bson:"userId"`
+	UserID    primitive.ObjectID `json:"userID" bson:"userId"`
 	Type      FeedbackType       `json:"type" bson:"type"`
 	Message   string             `json:"message" bson:"message"`
 	CreatedAt primitive.DateTime `json:"createdAt" bson:"createdAt"`
@@ -49,11 +49,11 @@ type EmailTemplateData struct {
 	CreatedAt time.Time
 }
 
-// FeedbackOption defines a function type for applying options to Feedback
-type FeedbackOption func(*Model) error
+// Option defines a function type for applying options to Feedback
+type Option func(*Model) error
 
 // NewFeedback creates a new Feedback instance using the options pattern
-func NewFeedback(opts ...FeedbackOption) (*Model, error) {
+func NewFeedback(opts ...Option) (*Model, error) {
 	f := &Model{
 		ID:        primitive.NewObjectID(),
 		CreatedAt: primitive.DateTime(time.Now().UnixNano() / int64(time.Millisecond)),
@@ -76,7 +76,7 @@ func NewFeedback(opts ...FeedbackOption) (*Model, error) {
 }
 
 // WithUserID sets the UserID field
-func WithUserID(userID primitive.ObjectID) FeedbackOption {
+func WithUserID(userID primitive.ObjectID) Option {
 	return func(f *Model) error {
 		if userID == primitive.NilObjectID {
 			return errors.New("user ID is required")
@@ -87,7 +87,7 @@ func WithUserID(userID primitive.ObjectID) FeedbackOption {
 }
 
 // WithType sets the Type field
-func WithType(feedbackType FeedbackType) FeedbackOption {
+func WithType(feedbackType FeedbackType) Option {
 	return func(f *Model) error {
 		if !isValidFeedbackType(feedbackType) {
 			return fmt.Errorf("invalid feedback type: %s", feedbackType)
@@ -98,7 +98,7 @@ func WithType(feedbackType FeedbackType) FeedbackOption {
 }
 
 // WithMessage sets the Message field
-func WithMessage(message string) FeedbackOption {
+func WithMessage(message string) Option {
 	return func(f *Model) error {
 		if message == "" {
 			return errors.New("message cannot be empty")
@@ -109,7 +109,7 @@ func WithMessage(message string) FeedbackOption {
 }
 
 // WithStatus sets the Status field (optional)
-func WithStatus(status FeedbackStatus) FeedbackOption {
+func WithStatus(status FeedbackStatus) Option {
 	return func(f *Model) error {
 		if !isValidFeedbackStatus(status) {
 			return fmt.Errorf("invalid feedback status: %s", status)

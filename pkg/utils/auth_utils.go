@@ -8,7 +8,7 @@ import (
 )
 
 type userService interface {
-	GetUserPermissionList(userId primitive.ObjectID) ([]auth.Permission, error)
+	GetUserPermissionList(userID primitive.ObjectID) ([]auth.Permission, error)
 }
 
 func CreateAuthContext(c *gin.Context, authService auth.Service, userService userService) (auth.PermissionContext, error) {
@@ -23,6 +23,6 @@ func CreateAuthContext(c *gin.Context, authService auth.Service, userService use
 
 	return auth.PermissionContext{
 		Permissions: currentUserPermissions,
-		UserId:      &currentUser.ID,
+		UserID:      &currentUser.ID,
 	}, nil
 }
