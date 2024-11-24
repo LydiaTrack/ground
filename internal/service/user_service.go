@@ -101,7 +101,7 @@ func (s UserService) CreateUser(command user.CreateUserCommand, authContext auth
 }
 
 // addDefaultRoles adds default roles to a user
-func (s UserService) addDefaultRoles(userId primitive.ObjectID, authContext auth.PermissionContext) error {
+func (s UserService) addDefaultRoles(userID primitive.ObjectID, authContext auth.PermissionContext) error {
 	// Get all default roles from all registered role providers
 	defaultRoleNames := registry.GetAllDefaultRoleNames()
 	if len(defaultRoleNames) == 0 {
@@ -114,7 +114,7 @@ func (s UserService) addDefaultRoles(userId primitive.ObjectID, authContext auth
 			return err
 		}
 		// Add roles to user
-		err = s.userRepository.AddRoleToUser(userId, roleModel.ID)
+		err = s.userRepository.AddRoleToUser(userID, roleModel.ID)
 	}
 
 	return nil
@@ -153,7 +153,7 @@ func (s UserService) GetSelfUser(authContext auth.PermissionContext) (user.Model
 		return user.Model{}, constants.ErrorPermissionDenied
 	}
 
-	objID, err := primitive.ObjectIDFromHex(authContext.UserId.Hex())
+	objID, err := primitive.ObjectIDFromHex(authContext.UserID.Hex())
 	if err != nil {
 		return user.Model{}, constants.ErrorBadRequest
 	}
@@ -282,7 +282,7 @@ func (s UserService) GetUserRoles(userID primitive.ObjectID, authContext auth.Pe
 func (s UserService) GetUserPermissionList(userID primitive.ObjectID) ([]auth.Permission, error) {
 	result, err := s.GetUserRoles(userID, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 	if err != nil {
 		return nil, constants.ErrorInternalServerError
@@ -331,7 +331,7 @@ func (s UserService) UpdateUserSelf(command user.UpdateUserCommand, authContext 
 		return user.Model{}, constants.ErrorBadRequest
 	}
 
-	objID, err := primitive.ObjectIDFromHex(authContext.UserId.Hex())
+	objID, err := primitive.ObjectIDFromHex(authContext.UserID.Hex())
 	if err != nil {
 		return user.Model{}, constants.ErrorBadRequest
 	}
@@ -364,7 +364,7 @@ func (s UserService) UpdateUserPassword(id string, cmd user.UpdatePasswordComman
 	}
 
 	// Check if the user is trying to update another user's password
-	if authContext.UserId.Hex() != id {
+	if authContext.UserID.Hex() != id {
 		return constants.ErrorPermissionDenied
 	}
 
@@ -375,7 +375,7 @@ func (s UserService) UpdateUserPassword(id string, cmd user.UpdatePasswordComman
 
 	userModel, err := s.GetUser(id, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      &objID,
+		UserID:      &objID,
 	})
 	if err != nil {
 		return err
@@ -410,14 +410,14 @@ func (s UserService) UpdateUserPasswordSelf(cmd user.UpdatePasswordCommand, auth
 		return constants.ErrorPermissionDenied
 	}
 
-	objID, err := primitive.ObjectIDFromHex(authContext.UserId.Hex())
+	objID, err := primitive.ObjectIDFromHex(authContext.UserID.Hex())
 	if err != nil {
 		return constants.ErrorBadRequest
 	}
 
-	userModel, err := s.GetUser(authContext.UserId.Hex(), auth.PermissionContext{
+	userModel, err := s.GetUser(authContext.UserID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      &objID,
+		UserID:      &objID,
 	})
 	if err != nil {
 		return err
@@ -456,7 +456,7 @@ func (s UserService) ResetUserPassword(id string, cmd user.ResetPasswordCommand)
 
 	userModel, err := s.GetUser(id, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      &objID,
+		UserID:      &objID,
 	})
 	if err != nil {
 		return err

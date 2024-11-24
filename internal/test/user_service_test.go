@@ -67,7 +67,7 @@ func testCreateUser(t *testing.T) {
 	}
 	userModel, err := userService.CreateUser(command, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -110,7 +110,7 @@ func testCreateUser(t *testing.T) {
 	// Check user is exists
 	exists, err := userService.ExistsUser(userModel.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -138,7 +138,7 @@ func testCreateUser(t *testing.T) {
 	// Get user
 	getUserModel, err := userService.GetUser(userModel.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -168,7 +168,7 @@ func testAddRoleToUser(t *testing.T) {
 
 	userModel, err := userService.CreateUser(command, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -189,7 +189,7 @@ func testAddRoleToUser(t *testing.T) {
 
 	roleModel, err := roleService.CreateRole(roleCommand, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -204,7 +204,7 @@ func testAddRoleToUser(t *testing.T) {
 
 	err = userService.AddRoleToUser(addRoleToUserCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -214,7 +214,7 @@ func testAddRoleToUser(t *testing.T) {
 	// Check if the role is added to the user
 	result, err := userService.GetUserRoles(userModel.ID, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -259,7 +259,7 @@ func testRemoveRoleFromUser(t *testing.T) {
 
 	userModel, err := userService.CreateUser(command, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -283,7 +283,7 @@ func testRemoveRoleFromUser(t *testing.T) {
 
 	roleModel, err := roleService.CreateRole(roleCommand, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -298,7 +298,7 @@ func testRemoveRoleFromUser(t *testing.T) {
 
 	err = userService.AddRoleToUser(addRoleToUserCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -313,7 +313,7 @@ func testRemoveRoleFromUser(t *testing.T) {
 
 	err = userService.RemoveRoleFromUser(removeRoleFromUserCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -323,7 +323,7 @@ func testRemoveRoleFromUser(t *testing.T) {
 	// Check if the role is removed from the user
 	result, err := userService.GetUserRoles(userModel.ID, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -364,7 +364,7 @@ func testCreateAndVerifyUser(t *testing.T) {
 
 	_, err := userService.CreateUser(command, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -374,7 +374,7 @@ func testCreateAndVerifyUser(t *testing.T) {
 	// Verify user
 	_, err = userService.VerifyUser("test-create-verify-user-001", "test123", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -384,7 +384,7 @@ func testCreateAndVerifyUser(t *testing.T) {
 	// Verify user with wrong password
 	_, err = userService.VerifyUser("test-create-verify-user-001", "test1234", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err == nil {
@@ -409,7 +409,7 @@ func testCreateAndDeleteUser(t *testing.T) {
 
 	userModel, err := userService.CreateUser(command, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -423,7 +423,7 @@ func testCreateAndDeleteUser(t *testing.T) {
 
 	err = userService.DeleteUser(deleteUserCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {

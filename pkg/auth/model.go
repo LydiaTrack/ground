@@ -9,5 +9,5 @@ type Permission struct {
 
 type PermissionContext struct {
 	Permissions []Permission        `json:"permissions"`
-	UserId      *primitive.ObjectID `json:"userId"`
+	UserID      *primitive.ObjectID `json:"userID"`
 }

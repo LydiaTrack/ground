@@ -55,18 +55,18 @@ func (s SessionMongoRepository) GetUserSession(id primitive.ObjectID) (session.I
 	return sessionModel, nil
 }
 
-// DeleteSessionByUserId is a function that deletes all sessions of a user
-func (s SessionMongoRepository) DeleteSessionByUserId(userId primitive.ObjectID) error {
-	_, err := s.collection.DeleteMany(context.Background(), primitive.M{"userId": userId})
+// DeleteSessionByUserID is a function that deletes all sessions of a user
+func (s SessionMongoRepository) DeleteSessionByUserID(userID primitive.ObjectID) error {
+	_, err := s.collection.DeleteMany(context.Background(), primitive.M{"userId": userID})
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// DeleteSessionById is a function that deletes a session by id
-func (s SessionMongoRepository) DeleteSessionById(sessionId primitive.ObjectID) error {
-	_, err := s.collection.DeleteOne(context.Background(), primitive.M{"_id": sessionId})
+// DeleteSessionByID is a function that deletes a session by id
+func (s SessionMongoRepository) DeleteSessionByID(sessionID primitive.ObjectID) error {
+	_, err := s.collection.DeleteOne(context.Background(), primitive.M{"_id": sessionID})
 	if err != nil {
 		return err
 	}

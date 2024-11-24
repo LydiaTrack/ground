@@ -11,6 +11,6 @@ func InitFeedback(r *gin.Engine, services service_initializer.Services) {
 
 	routeGroup := r.Group("/feedback")
 	routeGroup.POST("", feedbackHandler.CreateFeedback)
-	routeGroup.GET("/user/:userId", feedbackHandler.GetFeedbackByUser)
-	routeGroup.PUT("/:feedbackId/status", feedbackHandler.UpdateFeedbackStatus)
+	routeGroup.GET("/user/:userID", feedbackHandler.GetFeedbackByUser)
+	routeGroup.PUT("/:feedbackID/status", feedbackHandler.UpdateFeedbackStatus)
 }

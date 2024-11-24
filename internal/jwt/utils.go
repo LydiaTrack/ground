@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	UserIdKey            = "sub"
+	UserIDKey            = "sub"
 	AuthorizedKey        = "authorized"
 	ExpKey               = "exp"
 	JwtExpirationKey     = "JWT_EXPIRES_IN_HOUR"
@@ -28,7 +28,7 @@ type TokenPair struct {
 }
 
 // GenerateTokenPair generates a jwt and refresh token
-func GenerateTokenPair(userId primitive.ObjectID) (TokenPair, error) {
+func GenerateTokenPair(userID primitive.ObjectID) (TokenPair, error) {
 
 	tokenLifespan, err := strconv.Atoi(os.Getenv(JwtExpirationKey))
 
@@ -38,7 +38,7 @@ func GenerateTokenPair(userId primitive.ObjectID) (TokenPair, error) {
 
 	claims := jwt.MapClaims{}
 	claims[AuthorizedKey] = true
-	claims[UserIdKey] = userId.Hex()
+	claims[UserIDKey] = userID.Hex()
 	claims[ExpKey] = time.Now().Add(time.Hour * time.Duration(tokenLifespan)).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
@@ -92,8 +92,8 @@ func extractBearerTokenFromContext(c *gin.Context) string {
 	return ""
 }
 
-// ExtractUserIdFromContext extracts the token id (userId) from the request
-func ExtractUserIdFromContext(c *gin.Context) (string, error) {
+// ExtractUserIDFromContext extracts the token id (userID) from the request
+func ExtractUserIDFromContext(c *gin.Context) (string, error) {
 
 	tokenString, err := ExtractTokenFromContext(c)
 	if err != nil {
@@ -112,7 +112,7 @@ func ExtractUserIdFromContext(c *gin.Context) (string, error) {
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
-		uid := claims[UserIdKey].(string)
+		uid := claims[UserIDKey].(string)
 		return uid, nil
 	}
 	return "", nil
@@ -120,7 +120,7 @@ func ExtractUserIdFromContext(c *gin.Context) (string, error) {
 
 // Logout logs out the user
 /*func Logout(c *gin.Context) error {
-	_, err := ExtractUserIdFromContext(c)
+	_, err := ExtractUserIDFromContext(c)
 	if err != nil {
 		return err
 	}

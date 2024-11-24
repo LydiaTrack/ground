@@ -48,13 +48,13 @@ type DeleteUserCommand struct {
 }
 
 type AddRoleToUserCommand struct {
-	UserID primitive.ObjectID `json:"userId"`
-	RoleID primitive.ObjectID `json:"roleId"`
+	UserID primitive.ObjectID `json:"userID"`
+	RoleID primitive.ObjectID `json:"roleID"`
 }
 
 type RemoveRoleFromUserCommand struct {
-	UserID primitive.ObjectID `json:"userId"`
-	RoleID primitive.ObjectID `json:"roleId"`
+	UserID primitive.ObjectID `json:"userID"`
+	RoleID primitive.ObjectID `json:"roleID"`
 }
 
 type UpdatePasswordCommand struct {

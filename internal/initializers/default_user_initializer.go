@@ -41,19 +41,19 @@ func InitializeDefaultUser() error {
 			Username: os.Getenv("DEFAULT_USER_USERNAME"),
 			Password: os.Getenv("DEFAULT_USER_PASSWORD"),
 			PersonInfo: &user.PersonInfo{
-				FirstName: "Lydia",
+				FirstName: "Ground",
 				LastName:  "Admin",
 				BirthDate: primitive.NewDateTimeFromTime(time.Now()),
 			},
 			ContactInfo: user.ContactInfo{
-				Email:       "lydia@lydiaadmin.com",
+				Email:       "support@renoten.com",
 				PhoneNumber: nil,
 			},
 		}
 
 		createdUser, err := userService.CreateUser(userCreateCmd, auth.PermissionContext{
 			Permissions: []auth.Permission{auth.AdminPermission},
-			UserId:      nil,
+			UserID:      nil,
 		})
 		if err != nil {
 			return err
@@ -73,15 +73,15 @@ func InitializeDefaultUser() error {
 
 func addAdminRolesToUser(userModel user.Model, roleService service.RoleService, userService service.UserService) error {
 	// Check if userModel has admin role
-	userRoleIds := userModel.RoleIds
+	userRoleIDs := userModel.RoleIDs
 	hasAdminRoles := false
-	if userRoleIds == nil {
+	if userRoleIDs == nil {
 		log.Log("Default user does not have any roles, adding admin roles...")
 	} else {
-		for _, roleId := range *userRoleIds {
-			roleModel, err := roleService.GetRole(roleId.Hex(), auth.PermissionContext{
+		for _, roleID := range *userRoleIDs {
+			roleModel, err := roleService.GetRole(roleID.Hex(), auth.PermissionContext{
 				Permissions: []auth.Permission{auth.AdminPermission},
-				UserId:      nil,
+				UserID:      nil,
 			})
 			if err != nil {
 				return err
@@ -106,7 +106,7 @@ func addAdminRolesToUser(userModel user.Model, roleService service.RoleService, 
 	// Check if admin role exists
 	existsRole := roleService.ExistsByName("ADMIN", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 	roleModel := role.Model{}
 	if !existsRole {
@@ -120,7 +120,7 @@ func addAdminRolesToUser(userModel user.Model, roleService service.RoleService, 
 		// If admin role exists, get the role
 		model, err := roleService.GetRoleByName("ADMIN", auth.PermissionContext{
 			Permissions: []auth.Permission{auth.AdminPermission},
-			UserId:      nil,
+			UserID:      nil,
 		})
 		if err != nil {
 			return err
@@ -135,7 +135,7 @@ func addAdminRolesToUser(userModel user.Model, roleService service.RoleService, 
 	}
 	err := userService.AddRoleToUser(addRoleCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 	if err != nil {
 		return err
@@ -153,7 +153,7 @@ func createAdminRole(roleService service.RoleService) (role.Model, error) {
 	}
 	roleModel, err := roleService.CreateRole(createRoleCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 	if err != nil {
 		return role.Model{}, err

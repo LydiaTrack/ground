@@ -21,10 +21,10 @@ type SessionRepository interface {
 	SaveSession(model session.InfoModel) (session.InfoModel, error)
 	// GetUserSession is a function that gets a user session
 	GetUserSession(id primitive.ObjectID) (session.InfoModel, error)
-	// DeleteSessionByUserId is a function that deletes a session
-	DeleteSessionByUserId(id primitive.ObjectID) error
-	// DeleteSessionById is a function that deletes a session by id
-	DeleteSessionById(sessionId primitive.ObjectID) error
+	// DeleteSessionByUserID is a function that deletes a session
+	DeleteSessionByUserID(id primitive.ObjectID) error
+	// DeleteSessionByID is a function that deletes a session by id
+	DeleteSessionByID(sessionID primitive.ObjectID) error
 	// GetSessionByRefreshToken is a function that gets a session by refresh token
 	GetSessionByRefreshToken(refreshToken string) (session.InfoModel, error)
 }
@@ -39,13 +39,13 @@ func NewSessionService(sessionRepository SessionRepository, userService UserServ
 // CreateSession is a function that creates a session
 func (s SessionService) CreateSession(cmd session.CreateSessionCommand) (session.InfoModel, error) {
 	// Check if user exists
-	userID, err := primitive.ObjectIDFromHex(cmd.UserId)
+	userID, err := primitive.ObjectIDFromHex(cmd.UserID)
 	if err != nil {
 		return session.InfoModel{}, err
 	}
-	exists, err := s.UserService.ExistsUser(cmd.UserId, auth.PermissionContext{
+	exists, err := s.UserService.ExistsUser(cmd.UserID, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      &userID,
+		UserID:      &userID,
 	})
 	if err != nil {
 		return session.InfoModel{}, err
@@ -55,7 +55,7 @@ func (s SessionService) CreateSession(cmd session.CreateSessionCommand) (session
 	}
 	sessionInfo := session.InfoModel{
 		ID:           primitive.NewObjectID(),
-		UserId:       userID,
+		UserID:       userID,
 		ExpireTime:   cmd.ExpireTime,
 		RefreshToken: cmd.RefreshToken,
 	}
@@ -66,13 +66,13 @@ func (s SessionService) CreateSession(cmd session.CreateSessionCommand) (session
 // GetUserSession is a function that gets a user session
 func (s SessionService) GetUserSession(id string) (session.InfoModel, error) {
 	// Check if user exists
-	userId, err := primitive.ObjectIDFromHex(id)
+	userID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return session.InfoModel{}, err
 	}
 	exists, err := s.UserService.ExistsUser(id, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      &userId,
+		UserID:      &userID,
 	})
 	if err != nil {
 		return session.InfoModel{}, err
@@ -81,30 +81,30 @@ func (s SessionService) GetUserSession(id string) (session.InfoModel, error) {
 		return session.InfoModel{}, constants.ErrorNotFound
 	}
 
-	return s.sessionRepository.GetUserSession(userId)
+	return s.sessionRepository.GetUserSession(userID)
 }
 
 // DeleteSessionByUser DeleteSession is a function that deletes a session
-func (s SessionService) DeleteSessionByUser(userId string) error {
-	objID, err := primitive.ObjectIDFromHex(userId)
+func (s SessionService) DeleteSessionByUser(userID string) error {
+	objID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
 		return err
 	}
-	return s.sessionRepository.DeleteSessionByUserId(objID)
+	return s.sessionRepository.DeleteSessionByUserID(objID)
 }
 
-// DeleteSessionById is a function that deletes a session by id
-func (s SessionService) DeleteSessionById(sessionId string) error {
-	objID, err := primitive.ObjectIDFromHex(sessionId)
+// DeleteSessionByID is a function that deletes a session by id
+func (s SessionService) DeleteSessionByID(sessionID string) error {
+	objID, err := primitive.ObjectIDFromHex(sessionID)
 	if err != nil {
 		return err
 	}
-	return s.sessionRepository.DeleteSessionById(objID)
+	return s.sessionRepository.DeleteSessionByID(objID)
 }
 
 // IsUserHasActiveSession is a function that checks if a user has an active session
-func (s SessionService) IsUserHasActiveSession(userId string) bool {
-	sessionModel, err := s.GetUserSession(userId)
+func (s SessionService) IsUserHasActiveSession(userID string) bool {
+	sessionModel, err := s.GetUserSession(userID)
 	if err != nil {
 		return false
 	}
