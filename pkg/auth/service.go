@@ -1,10 +1,11 @@
 package auth
 
 import (
-	"github.com/LydiaTrack/ground/internal/log"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/LydiaTrack/ground/internal/log"
 
 	"github.com/LydiaTrack/ground/pkg/constants"
 	"github.com/LydiaTrack/ground/pkg/domain/session"
@@ -161,6 +162,10 @@ func (s Service) RefreshTokenPair(c *gin.Context) (jwt.TokenPair, error) {
 	var refreshTokenRequest RefreshTokenRequest
 	if err := c.ShouldBindJSON(&refreshTokenRequest); err != nil {
 		return jwt.TokenPair{}, constants.ErrorInternalServerError
+	}
+
+	if refreshTokenRequest.RefreshToken == "" {
+		return jwt.TokenPair{}, constants.ErrorUnauthorized
 	}
 
 	// Get the session by user id
