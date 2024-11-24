@@ -48,7 +48,7 @@ func testCreateRole(t *testing.T) {
 
 	roleModel, err := roleService.CreateRole(command, auth.PermissionContext{
 		Permissions: []auth.Permission{permissions.RoleCreatePermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -62,7 +62,7 @@ func testCreateRole(t *testing.T) {
 	// Check if the roleModel is created or not by existence control
 	exists, err := roleService.ExistsRole(roleModel.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -76,7 +76,7 @@ func testCreateRole(t *testing.T) {
 	// Check if the roleModel is created or not by getting the roleModel
 	roleModel, err = roleService.GetRole(roleModel.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -97,7 +97,7 @@ func testCannotCreateRoleWithSameName(t *testing.T) {
 
 	_, err := roleService.CreateRole(command, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -113,7 +113,7 @@ func testCannotCreateRoleWithSameName(t *testing.T) {
 
 	_, err = roleService.CreateRole(command, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err == nil {
@@ -130,7 +130,7 @@ func testDeleteRole(t *testing.T) {
 
 	roleModel, err := roleService.CreateRole(command, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -139,7 +139,7 @@ func testDeleteRole(t *testing.T) {
 
 	err = roleService.DeleteRole(roleModel.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -149,7 +149,7 @@ func testDeleteRole(t *testing.T) {
 	// Check if the roleModel is deleted or not by existence control
 	exists, err := roleService.ExistsRole(roleModel.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	// If error is not nil, and error is not mongo.ErrNoDocuments, then it is an unexpected error

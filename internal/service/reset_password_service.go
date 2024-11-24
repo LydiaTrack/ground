@@ -56,7 +56,7 @@ type ResetPasswordRepository interface {
 func (s ResetPasswordService) createResetPassword(cmd resetPassword.SendResetPasswordCodeCommand) (resetPassword.Model, error) {
 	authContext := auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	}
 
 	// Check if the user exists
@@ -92,7 +92,7 @@ func (s ResetPasswordService) SendResetPasswordEmail(c *gin.Context, cmd resetPa
 
 	userModel, err := s.userService.GetUserByEmail(cmd.Email, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 	if err != nil {
 		return err
@@ -147,7 +147,7 @@ func (s ResetPasswordService) ResetPassword(c *gin.Context, cmd resetPassword.Do
 
 	authCtx := auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	}
 
 	userToUpdate, err := s.userService.GetUserByEmail(cmd.Email, authCtx)

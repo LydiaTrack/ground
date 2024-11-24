@@ -23,9 +23,9 @@ type UserService interface {
 }
 
 type SessionService interface {
-	DeleteSessionByUser(userId string) error
+	DeleteSessionByUser(userID string) error
 	CreateSession(command session.CreateSessionCommand) (session.InfoModel, error)
-	GetUserSession(userId string) (session.InfoModel, error)
+	GetUserSession(userID string) (session.InfoModel, error)
 	GetSessionByRefreshToken(refreshToken string) (session.InfoModel, error)
 }
 
@@ -66,7 +66,7 @@ func (s Service) Login(request Request) (Response, error) {
 	// Check if password is correct
 	userModel, err := s.userService.VerifyUser(request.Username, request.Password, PermissionContext{
 		Permissions: []Permission{AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 	if err != nil {
 		log.Log("Error verifying user", err)
@@ -100,7 +100,7 @@ func (s Service) SignUp(cmd user.CreateUserCommand) (user.Model, error) {
 	}
 
 	// Create user
-	userResponse, err := s.userService.CreateUser(cmd, PermissionContext{Permissions: []Permission{AdminPermission}, UserId: nil})
+	userResponse, err := s.userService.CreateUser(cmd, PermissionContext{Permissions: []Permission{AdminPermission}, UserID: nil})
 	if err != nil {
 		return user.Model{}, constants.ErrorInternalServerError
 	}
@@ -109,7 +109,7 @@ func (s Service) SignUp(cmd user.CreateUserCommand) (user.Model, error) {
 }
 
 // SetSession is a function that sets the session with the given user id and token pair
-func (s Service) SetSession(userId string, tokenPair jwt.TokenPair) error {
+func (s Service) SetSession(userID string, tokenPair jwt.TokenPair) error {
 	// Start a session
 	refreshTokenLifespan, err := strconv.Atoi(os.Getenv(jwt.RefreshExpirationKey))
 	if err != nil {
@@ -117,14 +117,14 @@ func (s Service) SetSession(userId string, tokenPair jwt.TokenPair) error {
 	}
 
 	// If there is a session for the user, delete it
-	err = s.sessionService.DeleteSessionByUser(userId)
+	err = s.sessionService.DeleteSessionByUser(userID)
 	if err != nil {
 		return constants.ErrorInternalServerError
 	}
 
 	// Save refresh token with expire time
 	createSessionCmd := session.CreateSessionCommand{
-		UserId:       userId,
+		UserID:       userID,
 		ExpireTime:   time.Now().Add(time.Hour * time.Duration(refreshTokenLifespan)).Unix(),
 		RefreshToken: tokenPair.RefreshToken,
 	}
@@ -138,15 +138,15 @@ func (s Service) SetSession(userId string, tokenPair jwt.TokenPair) error {
 
 // GetCurrentUser is a function that returns the current user
 func (s Service) GetCurrentUser(c *gin.Context) (user.Model, error) {
-	userId, err := jwt.ExtractUserIdFromContext(c)
+	userID, err := jwt.ExtractUserIDFromContext(c)
 	if err != nil {
 		return user.Model{}, constants.ErrorUnauthorized
 	}
 
 	// TODO: Maybe we should (or must) use GetSelfUser instead of GetUser, but I'm not sure.
-	userModel, err := s.userService.GetUser(userId, PermissionContext{
+	userModel, err := s.userService.GetUser(userID, PermissionContext{
 		Permissions: []Permission{AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 	if err != nil {
 		return user.Model{}, constants.ErrorInternalServerError
@@ -175,12 +175,12 @@ func (s Service) RefreshTokenPair(c *gin.Context) (jwt.TokenPair, error) {
 	}
 
 	// Now that we know the token is valid, we can extract the user id from it
-	tokenPair, err := jwt.GenerateTokenPair(sessionInfo.UserId)
+	tokenPair, err := jwt.GenerateTokenPair(sessionInfo.UserID)
 	if err != nil {
 		return jwt.TokenPair{}, constants.ErrorInternalServerError
 	}
 
-	err = s.SetSession(sessionInfo.UserId.Hex(), tokenPair)
+	err = s.SetSession(sessionInfo.UserID.Hex(), tokenPair)
 	if err != nil {
 		return jwt.TokenPair{}, constants.ErrorInternalServerError
 	}
