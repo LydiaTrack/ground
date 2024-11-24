@@ -20,7 +20,7 @@ type Model struct {
 	CreatedDate              time.Time              `json:"createdDate" bson:"createdDate"`
 	Version                  int                    `json:"version" bson:"version"`
 	LastSeenChangelogVersion string                 `json:"lastSeenChangelogVersion" bson:"lastSeenChangelogVersion"`
-	RoleIds                  *[]primitive.ObjectID  `json:"roleIds" bson:"roleIds"`
+	RoleIDs                  *[]primitive.ObjectID  `json:"roleIDs" bson:"roleIds"`
 	Properties               map[string]interface{} `json:"properties" bson:"properties"`
 }
 
@@ -41,7 +41,7 @@ func NewUser(id string, username string, password string,
 		ContactInfo: contactInfo,
 		CreatedDate: createdDate,
 		Version:     version,
-		RoleIds:     &[]primitive.ObjectID{},
+		RoleIDs:     &[]primitive.ObjectID{},
 		Properties:  properties,
 		Avatar:      "",
 	}, nil

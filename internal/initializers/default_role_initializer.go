@@ -28,7 +28,7 @@ func InitializeDefaultRole() error {
 
 	_, err := service.NewRoleService(repository.GetRoleRepository()).CreateRole(roleCreateCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 	if err != nil {
 		return err

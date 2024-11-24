@@ -50,11 +50,11 @@ func (h FeedbackHandler) CreateFeedback(c *gin.Context) {
 // @Tags feedback
 // @Accept json
 // @Produce json
-// @Param userId path string true "User ID"
+// @Param userID path string true "User ID"
 // @Success 200 {array} feedback.Feedback
-// @Router /feedback/user/{userId} [get]
+// @Router /feedback/user/{userID} [get]
 func (h FeedbackHandler) GetFeedbackByUser(c *gin.Context) {
-	userIDParam := c.Param("userId")
+	userIDParam := c.Param("userID")
 
 	feedbacks, err := h.feedbackService.GetFeedbacksByUser(userIDParam)
 	if err != nil {

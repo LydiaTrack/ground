@@ -97,10 +97,10 @@ func initializeRoutes(r *gin.Engine, services service_initializer.Services) {
 func createDefaultRoles() {
 	authContext := auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	}
 	selfServiceRoleCmd := role.CreateRoleCommand{
-		Name: "Lydia Self Service Role",
+		Name: "Ground Self Service Role",
 		Tags: []string{"self-service"},
 		Info: "This role is for the users who can manage their profiles",
 		Permissions: []auth.Permission{

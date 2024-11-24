@@ -136,7 +136,7 @@ func (r *UserMongoRepository) GetUserByUsername(username string) (user.Model, er
 }
 
 func (r *UserMongoRepository) AddRoleToUser(userID primitive.ObjectID, roleID primitive.ObjectID) error {
-	// roleIds can be null or empty
+	// roleIDs can be null or empty
 	_, err := r.collection.UpdateOne(context.Background(), primitive.M{"_id": userID}, primitive.M{"$addToSet": primitive.M{"roleIds": roleID}})
 	if err != nil {
 		return err
@@ -158,9 +158,9 @@ func (r *UserMongoRepository) GetUserRoles(userID primitive.ObjectID) (responses
 		return responses.QueryResult[role.Model]{}, err
 	}
 
-	// Resolve roleIds to roles
+	// Resolve roleIDs to roles
 	var roles []role.Model
-	for _, roleID := range *userModel.RoleIds {
+	for _, roleID := range *userModel.RoleIDs {
 		roleModel, err := GetRoleRepository().GetRole(roleID)
 		if err != nil {
 			return responses.QueryResult[role.Model]{}, err

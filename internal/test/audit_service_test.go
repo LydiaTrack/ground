@@ -60,7 +60,7 @@ func testCreateAudit(t *testing.T) {
 	}
 	auditModel, err := auditService.CreateAudit(createAuditCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -104,7 +104,7 @@ func testGetAudit(t *testing.T) {
 	}
 	auditModel, err := auditService.CreateAudit(createAuditCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -131,7 +131,7 @@ func testGetAudit(t *testing.T) {
 	// Get an Audit
 	auditModels, err := auditService.GetAudit(auditModel.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -175,7 +175,7 @@ func testExistsAudit(t *testing.T) {
 	}
 	auditModel, err := auditService.CreateAudit(createAuditCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -202,7 +202,7 @@ func testExistsAudit(t *testing.T) {
 	// Check if an Audit exists
 	exists, err := auditService.ExistsAudit(auditModel.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -234,7 +234,7 @@ func testGetAudits(t *testing.T) {
 	}
 	_, err := auditService.CreateAudit(createAuditCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -244,7 +244,7 @@ func testGetAudits(t *testing.T) {
 	// Get all Audits
 	audits, err := auditService.GetAudits(auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -268,7 +268,7 @@ func testDeleteOlderThan(t *testing.T) {
 	// Get all Audits
 	audits, err := auditService.GetAudits(auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 	if err != nil {
 		t.Errorf("Error getting Audits test: %v", err)
@@ -287,7 +287,7 @@ func testDeleteOlderThan(t *testing.T) {
 	}
 	_, err = auditService.CreateAudit(createAuditCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -305,7 +305,7 @@ func testDeleteOlderThan(t *testing.T) {
 	}
 	_, err = auditService.CreateAudit(createAuditCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 	if err != nil {
 		t.Errorf("Error creating Audit test: %v", err)
@@ -314,7 +314,7 @@ func testDeleteOlderThan(t *testing.T) {
 	// Check if auditCount + 2 audits exist
 	audits, err = auditService.GetAudits(auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 	if err != nil {
 		t.Errorf("Error getting Audits test: %v", err)
@@ -331,7 +331,7 @@ func testDeleteOlderThan(t *testing.T) {
 	}
 	err = auditService.DeleteOlderThan(deleteOlderThanCommand, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -341,7 +341,7 @@ func testDeleteOlderThan(t *testing.T) {
 	// Get all Audits
 	audits, err = auditService.GetAudits(auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 	if err != nil {
 		t.Errorf("Error getting Audits test: %v", err)
@@ -364,7 +364,7 @@ func testDeleteInterval(t *testing.T) {
 	// Get all Audits
 	audits, err := auditService.GetAudits(auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 	if err != nil {
 		t.Errorf("Error getting Audits test: %v", err)
@@ -383,7 +383,7 @@ func testDeleteInterval(t *testing.T) {
 	}
 	_, err = auditService.CreateAudit(createAuditCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -401,7 +401,7 @@ func testDeleteInterval(t *testing.T) {
 	}
 	_, err = auditService.CreateAudit(createAuditCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 	if err != nil {
 		t.Errorf("Error creating Audit test: %v", err)
@@ -410,7 +410,7 @@ func testDeleteInterval(t *testing.T) {
 	// Check if auditCount + 2 audits exist
 	audits, err = auditService.GetAudits(auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 	if err != nil {
 		t.Errorf("Error getting Audits test: %v", err)
@@ -428,7 +428,7 @@ func testDeleteInterval(t *testing.T) {
 	}
 	err = auditService.DeleteInterval(deleteIntervalCommand, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 
 	if err != nil {
@@ -438,7 +438,7 @@ func testDeleteInterval(t *testing.T) {
 	// Get all Audits
 	audits, err = auditService.GetAudits(auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
-		UserId:      nil,
+		UserID:      nil,
 	})
 	if err != nil {
 		t.Errorf("Error getting Audits test: %v", err)

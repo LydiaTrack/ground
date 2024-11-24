@@ -78,12 +78,12 @@ func (h UserHandler) GetUsers(c *gin.Context) {
 	if currentUser.Username == os.Getenv("DEFAULT_USER_USERNAME") {
 		users, err = h.userService.GetUsers(auth.PermissionContext{
 			Permissions: []auth.Permission{auth.AdminPermission},
-			UserId:      &currentUser.ID,
+			UserID:      &currentUser.ID,
 		})
 	} else {
 		users, err = h.userService.GetUsers(auth.PermissionContext{
 			Permissions: currentUserPermissions,
-			UserId:      &currentUser.ID,
+			UserID:      &currentUser.ID,
 		})
 	}
 	if err != nil {
