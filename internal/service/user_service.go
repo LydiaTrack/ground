@@ -1,9 +1,10 @@
 package service
 
 import (
+	"time"
+
 	"github.com/LydiaTrack/ground/pkg/responses"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"time"
 
 	"github.com/LydiaTrack/ground/internal/log"
 	"github.com/LydiaTrack/ground/internal/permissions"
@@ -115,6 +116,40 @@ func (s UserService) addDefaultRoles(userID primitive.ObjectID, authContext auth
 		}
 		// Add roles to user
 		err = s.userRepository.AddRoleToUser(userID, roleModel.ID)
+	}
+
+	return nil
+}
+
+// InitializeDefaultRolesForAllUsers initializes default roles for all users
+func (s UserService) InitializeDefaultRolesForAllUsers() error {
+	// Retrieve all users from the repository
+	allUsers, err := s.userRepository.GetUsers()
+	if err != nil {
+		return err
+	}
+
+	// Create a permission context that grants all necessary permissions.
+	// Here, we assume the AdminPermission allows adding roles to users.
+	adminCtx := auth.PermissionContext{
+		Permissions: []auth.Permission{auth.AdminPermission},
+		UserID:      nil,
+	}
+
+	if len(allUsers.Data) == 0 {
+		log.Log("No users found in the system. Skipping default role assignment.")
+		return nil
+	}
+
+	// Iterate over each user and attempt to add default roles
+	for _, usr := range allUsers.Data {
+		err := s.addDefaultRoles(usr.ID, adminCtx)
+		if err != nil {
+			// Log the error but continue with other users
+			log.Log("Failed to add default roles to user %s: %v", usr.Username, err)
+		} else {
+			log.Log("Default roles successfully assigned to user %s", usr.Username)
+		}
 	}
 
 	return nil
