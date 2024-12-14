@@ -1,17 +1,21 @@
 name: New Version
 
 on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
   workflow_dispatch:
     inputs:
-        level:
-            type: choice
-            description: 'The level of the version bump'
-            required: true
-            default: 'minor'
-            options:
-            - 'major'
-            - 'minor'
-            - 'patch'
+      level:
+        type: choice
+        description: "The level of the version bump"
+        required: true
+        default: "minor"
+        options:
+          - "major"
+          - "minor"
+          - "patch"
 
 permissions:
   contents: write
@@ -34,7 +38,7 @@ jobs:
       - uses: actions-ecosystem/action-push-tag@v1
         with:
           tag: ${{ steps.bump-semver.outputs.new_version }}
-          message: '${{ steps.bump-semver.outputs.new_version }}: PR #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}'
+          message: "${{ steps.bump-semver.outputs.new_version }}: PR #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}"
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
