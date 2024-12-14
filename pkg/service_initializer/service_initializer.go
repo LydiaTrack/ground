@@ -24,7 +24,7 @@ func InitializeServices() {
 	services.SessionService = service.NewSessionService(repository.GetSessionRepository(), *services.UserService)
 	services.AuthService = auth.NewAuthService(*services.UserService, *services.SessionService)
 	services.ResetPasswordService = service.NewResetPasswordService(repository.GetResetPasswordRepository(), *services.UserService)
-	services.FeedbackService = service.NewFeedbackService(repository.GetFeedbackRepository())
+	services.FeedbackService = service.NewFeedbackService(repository.GetFeedbackRepository(), *services.UserService)
 }
 
 // GetServices returns the services.

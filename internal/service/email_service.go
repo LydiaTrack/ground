@@ -41,6 +41,7 @@ func GenerateMessageID(domain string) (string, error) {
 
 // SendEmail sends an email using the provided SendEmailCommand and email type.
 // It generates the email body using the specified template.
+// SendEmail function using strings.Builder
 func (s *SimpleEmailService) SendEmail(command email.SendEmailCommand, emailType email.SupportedEmailType, templateData email.TemplateContext) error {
 	if emailType == "" {
 		return fmt.Errorf("email type is required")
@@ -67,16 +68,28 @@ func (s *SimpleEmailService) SendEmail(command email.SendEmailCommand, emailType
 	// Format the date
 	date := time.Now().Format(time.RFC1123Z)
 
-	// Create the email message with the generated HTML content.
-	msg := []byte(fmt.Sprintf("From: %s\r\n", emailCredentials.Address) +
-		fmt.Sprintf("To: %s\r\n", command.To) +
-		fmt.Sprintf("Subject: %s\r\n", command.Subject) +
-		fmt.Sprintf("Message-ID: %s\r\n", messageID) +
-		fmt.Sprintf("Date: %s\r\n", date) +
-		"MIME-Version: 1.0\r\n" +
-		"Content-Type: text/html; charset=\"UTF-8\"\r\n" +
-		"\r\n" +
-		body)
+	// Use strings.Builder to construct the email
+	var msgBuilder strings.Builder
+
+	msgBuilder.WriteString(fmt.Sprintf("From: %s\r\n", emailCredentials.Address))
+	msgBuilder.WriteString(fmt.Sprintf("To: %s\r\n", command.To))
+	msgBuilder.WriteString(fmt.Sprintf("Subject: %s\r\n", command.Subject))
+	msgBuilder.WriteString(fmt.Sprintf("Message-ID: %s\r\n", messageID))
+	msgBuilder.WriteString(fmt.Sprintf("Date: %s\r\n", date))
+	msgBuilder.WriteString("MIME-Version: 1.0\r\n")
+	msgBuilder.WriteString("Content-Type: text/html; charset=\"UTF-8\"\r\n")
+
+	// Add Reply-To if specified
+	if command.ReplyTo != nil {
+		msgBuilder.WriteString(fmt.Sprintf("Reply-To: %s\r\n", *command.ReplyTo))
+	}
+
+	// Add a blank line to separate headers from the body
+	msgBuilder.WriteString("\r\n")
+	msgBuilder.WriteString(body)
+
+	// Convert the built string to a byte slice
+	msg := []byte(msgBuilder.String())
 
 	// Set up authentication information.
 	auth := smtp.PlainAuth("", emailCredentials.Address, emailCredentials.Password, s.SMTPConfig.Host)
