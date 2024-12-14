@@ -8,6 +8,7 @@ import (
 
 	"github.com/LydiaTrack/ground/internal/log"
 
+	"github.com/LydiaTrack/ground/pkg/auth"
 	"github.com/LydiaTrack/ground/pkg/domain/email"
 	"github.com/LydiaTrack/ground/pkg/domain/feedback"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -15,10 +16,11 @@ import (
 
 type FeedbackService struct {
 	feedbackRepository FeedbackRepository
+	userService        UserService
 	emailService       SimpleEmailService
 }
 
-func NewFeedbackService(feedbackRepository FeedbackRepository) *FeedbackService {
+func NewFeedbackService(feedbackRepository FeedbackRepository, userService UserService) *FeedbackService {
 	feedbackSmtp := os.Getenv("EMAIL_TYPE_FEEDBACK_SMTP")
 	feedbackPort, err := strconv.Atoi(os.Getenv("EMAIL_TYPE_FEEDBACK_PORT"))
 	if err != nil {
@@ -27,6 +29,7 @@ func NewFeedbackService(feedbackRepository FeedbackRepository) *FeedbackService 
 
 	return &FeedbackService{
 		feedbackRepository: feedbackRepository,
+		userService:        userService,
 		emailService: *NewSimpleEmailService(
 			SMTPConfig{
 				Host: feedbackSmtp,
@@ -70,7 +73,6 @@ func (s FeedbackService) CreateFeedback(command feedback.CreateFeedbackCommand) 
 		feedback.WithType(command.Type),
 		feedback.WithMessage(command.Message),
 	)
-	fmt.Printf("Feedback: %v\n", f)
 	if err != nil {
 		return feedback.Model{}, err
 	}
@@ -179,19 +181,32 @@ func (s FeedbackService) GetFeedbacksByUser(userID string) ([]feedback.Model, er
 
 // sendFeedbackEmail sends an email notification when new feedback is submitted
 func (s FeedbackService) sendFeedbackEmail(emailDestination string, feedbackModel feedback.Model) error {
+	// Get the user who submitted the feedback
+	authContext := auth.PermissionContext{
+		Permissions: []auth.Permission{auth.AdminPermission},
+		UserID:      nil,
+	}
+	userModel, err := s.userService.GetUser(feedbackModel.UserID.Hex(), authContext)
+	if err != nil {
+		return fmt.Errorf("failed to get user: %w", err)
+	}
+
 	subject := "New Feedback Submitted"
 	body := fmt.Sprintf("A new feedback has been submitted by User ID: %s.\n\nType: %s\nMessage: %s\nStatus: %s\n\nPlease check the feedbacks page for more information.",
 		feedbackModel.UserID.Hex(), feedbackModel.Type, feedbackModel.Message, feedbackModel.Status)
+	replyTo := userModel.ContactInfo.Email
 	sendMailCmd := email.SendEmailCommand{
 		To:      emailDestination,
 		Subject: subject,
 		Body:    body,
+		ReplyTo: &replyTo,
 	}
 
-	err := s.emailService.SendEmail(sendMailCmd, email.EmailTypeFeedback, email.TemplateContext{
+	err = s.emailService.SendEmail(sendMailCmd, email.EmailTypeFeedback, email.TemplateContext{
 		Data: feedback.EmailTemplateData{
 			ID:        feedbackModel.ID.Hex(),
 			UserID:    feedbackModel.UserID.Hex(),
+			Username:  userModel.Username,
 			Type:      feedbackModel.Type,
 			Message:   feedbackModel.Message,
 			Status:    feedbackModel.Status,
