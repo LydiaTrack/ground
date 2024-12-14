@@ -1,29 +1,36 @@
 package test
 
 import (
-	"github.com/LydiaTrack/ground/internal/templates"
-	"github.com/LydiaTrack/ground/pkg/registry"
 	"log"
 	"os"
 	"testing"
+	"time"
+
+	"github.com/LydiaTrack/ground/internal/templates"
+	"github.com/LydiaTrack/ground/pkg/auth"
+	"github.com/LydiaTrack/ground/pkg/registry"
 
 	"github.com/LydiaTrack/ground/internal/repository"
 	"github.com/LydiaTrack/ground/internal/service"
 	"github.com/LydiaTrack/ground/pkg/domain/feedback"
+	"github.com/LydiaTrack/ground/pkg/domain/user"
 	"github.com/LydiaTrack/ground/pkg/test_support"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var (
 	feedbackService     service.FeedbackService
+	usrService          service.UserService
 	initializedFeedback = false
 )
 
 func initializeFeedbackService() {
 	if !initializedFeedback {
 		test_support.TestWithMongo()
+		roleService := service.NewRoleService(repository.GetRoleRepository())
+		usrService = *service.NewUserService(repository.GetUserRepository(), *roleService)
 		repo := repository.GetFeedbackRepository()
-		feedbackService = *service.NewFeedbackService(repo)
+		feedbackService = *service.NewFeedbackService(repo, usrService)
 		registerFeedbackEmailTemplate()
 		initializedFeedback = true
 	}
@@ -56,7 +63,7 @@ func setFeedbackEnvVariables() {
 	if err != nil {
 		return
 	}
-	err = os.Setenv("FEEDBACK_EMAIL_DESTINATION", "support@renoten.com")
+	err = os.Setenv("FEEDBACK_EMAIL_DESTINATION", "no-reply@renoten.com")
 	if err != nil {
 		return
 	}
@@ -86,10 +93,37 @@ func TestFeedbackService(t *testing.T) {
 }
 
 func testCreateFeedback(t *testing.T) {
+	// Create a mock user
+	birthDate := primitive.NewDateTimeFromTime(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC))
+	createUserCommand := user.CreateUserCommand{
+		Username: "test-user-for-feedback-1",
+		Password: "test123",
+		PersonInfo: &user.PersonInfo{
+			FirstName: "TestName",
+			LastName:  "Test Lastname",
+			BirthDate: birthDate,
+		},
+		ContactInfo: user.ContactInfo{
+			Email: "test-user-for-feedback-1@example.com",
+			PhoneNumber: &user.PhoneNumber{
+				AreaCode:    "532",
+				Number:      "5232323",
+				CountryCode: "+90",
+			},
+		},
+	}
+	userModel, err := usrService.CreateUser(createUserCommand, auth.PermissionContext{
+		Permissions: []auth.Permission{auth.AdminPermission},
+		UserID:      nil,
+	})
+	if err != nil {
+		t.Errorf("Error creating user for feedback: %s", err)
+	}
+
 	// Create a new feedback command
 	command := feedback.CreateFeedbackCommand{
-		UserID:  primitive.NewObjectID(),
-		Message: "Hi there! I really enjoy using your to-do app to keep my tasks organized. One feature I think would make it even better is the ability to set recurring tasks. For example, I have weekly and monthly tasks that I need to complete regularly, and it would be super helpful if I could set these tasks to repeat automatically at a set interval (like every week or month) instead of having to manually add them each time. Thanks for considering this idea, and keep up the great work!",
+		UserID:  userModel.ID,
+		Message: "This is a test message. Sent by test code.",
 		Type:    feedback.FeatureRequest,
 	}
 

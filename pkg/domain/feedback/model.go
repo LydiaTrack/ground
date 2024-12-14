@@ -43,6 +43,8 @@ type Model struct {
 type EmailTemplateData struct {
 	ID        string
 	UserID    string
+	Username  string
+	ReplyTo   string
 	Type      FeedbackType
 	Message   string
 	Status    FeedbackStatus
