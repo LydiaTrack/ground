@@ -1,7 +1,6 @@
 package initializers
 
 import (
-	"github.com/LydiaTrack/ground/pkg/utils"
 	"os"
 	"time"
 
@@ -25,14 +24,14 @@ func InitializeDefaultUser() error {
 	if err != nil {
 		return err
 	}
-	isExists, err := userService.ExistsByUsername(os.Getenv("DEFAULT_USER_USERNAME"), utils.CreateAdminAuthContext())
+	isExists, err := userService.ExistsByUsername(os.Getenv("DEFAULT_USER_USERNAME"), auth.CreateAdminAuthContext())
 	if err != nil {
 		return err
 	}
 
 	if isExists {
 		log.Log("Default user already exists")
-		userModel, err := userService.GetByUsername(os.Getenv("DEFAULT_USER_USERNAME"), utils.CreateAdminAuthContext())
+		userModel, err := userService.GetByUsername(os.Getenv("DEFAULT_USER_USERNAME"), auth.CreateAdminAuthContext())
 		if err != nil {
 			return err
 		}

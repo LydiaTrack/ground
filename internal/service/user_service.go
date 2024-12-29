@@ -2,8 +2,6 @@ package service
 
 import (
 	"context"
-	"github.com/LydiaTrack/ground/pkg/utils"
-
 	"github.com/LydiaTrack/ground/internal/log"
 	"github.com/LydiaTrack/ground/internal/permissions"
 	"github.com/LydiaTrack/ground/pkg/auth"
@@ -495,7 +493,7 @@ func (s UserService) RemoveRole(command user.RemoveRoleFromUserCommand, authCont
 
 // GetPermissionList retrieves permissions for a user
 func (s UserService) GetPermissionList(userID primitive.ObjectID) ([]auth.Permission, error) {
-	userRoles, err := s.GetRoles(userID, utils.CreateAdminAuthContext())
+	userRoles, err := s.GetRoles(userID, auth.CreateAdminAuthContext())
 	if err != nil {
 		return nil, err
 	}

@@ -35,7 +35,7 @@ func NewUserHandler(userService service.UserService, authService auth.Service) U
 // @Router /users/checkUsername/:username [get]
 func (h UserHandler) CheckUsername(c *gin.Context) {
 	username := c.Param("username")
-	exists, err := h.userService.ExistsByUsername(username, utils.CreateAdminAuthContext())
+	exists, err := h.userService.ExistsByUsername(username, auth.CreateAdminAuthContext())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -54,7 +54,7 @@ func (h UserHandler) CheckUsername(c *gin.Context) {
 // @Router /users/checkUsername/:username [get]
 func (h UserHandler) CheckEmail(c *gin.Context) {
 	email := c.Param("email")
-	exists, err := h.userService.ExistsByEmail(email, utils.CreateAdminAuthContext())
+	exists, err := h.userService.ExistsByEmail(email, auth.CreateAdminAuthContext())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -73,7 +73,7 @@ func (h UserHandler) CheckEmail(c *gin.Context) {
 // @Router /users [get]
 func (h UserHandler) GetUsers(c *gin.Context) {
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, &h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -134,7 +134,7 @@ func (h UserHandler) GetUsers(c *gin.Context) {
 func (h UserHandler) GetUser(c *gin.Context) {
 	id := c.Param("id")
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, &h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -163,7 +163,7 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, &h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -188,7 +188,7 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 func (h UserHandler) DeleteUser(c *gin.Context) {
 	id := c.Param("id")
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, &h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -225,7 +225,7 @@ func (h UserHandler) AddRoleToUser(c *gin.Context) {
 		return
 	}
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, &h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -253,7 +253,7 @@ func (h UserHandler) RemoveRoleFromUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, &h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -277,7 +277,7 @@ func (h UserHandler) RemoveRoleFromUser(c *gin.Context) {
 func (h UserHandler) GetUserRoles(c *gin.Context) {
 	id := c.Param("id")
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, &h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -312,7 +312,7 @@ func (h UserHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, &h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -346,7 +346,7 @@ func (h UserHandler) UpdateUserSelf(c *gin.Context) {
 		return
 	}
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, &h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -376,7 +376,7 @@ func (h UserHandler) UpdateUserPassword(c *gin.Context) {
 		return
 	}
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, &h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -405,7 +405,7 @@ func (h UserHandler) UpdateUserSelfPassword(c *gin.Context) {
 		return
 	}
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, &h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
