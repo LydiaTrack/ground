@@ -144,7 +144,7 @@ func (s Service) GetCurrentUser(c *gin.Context) (user.Model, error) {
 		return user.Model{}, constants.ErrorUnauthorized
 	}
 
-	// TODO: Maybe we should (or must) use GetSelfUser instead of GetUser, but I'm not sure.
+	// TODO: Maybe we should (or must) use GetSelfUser instead of Get, but I'm not sure.
 	userModel, err := s.userService.GetUser(userID, PermissionContext{
 		Permissions: []Permission{AdminPermission},
 		UserID:      nil,

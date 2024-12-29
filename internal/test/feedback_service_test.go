@@ -27,8 +27,8 @@ var (
 func initializeFeedbackService() {
 	if !initializedFeedback {
 		test_support.TestWithMongo()
-		roleService := service.NewRoleService(repository.GetRoleRepository())
-		usrService = *service.NewUserService(repository.GetUserRepository(), *roleService)
+		roleService := service.NewRoleService(repository.GetRoleMongoRepository())
+		usrService = *service.NewUserService(repository.GetUserMongoRepository(repository.GetRoleMongoRepository()), *roleService)
 		repo := repository.GetFeedbackRepository()
 		feedbackService = *service.NewFeedbackService(repo, usrService)
 		registerFeedbackEmailTemplate()
@@ -112,7 +112,7 @@ func testCreateFeedback(t *testing.T) {
 			},
 		},
 	}
-	userModel, err := usrService.CreateUser(createUserCommand, auth.PermissionContext{
+	userModel, err := usrService.Create(createUserCommand, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})

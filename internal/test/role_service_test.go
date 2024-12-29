@@ -21,7 +21,7 @@ var (
 func initializeRoleService() {
 	if !initializedRole {
 		test_support.TestWithMongo()
-		repo := repository.GetRoleRepository()
+		repo := repository.GetRoleMongoRepository()
 
 		// Create a new role service instance
 		roleService = *service.NewRoleService(repo)
@@ -60,7 +60,7 @@ func testCreateRole(t *testing.T) {
 	}
 
 	// Check if the roleModel is created or not by existence control
-	exists, err := roleService.ExistsRole(roleModel.ID.Hex(), auth.PermissionContext{
+	exists, err := roleService.Exists(roleModel.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -147,7 +147,7 @@ func testDeleteRole(t *testing.T) {
 	}
 
 	// Check if the roleModel is deleted or not by existence control
-	exists, err := roleService.ExistsRole(roleModel.ID.Hex(), auth.PermissionContext{
+	exists, err := roleService.Exists(roleModel.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})

@@ -8,7 +8,7 @@ import (
 )
 
 type userService interface {
-	GetUserPermissionList(userID primitive.ObjectID) ([]auth.Permission, error)
+	GetPermissionList(userID primitive.ObjectID) ([]auth.Permission, error)
 }
 
 func CreateAuthContext(c *gin.Context, authService auth.Service, userService userService) (auth.PermissionContext, error) {
@@ -16,7 +16,7 @@ func CreateAuthContext(c *gin.Context, authService auth.Service, userService use
 	if err != nil {
 		return auth.PermissionContext{}, constants.ErrorNotFound
 	}
-	currentUserPermissions, err := userService.GetUserPermissionList(currentUser.ID)
+	currentUserPermissions, err := userService.GetPermissionList(currentUser.ID)
 	if err != nil {
 		return auth.PermissionContext{}, constants.ErrorNotFound
 	}
@@ -25,4 +25,12 @@ func CreateAuthContext(c *gin.Context, authService auth.Service, userService use
 		Permissions: currentUserPermissions,
 		UserID:      &currentUser.ID,
 	}, nil
+}
+
+// CreateAdminAuthContext creates an auth context for an admin user
+func CreateAdminAuthContext() auth.PermissionContext {
+	return auth.PermissionContext{
+		Permissions: []auth.Permission{auth.AdminPermission},
+		UserID:      nil,
+	}
 }

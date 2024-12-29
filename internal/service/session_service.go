@@ -43,7 +43,7 @@ func (s SessionService) CreateSession(cmd session.CreateSessionCommand) (session
 	if err != nil {
 		return session.InfoModel{}, err
 	}
-	exists, err := s.UserService.ExistsUser(cmd.UserID, auth.PermissionContext{
+	exists, err := s.UserService.Exists(cmd.UserID, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      &userID,
 	})
@@ -70,7 +70,7 @@ func (s SessionService) GetUserSession(id string) (session.InfoModel, error) {
 	if err != nil {
 		return session.InfoModel{}, err
 	}
-	exists, err := s.UserService.ExistsUser(id, auth.PermissionContext{
+	exists, err := s.UserService.Exists(id, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      &userID,
 	})

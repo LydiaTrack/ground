@@ -2,197 +2,114 @@ package repository
 
 import (
 	"context"
-	"errors"
+
 	"github.com/LydiaTrack/ground/pkg/domain/role"
 	"github.com/LydiaTrack/ground/pkg/domain/user"
 	"github.com/LydiaTrack/ground/pkg/mongodb"
+	"github.com/LydiaTrack/ground/pkg/mongodb/repository"
 	"github.com/LydiaTrack/ground/pkg/responses"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// A UserMongoRepository that implements UserRepository
 type UserMongoRepository struct {
-	collection *mongo.Collection
+	*repository.BaseRepository[user.Model]
+	roleRepository *RoleMongoRepository
 }
 
-var (
-	userRepository *UserMongoRepository
-)
-
-// NewUserMongoRepository creates a new UserMongoRepository instance
-// which implements UserRepository
-func initializeUserRepository() *UserMongoRepository {
-
+func GetUserMongoRepository(roleRepo *RoleMongoRepository) *UserMongoRepository {
 	collection, err := mongodb.GetCollection("users")
 	if err != nil {
 		panic(err)
 	}
-	roleRepository = GetRoleRepository()
-
 	return &UserMongoRepository{
-		collection: collection,
+		BaseRepository: repository.NewBaseRepository[user.Model](collection),
+		roleRepository: roleRepo,
 	}
 }
 
-// GetUserRepository returns a UserRepository instance if it is not initialized yet or
-// returns the existing one
-func GetUserRepository() *UserMongoRepository {
-	if userRepository == nil {
-		userRepository = initializeUserRepository()
-	}
-	return userRepository
+func (r *UserMongoRepository) GetUsers(ctx context.Context, searchText string) ([]user.Model, error) {
+	searchFields := []string{"username", "contactInfo.email"}
+	return r.Query(ctx, nil, searchFields, searchText)
 }
 
-// SaveUser saves a user
-func (r *UserMongoRepository) SaveUser(userModel user.Model) (user.Model, error) {
-	_, err := r.collection.InsertOne(context.Background(), userModel)
+func (r *UserMongoRepository) GetUsersPaginated(ctx context.Context, searchText string, page, limit int) (repository.PaginatedResult[user.Model], error) {
+	searchFields := []string{"username", "contactInfo.email"}
+	result, err := r.QueryPaginate(ctx, nil, searchFields, searchText, page, limit, bson.M{"username": 1})
 	if err != nil {
-		return user.Model{}, err
+		return repository.PaginatedResult[user.Model]{}, err
 	}
-	return userModel, nil
+	return result, err
 }
 
-// GetUsers gets all users from the repository
-func (r *UserMongoRepository) GetUsers() (responses.QueryResult[user.Model], error) {
-	cursor, err := r.collection.Find(context.Background(), primitive.M{})
-	if err != nil {
-		return responses.QueryResult[user.Model]{}, err
-	}
-
-	var users []user.Model
-	err = cursor.All(context.Background(), &users)
-	if err != nil {
-		return responses.QueryResult[user.Model]{}, err
-	}
-
-	// Return the QueryResult by value
-	return *responses.NewQueryResult(len(users), users), nil
-}
-
-// GetUser gets a user by id
-func (r *UserMongoRepository) GetUser(id primitive.ObjectID) (user.Model, error) {
-	var userModel user.Model
-	err := r.collection.FindOne(context.Background(), primitive.M{"_id": id}).Decode(&userModel)
-	if err != nil {
-		return user.Model{}, err
-	}
-	return userModel, nil
-}
-
-// ExistsUser checks if a user exists
-func (r *UserMongoRepository) ExistsUser(id primitive.ObjectID) (bool, error) {
-	var userModel user.Model
-	err := r.collection.FindOne(context.Background(), primitive.M{"_id": id}).Decode(&userModel)
-	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return false, nil // No documents found, so user does not exist
-		}
-		return false, err // An actual error occurred
-	}
-	return true, nil // User exists
-}
-
-// DeleteUser deletes a user by id
-func (r *UserMongoRepository) DeleteUser(id primitive.ObjectID) error {
-	_, err := r.collection.DeleteOne(context.Background(), primitive.M{"_id": id})
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
+// ExistsByUsernameAndEmail checks if a user exists by username or email
 func (r *UserMongoRepository) ExistsByUsernameAndEmail(username string, email string) bool {
-	count, err := r.collection.CountDocuments(context.Background(), primitive.M{"$or": []primitive.M{{"username": username}, {"contactInfo.email": email}}})
+	count, err := r.Collection.CountDocuments(context.Background(), bson.M{"$or": []bson.M{{"username": username}, {"contactInfo.email": email}}})
 	if err != nil {
-		return false
+		panic(err)
 	}
 	return count > 0
 }
 
+// ExistsByUsername checks if a user exists by username
 func (r *UserMongoRepository) ExistsByUsername(username string) bool {
-	count, err := r.collection.CountDocuments(context.Background(), primitive.M{"username": username})
-	if err != nil {
-		return false
-	}
-	return count > 0
+	count, err := r.Collection.CountDocuments(context.Background(), bson.M{"username": username})
+	return err == nil && count > 0
 }
 
+// ExistsByEmail checks if a user exists by email
 func (r *UserMongoRepository) ExistsByEmail(email string) bool {
-	count, err := r.collection.CountDocuments(context.Background(), primitive.M{"contactInfo.email": email})
-	if err != nil {
-		return false
-	}
-	return count > 0
+	count, err := r.Collection.CountDocuments(context.Background(), bson.M{"contactInfo.email": email})
+	return err == nil && count > 0
 }
 
-func (r *UserMongoRepository) GetUserByUsername(username string) (user.Model, error) {
+// GetByUsername retrieves a user by username
+func (r *UserMongoRepository) GetByUsername(username string) (user.Model, error) {
 	var userModel user.Model
-	err := r.collection.FindOne(context.Background(), primitive.M{"username": username}).Decode(&userModel)
-	if err != nil {
-		return user.Model{}, err
-	}
-	return userModel, nil
+	err := r.Collection.FindOne(context.Background(), bson.M{"username": username}).Decode(&userModel)
+	return userModel, err
 }
 
-func (r *UserMongoRepository) AddRoleToUser(userID primitive.ObjectID, roleID primitive.ObjectID) error {
-	// roleIDs can be null or empty
-	_, err := r.collection.UpdateOne(context.Background(), primitive.M{"_id": userID}, primitive.M{"$addToSet": primitive.M{"roleIds": roleID}})
-	if err != nil {
-		return err
-	}
-	return nil
+// GetByEmail retrieves a user by email
+func (r *UserMongoRepository) GetByEmail(email string) (user.Model, error) {
+	var userModel user.Model
+	err := r.Collection.FindOne(context.Background(), bson.M{"contactInfo.email": email}).Decode(&userModel)
+	return userModel, err
 }
 
-func (r *UserMongoRepository) RemoveRoleFromUser(userID primitive.ObjectID, roleID primitive.ObjectID) error {
-	_, err := r.collection.UpdateOne(context.Background(), primitive.M{"_id": userID}, primitive.M{"$pull": primitive.M{"roleIds": roleID}})
-	if err != nil {
-		return err
-	}
-	return nil
+// AddRole adds a role to a user
+func (r *UserMongoRepository) AddRole(userID, roleID primitive.ObjectID) error {
+	_, err := r.Collection.UpdateOne(context.Background(), bson.M{"_id": userID}, bson.M{"$addToSet": bson.M{"roleIds": roleID}})
+	return err
 }
 
+// RemoveRole removes a role from a user
+func (r *UserMongoRepository) RemoveRole(userID, roleID primitive.ObjectID) error {
+	_, err := r.Collection.UpdateOne(context.Background(), bson.M{"_id": userID}, bson.M{"$pull": bson.M{"roleIds": roleID}})
+	return err
+}
+
+// GetUserRoles retrieves roles for a user
 func (r *UserMongoRepository) GetUserRoles(userID primitive.ObjectID) (responses.QueryResult[role.Model], error) {
-	userModel, err := r.GetUser(userID)
+	userModel, err := r.GetByID(context.Background(), userID)
 	if err != nil {
 		return responses.QueryResult[role.Model]{}, err
 	}
 
-	// Resolve roleIDs to roles
 	var roles []role.Model
 	for _, roleID := range *userModel.RoleIDs {
-		roleModel, err := GetRoleRepository().GetRole(roleID)
+		roleModel, err := r.roleRepository.GetByID(context.Background(), roleID)
 		if err != nil {
 			return responses.QueryResult[role.Model]{}, err
 		}
 		roles = append(roles, roleModel)
 	}
 
-	// Create the QueryResult with the roles and total count
 	return *responses.NewQueryResult(len(roles), roles), nil
 }
 
-func (r *UserMongoRepository) UpdateUser(id primitive.ObjectID, updateCommand user.UpdateUserCommand) (user.Model, error) {
-	_, err := r.collection.UpdateOne(context.Background(), primitive.M{"_id": id}, primitive.M{"$set": updateCommand})
-	if err != nil {
-		return user.Model{}, err
-	}
-	return r.GetUser(id)
-}
-
-func (r *UserMongoRepository) UpdateUserPassword(id primitive.ObjectID, password string) error {
-	_, err := r.collection.UpdateOne(context.Background(), primitive.M{"_id": id}, primitive.M{"$set": primitive.M{"password": password}})
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (r *UserMongoRepository) GetUserByEmailAddress(email string) (user.Model, error) {
-	var userModel user.Model
-	err := r.collection.FindOne(context.Background(), primitive.M{"contactInfo.email": email}).Decode(&userModel)
-	if err != nil {
-		return user.Model{}, err
-	}
-	return userModel, nil
+// UpdateUserPassword updates a user's password
+func (r *UserMongoRepository) UpdateUserPassword(userID primitive.ObjectID, password string) error {
+	_, err := r.Collection.UpdateOne(context.Background(), bson.M{"_id": userID}, bson.M{"$set": bson.M{"password": password}})
+	return err
 }

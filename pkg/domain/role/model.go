@@ -2,8 +2,9 @@ package role
 
 import (
 	"errors"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/LydiaTrack/ground/pkg/auth"
 )
@@ -18,19 +19,49 @@ type Model struct {
 	Version     int                `json:"version" bson:"version"`
 }
 
-func NewRole(id string, name string, permissions []auth.Permission, tags []string, info string, createdDate time.Time, version int) Model {
-	objID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return Model{}
+type Option func(*Model) error
+
+func NewRole(opts ...Option) (*Model, error) {
+	u := &Model{
+		ID:          primitive.NewObjectID(),
+		CreatedDate: time.Now(),
+		Version:     1,
 	}
-	return Model{
-		ID:          objID,
-		Name:        name,
-		Tags:        tags,
-		Permissions: permissions,
-		Info:        info,
-		CreatedDate: createdDate,
-		Version:     version,
+
+	for _, opt := range opts {
+		if err := opt(u); err != nil {
+			return nil, err
+		}
+	}
+
+	return u, nil
+}
+
+func WithName(name string) Option {
+	return func(r *Model) error {
+		r.Name = name
+		return nil
+	}
+}
+
+func WithPermissions(permissions []auth.Permission) Option {
+	return func(r *Model) error {
+		r.Permissions = permissions
+		return nil
+	}
+}
+
+func WithTags(tags []string) Option {
+	return func(r *Model) error {
+		r.Tags = tags
+		return nil
+	}
+}
+
+func WithInfo(info string) Option {
+	return func(r *Model) error {
+		r.Info = info
+		return nil
 	}
 }
 
