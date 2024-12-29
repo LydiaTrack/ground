@@ -35,7 +35,7 @@ func TestAuditService(t *testing.T) {
 	t.Run("CreateAudit", testCreateAudit)
 	t.Run("GetAudit", testGetAudit)
 	t.Run("ExistsAudit", testExistsAudit)
-	t.Run("GetAudits", testGetAudits)
+	t.Run("Query", testGetAudits)
 	// FIXME: This test is failing when running gh actions
 	//t.Run("DeleteOlderThan", testDeleteOlderThan)
 	t.Run("DeleteInterval", testDeleteInterval)
@@ -242,7 +242,7 @@ func testGetAudits(t *testing.T) {
 	}
 
 	// Get all Audits
-	audits, err := auditService.GetAudits(auth.PermissionContext{
+	audits, err := auditService.Query("", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -266,7 +266,7 @@ func testDeleteOlderThan(t *testing.T) {
 	}
 
 	// Get all Audits
-	audits, err := auditService.GetAudits(auth.PermissionContext{
+	audits, err := auditService.Query("", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -312,7 +312,7 @@ func testDeleteOlderThan(t *testing.T) {
 	}
 
 	// Check if auditCount + 2 audits exist
-	audits, err = auditService.GetAudits(auth.PermissionContext{
+	audits, err = auditService.Query("", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -339,7 +339,7 @@ func testDeleteOlderThan(t *testing.T) {
 	}
 
 	// Get all Audits
-	audits, err = auditService.GetAudits(auth.PermissionContext{
+	audits, err = auditService.Query("", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -362,7 +362,7 @@ func testDeleteInterval(t *testing.T) {
 	}
 
 	// Get all Audits
-	audits, err := auditService.GetAudits(auth.PermissionContext{
+	audits, err := auditService.Query("", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -408,7 +408,7 @@ func testDeleteInterval(t *testing.T) {
 	}
 
 	// Check if auditCount + 2 audits exist
-	audits, err = auditService.GetAudits(auth.PermissionContext{
+	audits, err = auditService.Query("", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -436,7 +436,7 @@ func testDeleteInterval(t *testing.T) {
 	}
 
 	// Get all Audits
-	audits, err = auditService.GetAudits(auth.PermissionContext{
+	audits, err = auditService.Query("", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
