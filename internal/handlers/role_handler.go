@@ -36,7 +36,8 @@ func NewRoleHandler(roleService service.RoleService, authService auth.Service, u
 // @Success 200 {object} map[string]interface{}
 // @Router /roles [get]
 func (h RoleHandler) GetRoles(c *gin.Context) {
-	authContext, err := utils.CreateAuthContext(c, h.authService, &h.userService)
+
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -97,7 +98,7 @@ func (h RoleHandler) GetRoles(c *gin.Context) {
 func (h RoleHandler) GetRole(c *gin.Context) {
 	id := c.Param("id")
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, &h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -126,7 +127,7 @@ func (h RoleHandler) CreateRole(c *gin.Context) {
 		return
 	}
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, &h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -151,7 +152,7 @@ func (h RoleHandler) CreateRole(c *gin.Context) {
 func (h RoleHandler) DeleteRole(c *gin.Context) {
 	id := c.Param("id")
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, &h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return

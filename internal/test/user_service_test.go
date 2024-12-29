@@ -1,7 +1,6 @@
 package test
 
 import (
-	"github.com/LydiaTrack/ground/pkg/utils"
 	"testing"
 	"time"
 
@@ -122,7 +121,7 @@ func testCreateUser(t *testing.T) {
 	}
 
 	// Check user is exists by username
-	existsByUsername, err := userService.ExistsByUsername("test-create-user-001", utils.CreateAdminAuthContext())
+	existsByUsername, err := userService.ExistsByUsername("test-create-user-001", auth.CreateAdminAuthContext())
 	if err != nil {
 		t.Errorf("Error checking user exists by username: %v", err)
 	}
@@ -132,7 +131,7 @@ func testCreateUser(t *testing.T) {
 	}
 
 	// Check user exists by email address
-	existsByEmail, err := userService.ExistsByEmail("test-create-user-001@example.com", utils.CreateAdminAuthContext())
+	existsByEmail, err := userService.ExistsByEmail("test-create-user-001@example.com", auth.CreateAdminAuthContext())
 	if err != nil {
 		t.Errorf("Error checking user exists by email: %v", err)
 	}
