@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github.com/LydiaTrack/ground/pkg/mongodb/repository"
+	"github.com/LydiaTrack/ground/pkg/responses"
 	"net/http"
 	"strconv"
 
@@ -63,26 +64,26 @@ func (h RoleHandler) GetRoles(c *gin.Context) {
 			return
 		}
 
-		var roles repository.PaginatedResult[role.Model]
-		roles, err = h.roleService.QueryPaginated(searchText, page, limit, authContext)
+		var roleQueryPaginatedResult repository.PaginatedResult[role.Model]
+		roleQueryPaginatedResult, err = h.roleService.QueryPaginated(searchText, page, limit, authContext)
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		c.JSON(http.StatusOK, roles)
+		c.JSON(http.StatusOK, roleQueryPaginatedResult)
 	} else {
 		// Handle non-paginated query
-		var roles []role.Model
-		roles, err = h.roleService.Query(searchText, authContext)
+		var roleQueryResult responses.QueryResult[role.Model]
+		roleQueryResult, err = h.roleService.Query(searchText, authContext)
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"roles": roles, "count": len(roles)})
+		c.JSON(http.StatusOK, roleQueryResult)
 	}
 
 }
@@ -104,7 +105,7 @@ func (h RoleHandler) GetRole(c *gin.Context) {
 		return
 	}
 
-	getRoleResult, err := h.roleService.GetRole(id, authContext)
+	getRoleResult, err := h.roleService.Get(id, authContext)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -133,7 +134,7 @@ func (h RoleHandler) CreateRole(c *gin.Context) {
 		return
 	}
 
-	roleModel, err := h.roleService.CreateRole(createCmd, authContext)
+	roleModel, err := h.roleService.Create(createCmd, authContext)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -158,7 +159,7 @@ func (h RoleHandler) DeleteRole(c *gin.Context) {
 		return
 	}
 
-	err = h.roleService.DeleteRole(id, authContext)
+	err = h.roleService.Delete(id, authContext)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return

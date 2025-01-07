@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"github.com/LydiaTrack/ground/pkg/responses"
 	"github.com/LydiaTrack/ground/pkg/utils"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -63,12 +64,21 @@ func (r *BaseRepository[T]) GetByID(ctx context.Context, id interface{}) (T, err
 }
 
 // Update modifies an existing document identified by its ID.
-func (r *BaseRepository[T]) Update(ctx context.Context, id interface{}, update interface{}) (*mongo.UpdateResult, error) {
+func (r *BaseRepository[T]) Update(ctx context.Context, id interface{}, updateCommand interface{}) (*mongo.UpdateResult, error) {
+	// Convert the ID to ObjectID
 	objectID, err := utils.ToObjectID(id)
 	if err != nil {
 		return nil, err
 	}
-	return r.Collection.UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"$set": update})
+
+	// Generate the update document
+	updateDoc, err := utils.GenerateUpdateDocument(updateCommand)
+	if err != nil {
+		return nil, err
+	}
+
+	// Perform the update
+	return r.Collection.UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"$set": updateDoc})
 }
 
 // Delete removes a document from the collection by its ID.
@@ -81,7 +91,7 @@ func (r *BaseRepository[T]) Delete(ctx context.Context, id interface{}) (*mongo.
 }
 
 // Query retrieves documents matching the provided filter.
-func (r *BaseRepository[T]) Query(ctx context.Context, filter interface{}, searchFields []string, searchText string) ([]T, error) {
+func (r *BaseRepository[T]) Query(ctx context.Context, filter interface{}, searchFields []string, searchText string) (responses.QueryResult[T], error) {
 	var results []T
 
 	// Ensure filter is not nil
@@ -103,7 +113,7 @@ func (r *BaseRepository[T]) Query(ctx context.Context, filter interface{}, searc
 	// Execute the query
 	cursor, err := r.Collection.Find(ctx, filter)
 	if err != nil {
-		return nil, err
+		return responses.QueryResult[T]{}, err
 	}
 	defer func(cursor *mongo.Cursor, ctx context.Context) {
 		err := cursor.Close(ctx)
@@ -113,10 +123,14 @@ func (r *BaseRepository[T]) Query(ctx context.Context, filter interface{}, searc
 	}(cursor, ctx)
 
 	if err := cursor.All(ctx, &results); err != nil {
-		return nil, err
+		return responses.QueryResult[T]{}, err
 	}
 
-	return results, nil
+	if results == nil {
+		results = []T{}
+	}
+
+	return responses.QueryResult[T]{Data: results, TotalElements: len(results)}, nil
 }
 
 func (r *BaseRepository[T]) QueryPaginate(ctx context.Context, filter interface{}, searchFields []string, searchText string, page, limit int, sort interface{}) (PaginatedResult[T], error) {
@@ -175,15 +189,19 @@ func (r *BaseRepository[T]) QueryPaginate(ctx context.Context, filter interface{
 	}
 
 	// Count total matching documents
-	totalCount, err := r.Collection.CountDocuments(ctx, filter)
+	totalElements, err := r.Collection.CountDocuments(ctx, filter)
 	if err != nil {
 		return PaginatedResult[T]{}, err
 	}
 
+	if results == nil {
+		results = []T{}
+	}
+
 	return PaginatedResult[T]{
-		Data:       results,
-		TotalCount: totalCount,
-		Page:       page,
-		Limit:      limit,
+		Data:          results,
+		TotalElements: totalElements,
+		Page:          page,
+		Limit:         limit,
 	}, nil
 }

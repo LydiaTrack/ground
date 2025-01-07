@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"github.com/LydiaTrack/ground/pkg/mongodb/repository"
+	"github.com/LydiaTrack/ground/pkg/responses"
 	"time"
 
 	"github.com/LydiaTrack/ground/internal/permissions"
@@ -11,6 +12,8 @@ import (
 	"github.com/LydiaTrack/ground/pkg/domain/audit"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+var auditSearchFields = []string{"source", "operation", "additionalData"}
 
 type AuditService struct {
 	auditRepository AuditRepository
@@ -85,15 +88,14 @@ func (s AuditService) ExistsAudit(id string, authContext auth.PermissionContext)
 }
 
 // Query retrieves all audits after permission validation.
-func (s AuditService) Query(searchText string, authContext auth.PermissionContext) ([]audit.Model, error) {
+func (s AuditService) Query(searchText string, authContext auth.PermissionContext) (responses.QueryResult[audit.Model], error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.AuditReadPermission) != nil {
-		return nil, constants.ErrorPermissionDenied
+		return responses.QueryResult[audit.Model]{}, constants.ErrorPermissionDenied
 	}
 
-	searchFields := []string{"source", "operation", "additionalData"}
-	audits, err := s.auditRepository.Query(context.Background(), nil, searchFields, searchText)
+	audits, err := s.auditRepository.Query(context.Background(), nil, auditSearchFields, searchText)
 	if err != nil {
-		return nil, constants.ErrorInternalServerError
+		return responses.QueryResult[audit.Model]{}, constants.ErrorInternalServerError
 	}
 	return audits, nil
 }
@@ -104,8 +106,7 @@ func (s AuditService) QueryPaginated(searchText string, page, limit int, authCon
 		return repository.PaginatedResult[audit.Model]{}, constants.ErrorPermissionDenied
 	}
 
-	searchFields := []string{"source", "operation", "additionalData"}
-	result, err := s.auditRepository.QueryPaginate(context.Background(), nil, searchFields, searchText, page, limit, primitive.M{"instant": 1})
+	result, err := s.auditRepository.QueryPaginate(context.Background(), nil, auditSearchFields, searchText, page, limit, primitive.M{"instant": 1})
 	if err != nil {
 		return repository.PaginatedResult[audit.Model]{}, constants.ErrorInternalServerError
 	}

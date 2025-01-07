@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/LydiaTrack/ground/pkg/responses"
 	"net/http"
 	"strconv"
 
@@ -98,28 +99,25 @@ func (h UserHandler) GetUsers(c *gin.Context) {
 			return
 		}
 
-		var users repository.PaginatedResult[user.Model]
-		users, err = h.userService.QueryPaginated(searchText, page, limit, authContext)
+		var userQueryPaginatedResult repository.PaginatedResult[user.Model]
+		userQueryPaginatedResult, err = h.userService.QueryPaginated(searchText, page, limit, authContext)
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		c.JSON(http.StatusOK, users)
+		c.JSON(http.StatusOK, userQueryPaginatedResult)
 	} else {
 		// Handle non-paginated request
-		var users []user.Model
-		users, err = h.userService.Query(searchText, authContext)
+		var userQueryResult responses.QueryResult[user.Model]
+		userQueryResult, err = h.userService.Query(searchText, authContext)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{
-			"data":  users,
-			"count": len(users),
-		})
+		c.JSON(http.StatusOK, userQueryResult)
 	}
 }
 

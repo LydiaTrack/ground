@@ -64,9 +64,13 @@ func WithAvatar(avatar string) Option {
 	}
 }
 
-func WithPersonInfo(personInfo PersonInfo) Option {
+func WithPersonInfo(personInfo *PersonInfo) Option {
 	return func(u *Model) error {
-		u.PersonInfo = &personInfo
+		if personInfo == nil {
+			// Skip setting the PersonInfo if it's nil
+			return nil
+		}
+		u.PersonInfo = personInfo
 		return nil
 	}
 }
