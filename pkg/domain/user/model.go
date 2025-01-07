@@ -24,27 +24,76 @@ type Model struct {
 	Properties               map[string]interface{} `json:"properties" bson:"properties"`
 }
 
-func NewUser(id string, username string, password string,
-	personInfo *PersonInfo, contactInfo ContactInfo,
-	createdDate time.Time, properties map[string]interface{}, version int) (Model, error) {
-	objID, err := primitive.ObjectIDFromHex(id)
+type Option func(*Model) error
 
-	if err != nil {
-		return Model{}, err
+func NewUser(opts ...Option) (*Model, error) {
+	u := &Model{
+		ID:          primitive.NewObjectID(),
+		CreatedDate: time.Now(),
+		Version:     1,
+		RoleIDs:     &[]primitive.ObjectID{},
 	}
 
-	return Model{
-		ID:          objID,
-		Username:    username,
-		Password:    password,
-		PersonInfo:  personInfo,
-		ContactInfo: contactInfo,
-		CreatedDate: createdDate,
-		Version:     version,
-		RoleIDs:     &[]primitive.ObjectID{},
-		Properties:  properties,
-		Avatar:      "",
-	}, nil
+	for _, opt := range opts {
+		if err := opt(u); err != nil {
+			return nil, err
+		}
+	}
+
+	return u, nil
+}
+
+func WithUsername(username string) Option {
+	return func(u *Model) error {
+		u.Username = username
+		return nil
+	}
+}
+
+func WithPassword(password string) Option {
+	return func(u *Model) error {
+		u.Password = password
+		return nil
+	}
+}
+
+func WithAvatar(avatar string) Option {
+	return func(u *Model) error {
+		u.Avatar = avatar
+		return nil
+	}
+}
+
+func WithPersonInfo(personInfo *PersonInfo) Option {
+	return func(u *Model) error {
+		if personInfo == nil {
+			// Skip setting the PersonInfo if it's nil
+			return nil
+		}
+		u.PersonInfo = personInfo
+		return nil
+	}
+}
+
+func WithContactInfo(contactInfo ContactInfo) Option {
+	return func(u *Model) error {
+		u.ContactInfo = contactInfo
+		return nil
+	}
+}
+
+func WithProperties(properties map[string]interface{}) Option {
+	return func(u *Model) error {
+		u.Properties = properties
+		return nil
+	}
+}
+
+func WithRoleIDs(roleIDs *[]primitive.ObjectID) Option {
+	return func(u *Model) error {
+		u.RoleIDs = roleIDs
+		return nil
+	}
 }
 
 func (u Model) Validate() error {

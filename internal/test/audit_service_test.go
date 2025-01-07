@@ -35,7 +35,7 @@ func TestAuditService(t *testing.T) {
 	t.Run("CreateAudit", testCreateAudit)
 	t.Run("GetAudit", testGetAudit)
 	t.Run("ExistsAudit", testExistsAudit)
-	t.Run("GetAudits", testGetAudits)
+	t.Run("Query", testGetAudits)
 	// FIXME: This test is failing when running gh actions
 	//t.Run("DeleteOlderThan", testDeleteOlderThan)
 	t.Run("DeleteInterval", testDeleteInterval)
@@ -242,7 +242,7 @@ func testGetAudits(t *testing.T) {
 	}
 
 	// Get all Audits
-	audits, err := auditService.GetAudits(auth.PermissionContext{
+	auditQueryResult, err := auditService.Query("", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -251,7 +251,7 @@ func testGetAudits(t *testing.T) {
 		t.Errorf("Error getting Audits test: %v", err)
 	} else {
 
-		if len(audits) == 0 {
+		if auditQueryResult.TotalElements == 0 {
 			t.Errorf("Error getting Audits: %v", err)
 		}
 	}
@@ -266,7 +266,7 @@ func testDeleteOlderThan(t *testing.T) {
 	}
 
 	// Get all Audits
-	audits, err := auditService.GetAudits(auth.PermissionContext{
+	auditQueryResult, err := auditService.Query("", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -274,7 +274,7 @@ func testDeleteOlderThan(t *testing.T) {
 		t.Errorf("Error getting Audits test: %v", err)
 	}
 
-	auditCount := len(audits)
+	auditCount := auditQueryResult.TotalElements
 
 	// Create a new Audit
 	createAuditCmd := audit.CreateAuditCommand{
@@ -311,8 +311,8 @@ func testDeleteOlderThan(t *testing.T) {
 		t.Errorf("Error creating Audit test: %v", err)
 	}
 
-	// Check if auditCount + 2 audits exist
-	audits, err = auditService.GetAudits(auth.PermissionContext{
+	// Check if auditCount + 2 auditQueryResult exist
+	auditQueryResult, err = auditService.Query("", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -320,7 +320,7 @@ func testDeleteOlderThan(t *testing.T) {
 		t.Errorf("Error getting Audits test: %v", err)
 	} else {
 
-		if len(audits) != auditCount+2 {
+		if auditQueryResult.TotalElements != auditCount+2 {
 			t.Errorf("Error getting Audits: %v", err)
 		}
 	}
@@ -339,7 +339,7 @@ func testDeleteOlderThan(t *testing.T) {
 	}
 
 	// Get all Audits
-	audits, err = auditService.GetAudits(auth.PermissionContext{
+	auditQueryResult, err = auditService.Query("", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -347,7 +347,7 @@ func testDeleteOlderThan(t *testing.T) {
 		t.Errorf("Error getting Audits test: %v", err)
 	} else {
 
-		if len(audits) != 0 {
+		if auditQueryResult.TotalElements != 0 {
 			t.Errorf("Error getting Audits: %v", err)
 		}
 	}
@@ -362,7 +362,7 @@ func testDeleteInterval(t *testing.T) {
 	}
 
 	// Get all Audits
-	audits, err := auditService.GetAudits(auth.PermissionContext{
+	auditQueryResult, err := auditService.Query("", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -370,7 +370,7 @@ func testDeleteInterval(t *testing.T) {
 		t.Errorf("Error getting Audits test: %v", err)
 	}
 
-	auditCount := len(audits)
+	auditCount := auditQueryResult.TotalElements
 
 	// Create a new Audit
 	createAuditCmd := audit.CreateAuditCommand{
@@ -407,8 +407,8 @@ func testDeleteInterval(t *testing.T) {
 		t.Errorf("Error creating Audit test: %v", err)
 	}
 
-	// Check if auditCount + 2 audits exist
-	audits, err = auditService.GetAudits(auth.PermissionContext{
+	// Check if auditCount + 2 auditQueryResult exist
+	auditQueryResult, err = auditService.Query("", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -416,7 +416,7 @@ func testDeleteInterval(t *testing.T) {
 		t.Errorf("Error getting Audits test: %v", err)
 	} else {
 
-		if len(audits) != auditCount+2 {
+		if auditQueryResult.TotalElements != auditCount+2 {
 			t.Errorf("Error getting Audits: %v", err)
 		}
 	}
@@ -436,7 +436,7 @@ func testDeleteInterval(t *testing.T) {
 	}
 
 	// Get all Audits
-	audits, err = auditService.GetAudits(auth.PermissionContext{
+	auditQueryResult, err = auditService.Query("", auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -444,7 +444,7 @@ func testDeleteInterval(t *testing.T) {
 		t.Errorf("Error getting Audits test: %v", err)
 	} else {
 
-		if len(audits) != 0 {
+		if auditQueryResult.TotalElements != 0 {
 			t.Errorf("Error getting Audits: %v", err)
 		}
 	}

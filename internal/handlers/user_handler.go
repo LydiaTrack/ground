@@ -1,15 +1,17 @@
 package handlers
 
 import (
+	"github.com/LydiaTrack/ground/pkg/responses"
+	"net/http"
+	"strconv"
+
 	"github.com/LydiaTrack/ground/internal/service"
 	"github.com/LydiaTrack/ground/pkg/auth"
 	"github.com/LydiaTrack/ground/pkg/domain/user"
-	"github.com/LydiaTrack/ground/pkg/responses"
+	"github.com/LydiaTrack/ground/pkg/mongodb/repository"
 	"github.com/LydiaTrack/ground/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"net/http"
-	"os"
 )
 
 type UserHandler struct {
@@ -34,7 +36,11 @@ func NewUserHandler(userService service.UserService, authService auth.Service) U
 // @Router /users/checkUsername/:username [get]
 func (h UserHandler) CheckUsername(c *gin.Context) {
 	username := c.Param("username")
-	exists := h.userService.ExistsByUsername(username)
+	exists, err := h.userService.ExistsByUsername(username, auth.CreateAdminAuthContext())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{"exists": exists})
 }
@@ -48,8 +54,12 @@ func (h UserHandler) CheckUsername(c *gin.Context) {
 // @Success 200 {object} map[string]interface{}
 // @Router /users/checkUsername/:username [get]
 func (h UserHandler) CheckEmail(c *gin.Context) {
-	username := c.Param("email")
-	exists := h.userService.ExistsByEmail(username)
+	email := c.Param("email")
+	exists, err := h.userService.ExistsByEmail(email, auth.CreateAdminAuthContext())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{"exists": exists})
 }
@@ -63,35 +73,52 @@ func (h UserHandler) CheckEmail(c *gin.Context) {
 // @Success 200 {object} map[string]interface{}
 // @Router /users [get]
 func (h UserHandler) GetUsers(c *gin.Context) {
-	currentUser, err := h.authService.GetCurrentUser(c)
+
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	currentUserPermissions, err := h.userService.GetUserPermissionList(currentUser.ID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.EvaluateError(err, c)
 		return
 	}
 
-	var users responses.QueryResult[user.Model]
-	if currentUser.Username == os.Getenv("DEFAULT_USER_USERNAME") {
-		users, err = h.userService.GetUsers(auth.PermissionContext{
-			Permissions: []auth.Permission{auth.AdminPermission},
-			UserID:      &currentUser.ID,
-		})
+	// Check if pagination parameters are present
+	pageStr := c.Query("page")
+	limitStr := c.Query("limit")
+	searchText := c.DefaultQuery("search", "")
+
+	if pageStr != "" && limitStr != "" {
+		// Handle paginated request
+		page, err := strconv.Atoi(pageStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page parameter"})
+			return
+		}
+
+		limit, err := strconv.Atoi(limitStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid limit parameter"})
+			return
+		}
+
+		var userQueryPaginatedResult repository.PaginatedResult[user.Model]
+		userQueryPaginatedResult, err = h.userService.QueryPaginated(searchText, page, limit, authContext)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, userQueryPaginatedResult)
 	} else {
-		users, err = h.userService.GetUsers(auth.PermissionContext{
-			Permissions: currentUserPermissions,
-			UserID:      &currentUser.ID,
-		})
-	}
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, users)
+		// Handle non-paginated request
+		var userQueryResult responses.QueryResult[user.Model]
+		userQueryResult, err = h.userService.Query(searchText, authContext)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 
+		c.JSON(http.StatusOK, userQueryResult)
+	}
 }
 
 // GetUser godoc
@@ -105,13 +132,13 @@ func (h UserHandler) GetUsers(c *gin.Context) {
 func (h UserHandler) GetUser(c *gin.Context) {
 	id := c.Param("id")
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
 	}
 
-	userModel, err := h.userService.GetUser(id, authContext)
+	userModel, err := h.userService.Get(id, authContext)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -134,13 +161,13 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
 	}
 
-	createdUser, err := h.userService.CreateUser(createUserCommand, authContext)
+	createdUser, err := h.userService.Create(createUserCommand, authContext)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -159,7 +186,7 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 func (h UserHandler) DeleteUser(c *gin.Context) {
 	id := c.Param("id")
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -173,7 +200,7 @@ func (h UserHandler) DeleteUser(c *gin.Context) {
 	deleteUserCommand := user.DeleteUserCommand{
 		ID: userID,
 	}
-	err = h.userService.DeleteUser(deleteUserCommand, authContext)
+	err = h.userService.Delete(deleteUserCommand, authContext)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -196,13 +223,13 @@ func (h UserHandler) AddRoleToUser(c *gin.Context) {
 		return
 	}
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
 	}
 
-	err = h.userService.AddRoleToUser(addRoleToUserCommand, authContext)
+	err = h.userService.AddRole(addRoleToUserCommand, authContext)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -224,13 +251,13 @@ func (h UserHandler) RemoveRoleFromUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
 	}
 
-	err = h.userService.RemoveRoleFromUser(removeRoleFromUserCommand, authContext)
+	err = h.userService.RemoveRole(removeRoleFromUserCommand, authContext)
 	if err != nil {
 		utils.EvaluateError(err, c)
 	}
@@ -248,7 +275,7 @@ func (h UserHandler) RemoveRoleFromUser(c *gin.Context) {
 func (h UserHandler) GetUserRoles(c *gin.Context) {
 	id := c.Param("id")
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -259,7 +286,7 @@ func (h UserHandler) GetUserRoles(c *gin.Context) {
 		utils.EvaluateError(err, c)
 		return
 	}
-	result, err := h.userService.GetUserRoles(userID, authContext)
+	result, err := h.userService.GetRoles(userID, authContext)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -283,7 +310,7 @@ func (h UserHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -294,7 +321,7 @@ func (h UserHandler) UpdateUser(c *gin.Context) {
 		utils.EvaluateError(err, c)
 		return
 	}
-	updatedUser, err := h.userService.UpdateUser(userID.Hex(), updateUserCommand, authContext)
+	updatedUser, err := h.userService.Update(userID.Hex(), updateUserCommand, authContext)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -317,13 +344,13 @@ func (h UserHandler) UpdateUserSelf(c *gin.Context) {
 		return
 	}
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
 	}
 
-	updatedUser, err := h.userService.UpdateUserSelf(updateUserCommand, authContext)
+	updatedUser, err := h.userService.UpdateSelf(updateUserCommand, authContext)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -347,13 +374,13 @@ func (h UserHandler) UpdateUserPassword(c *gin.Context) {
 		return
 	}
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
 	}
 
-	err = h.userService.UpdateUserPassword(id, updatePasswordCommand, authContext)
+	err = h.userService.UpdatePassword(id, updatePasswordCommand, authContext)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -376,13 +403,13 @@ func (h UserHandler) UpdateUserSelfPassword(c *gin.Context) {
 		return
 	}
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
 	}
 
-	err = h.userService.UpdateUserPasswordSelf(updatePasswordCommand, authContext)
+	err = h.userService.UpdateSelfPassword(updatePasswordCommand, authContext)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
