@@ -192,7 +192,7 @@ func testAddRoleToUser(t *testing.T) {
 		},
 	}
 
-	roleModel, err := roleService.CreateRole(roleCommand, auth.PermissionContext{
+	roleModel, err := roleService.Create(roleCommand, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -202,7 +202,7 @@ func testAddRoleToUser(t *testing.T) {
 	}
 
 	// Check if the role is created
-	roleModelAfterCreate, err := roleService.GetRole(roleModel.ID.Hex(), auth.PermissionContext{
+	roleModelAfterCreate, err := roleService.Get(roleModel.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -296,7 +296,7 @@ func testRemoveRoleFromUser(t *testing.T) {
 		},
 	}
 
-	roleModel, err := roleService.CreateRole(roleCommand, auth.PermissionContext{
+	roleModel, err := roleService.Create(roleCommand, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})

@@ -86,7 +86,7 @@ func addAdminRolesToUser(userModel user.Model, roleService service.RoleService, 
 		log.Log("Default user does not have any roles, adding admin roles...")
 	} else {
 		for _, roleID := range *userRoleIDs {
-			roleModel, err := roleService.GetRole(roleID.Hex(), auth.PermissionContext{
+			roleModel, err := roleService.Get(roleID.Hex(), auth.PermissionContext{
 				Permissions: []auth.Permission{auth.AdminPermission},
 				UserID:      nil,
 			})
@@ -125,7 +125,7 @@ func addAdminRolesToUser(userModel user.Model, roleService service.RoleService, 
 		roleModel = rm
 	} else {
 		// If admin role exists, get the role
-		model, err := roleService.GetRoleByName("ADMIN", auth.PermissionContext{
+		model, err := roleService.GetByName("ADMIN", auth.PermissionContext{
 			Permissions: []auth.Permission{auth.AdminPermission},
 			UserID:      nil,
 		})
@@ -158,7 +158,7 @@ func createAdminRole(roleService service.RoleService) (role.Model, error) {
 		Info:        "Lydia Admin role for the default user",
 		Permissions: []auth.Permission{auth.AdminPermission},
 	}
-	roleModel, err := roleService.CreateRole(createRoleCmd, auth.PermissionContext{
+	roleModel, err := roleService.Create(createRoleCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})

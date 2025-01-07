@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/LydiaTrack/ground/pkg/responses"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
@@ -11,6 +12,8 @@ import (
 	"github.com/LydiaTrack/ground/pkg/domain/role"
 	"github.com/LydiaTrack/ground/pkg/mongodb/repository"
 )
+
+var roleSearchFields = []string{"name", "info"}
 
 type RoleService struct {
 	roleRepository RoleRepository
@@ -30,7 +33,7 @@ type RoleRepository interface {
 	GetRoleByName(name string) (role.Model, error)
 }
 
-func (s RoleService) CreateRole(command role.CreateRoleCommand, authContext auth.PermissionContext) (role.Model, error) {
+func (s RoleService) Create(command role.CreateRoleCommand, authContext auth.PermissionContext) (role.Model, error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.RoleCreatePermission) != nil {
 		return role.Model{}, constants.ErrorPermissionDenied
 	}
@@ -72,7 +75,7 @@ func (s RoleService) CreateRole(command role.CreateRoleCommand, authContext auth
 	return roleAfterSave, nil
 }
 
-func (s RoleService) GetRole(id string, authContext auth.PermissionContext) (role.Model, error) {
+func (s RoleService) Get(id string, authContext auth.PermissionContext) (role.Model, error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.RoleReadPermission) != nil {
 		return role.Model{}, constants.ErrorPermissionDenied
 	}
@@ -84,15 +87,14 @@ func (s RoleService) GetRole(id string, authContext auth.PermissionContext) (rol
 	return roleModel, nil
 }
 
-func (s RoleService) Query(searchText string, authContext auth.PermissionContext) ([]role.Model, error) {
+func (s RoleService) Query(searchText string, authContext auth.PermissionContext) (responses.QueryResult[role.Model], error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.RoleReadPermission) != nil {
-		return nil, constants.ErrorPermissionDenied
+		return responses.QueryResult[role.Model]{}, constants.ErrorPermissionDenied
 	}
 
-	searchFields := []string{"name", "info"}
-	roles, err := s.roleRepository.Query(context.Background(), nil, searchFields, searchText)
+	roles, err := s.roleRepository.Query(context.Background(), nil, roleSearchFields, searchText)
 	if err != nil {
-		return nil, err
+		return responses.QueryResult[role.Model]{}, err
 	}
 	return roles, nil
 }
@@ -102,8 +104,7 @@ func (s RoleService) QueryPaginated(searchText string, page int, limit int, auth
 		return repository.PaginatedResult[role.Model]{}, constants.ErrorPermissionDenied
 	}
 
-	searchFields := []string{"name", "info"}
-	roles, err := s.roleRepository.QueryPaginate(context.Background(), nil, searchFields, searchText, page, limit, nil)
+	roles, err := s.roleRepository.QueryPaginate(context.Background(), nil, roleSearchFields, searchText, page, limit, nil)
 	if err != nil {
 		return repository.PaginatedResult[role.Model]{}, err
 	}
@@ -129,7 +130,7 @@ func (s RoleService) Exists(id string, authContext auth.PermissionContext) (bool
 	return exists, nil
 }
 
-func (s RoleService) DeleteRole(id string, authContext auth.PermissionContext) error {
+func (s RoleService) Delete(id string, authContext auth.PermissionContext) error {
 	if auth.CheckPermission(authContext.Permissions, permissions.RoleDeletePermission) != nil {
 		return constants.ErrorPermissionDenied
 	}
@@ -148,7 +149,7 @@ func (s RoleService) ExistsByName(name string, authContext auth.PermissionContex
 	return s.roleRepository.ExistsByName(name)
 }
 
-func (s RoleService) GetRoleByName(name string, authContext auth.PermissionContext) (role.Model, error) {
+func (s RoleService) GetByName(name string, authContext auth.PermissionContext) (role.Model, error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.RoleReadPermission) != nil {
 		return role.Model{}, constants.ErrorPermissionDenied
 	}

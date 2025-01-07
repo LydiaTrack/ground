@@ -33,9 +33,9 @@ func TestRoleService(t *testing.T) {
 	test_support.TestWithMongo()
 	initializeRoleService()
 
-	t.Run("CreateRole", testCreateRole)
+	t.Run("Create", testCreateRole)
 	t.Run("CannotCreateRoleWithSameName", testCannotCreateRoleWithSameName)
-	t.Run("DeleteRole", testDeleteRole)
+	t.Run("Delete", testDeleteRole)
 }
 
 func testCreateRole(t *testing.T) {
@@ -46,7 +46,7 @@ func testCreateRole(t *testing.T) {
 		Info: "Test Tag Create",
 	}
 
-	roleModel, err := roleService.CreateRole(command, auth.PermissionContext{
+	roleModel, err := roleService.Create(command, auth.PermissionContext{
 		Permissions: []auth.Permission{permissions.RoleCreatePermission},
 		UserID:      nil,
 	})
@@ -74,7 +74,7 @@ func testCreateRole(t *testing.T) {
 	}
 
 	// Check if the roleModel is created or not by getting the roleModel
-	roleModel, err = roleService.GetRole(roleModel.ID.Hex(), auth.PermissionContext{
+	roleModel, err = roleService.Get(roleModel.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -95,7 +95,7 @@ func testCannotCreateRoleWithSameName(t *testing.T) {
 		Info: "Test Tag Create",
 	}
 
-	_, err := roleService.CreateRole(command, auth.PermissionContext{
+	_, err := roleService.Create(command, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -111,7 +111,7 @@ func testCannotCreateRoleWithSameName(t *testing.T) {
 		Info: "Test Tag Create123",
 	}
 
-	_, err = roleService.CreateRole(command, auth.PermissionContext{
+	_, err = roleService.Create(command, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -128,7 +128,7 @@ func testDeleteRole(t *testing.T) {
 		Info: "Test Tag Delete",
 	}
 
-	roleModel, err := roleService.CreateRole(command, auth.PermissionContext{
+	roleModel, err := roleService.Create(command, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -137,7 +137,7 @@ func testDeleteRole(t *testing.T) {
 		t.Errorf("Error creating roleModel: %s", err)
 	}
 
-	err = roleService.DeleteRole(roleModel.ID.Hex(), auth.PermissionContext{
+	err = roleService.Delete(roleModel.ID.Hex(), auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})

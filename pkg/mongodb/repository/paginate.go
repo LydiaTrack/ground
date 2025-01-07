@@ -51,16 +51,16 @@ func (r *BaseRepository[T]) Paginate(ctx context.Context, filter interface{}, pa
 	}
 
 	// Get the total count of documents matching the filter
-	totalCount, err := r.Collection.CountDocuments(ctx, filter)
+	totalElements, err := r.Collection.CountDocuments(ctx, filter)
 	if err != nil {
 		return PaginatedResult[T]{}, err
 	}
 
 	// Construct and return the paginated result
 	return PaginatedResult[T]{
-		Data:       results,
-		TotalCount: totalCount,
-		Page:       page,
-		Limit:      limit,
+		Data:          results,
+		TotalElements: totalElements,
+		Page:          page,
+		Limit:         limit,
 	}, nil
 }

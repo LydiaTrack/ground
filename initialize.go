@@ -112,7 +112,7 @@ func createDefaultRoles() {
 	isExists := service_initializer.GetServices().RoleService.ExistsByName(selfServiceRoleCmd.Name, authContext)
 	if isExists {
 		// If exists, check if the permissions are the same
-		roleModel, err := service_initializer.GetServices().RoleService.GetRoleByName(selfServiceRoleCmd.Name, authContext)
+		roleModel, err := service_initializer.GetServices().RoleService.GetByName(selfServiceRoleCmd.Name, authContext)
 		if err != nil {
 			log.LogFatal("Error creating default roles: " + err.Error())
 			return
@@ -141,7 +141,7 @@ func createDefaultRoles() {
 	}
 
 	// Create the role if it does not exist
-	_, err := service_initializer.GetServices().RoleService.CreateRole(selfServiceRoleCmd, authContext)
+	_, err := service_initializer.GetServices().RoleService.Create(selfServiceRoleCmd, authContext)
 	if err != nil {
 		log.LogFatal("Error creating default roles: " + err.Error())
 		return

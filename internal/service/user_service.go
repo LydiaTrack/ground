@@ -15,6 +15,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var userSearchFields = []string{"username", "contactInfo.email"}
+
 type UserService struct {
 	userRepository UserRepository
 	roleService    RoleService
@@ -38,8 +40,6 @@ type UserRepository interface {
 	RemoveRole(userID, roleID primitive.ObjectID) error
 	GetUserRoles(userID primitive.ObjectID) (responses.QueryResult[role.Model], error)
 	UpdateUserPassword(id primitive.ObjectID, password string) error
-	GetUsers(ctx context.Context, searchText string) ([]user.Model, error)
-	GetUsersPaginated(ctx context.Context, searchText string, page, limit int) (repository.PaginatedResult[user.Model], error)
 }
 
 // Create creates a new user
@@ -52,7 +52,7 @@ func (s UserService) Create(command user.CreateUserCommand, authContext auth.Per
 		user.WithUsername(command.Username),
 		user.WithPassword(command.Password),
 		user.WithContactInfo(command.ContactInfo),
-		user.WithPersonInfo(*command.PersonInfo),
+		user.WithPersonInfo(command.PersonInfo),
 		user.WithProperties(command.Properties),
 	)
 
@@ -91,7 +91,7 @@ func (s UserService) Create(command user.CreateUserCommand, authContext auth.Per
 // InitializeDefaultRolesForAllUsers initializes default roles for all users
 func (s UserService) InitializeDefaultRolesForAllUsers() error {
 	// Retrieve all users from the repository
-	allUsers, err := s.userRepository.GetUsers(context.Background(), "")
+	allUsers, err := s.userRepository.Query(context.Background(), nil, nil, "")
 	if err != nil {
 		return err
 	}
@@ -103,13 +103,13 @@ func (s UserService) InitializeDefaultRolesForAllUsers() error {
 		UserID:      nil,
 	}
 
-	if len(allUsers) == 0 {
+	if allUsers.TotalElements == 0 {
 		log.Log("No users found in the system. Skipping default role assignment.")
 		return nil
 	}
 
 	// Iterate over each user and attempt to add default roles
-	for _, usr := range allUsers {
+	for _, usr := range allUsers.Data {
 		err := s.addDefaultRoles(usr.ID, adminCtx)
 		if err != nil {
 			// Log the error but continue with other users
@@ -123,13 +123,12 @@ func (s UserService) InitializeDefaultRolesForAllUsers() error {
 }
 
 // Query users by an optional search text
-func (s UserService) Query(searchText string, authContext auth.PermissionContext) ([]user.Model, error) {
+func (s UserService) Query(searchText string, authContext auth.PermissionContext) (responses.QueryResult[user.Model], error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
-		return nil, constants.ErrorPermissionDenied
+		return responses.QueryResult[user.Model]{}, constants.ErrorPermissionDenied
 	}
 
-	ctx := context.Background()
-	return s.userRepository.GetUsers(ctx, searchText)
+	return s.userRepository.Query(context.Background(), nil, userSearchFields, searchText)
 }
 
 // QueryPaginated query users by an optional search text with pagination
@@ -139,7 +138,7 @@ func (s UserService) QueryPaginated(searchText string, page, limit int, authCont
 	}
 
 	ctx := context.Background()
-	return s.userRepository.GetUsersPaginated(ctx, searchText, page, limit)
+	return s.userRepository.QueryPaginate(ctx, nil, userSearchFields, searchText, page, limit, nil)
 }
 
 // GetByUsername retrieves a user by username
@@ -514,7 +513,7 @@ func (s UserService) addDefaultRoles(userID primitive.ObjectID, authContext auth
 	}
 
 	for _, roleName := range defaultRoleNames {
-		roleModel, err := s.roleService.GetRoleByName(roleName, authContext)
+		roleModel, err := s.roleService.GetByName(roleName, authContext)
 		if err != nil {
 			return err
 		}

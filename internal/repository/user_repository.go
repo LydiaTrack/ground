@@ -28,20 +28,6 @@ func GetUserMongoRepository(roleRepo *RoleMongoRepository) *UserMongoRepository 
 	}
 }
 
-func (r *UserMongoRepository) GetUsers(ctx context.Context, searchText string) ([]user.Model, error) {
-	searchFields := []string{"username", "contactInfo.email"}
-	return r.Query(ctx, nil, searchFields, searchText)
-}
-
-func (r *UserMongoRepository) GetUsersPaginated(ctx context.Context, searchText string, page, limit int) (repository.PaginatedResult[user.Model], error) {
-	searchFields := []string{"username", "contactInfo.email"}
-	result, err := r.QueryPaginate(ctx, nil, searchFields, searchText, page, limit, bson.M{"username": 1})
-	if err != nil {
-		return repository.PaginatedResult[user.Model]{}, err
-	}
-	return result, err
-}
-
 // ExistsByUsernameAndEmail checks if a user exists by username or email
 func (r *UserMongoRepository) ExistsByUsernameAndEmail(username string, email string) bool {
 	count, err := r.Collection.CountDocuments(context.Background(), bson.M{"$or": []bson.M{{"username": username}, {"contactInfo.email": email}}})
