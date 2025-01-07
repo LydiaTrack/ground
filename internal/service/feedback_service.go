@@ -186,7 +186,7 @@ func (s FeedbackService) sendFeedbackEmail(emailDestination string, feedbackMode
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	}
-	userModel, err := s.userService.GetUser(feedbackModel.UserID.Hex(), authContext)
+	userModel, err := s.userService.Get(feedbackModel.UserID.Hex(), authContext)
 	if err != nil {
 		return fmt.Errorf("failed to get user: %w", err)
 	}

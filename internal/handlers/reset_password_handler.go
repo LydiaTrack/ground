@@ -39,7 +39,7 @@ func (h ResetPasswordHandler) SendResetPasswordCode(c *gin.Context) {
 		return
 	}
 
-	err := h.resetPasswordService.SendResetPasswordEmail(c, cmd)
+	err := h.resetPasswordService.SendResetPasswordEmail(cmd)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
@@ -94,7 +94,7 @@ func (h ResetPasswordHandler) VerifyResetPasswordCode(c *gin.Context) {
 		return
 	}
 
-	err := h.resetPasswordService.VerifyResetPasswordCode(c, cmd)
+	err := h.resetPasswordService.VerifyResetPasswordCode(cmd)
 	if err != nil {
 		if errors.Is(err, resetPassword.ErrResetPasswordCodeExpired) {
 			c.JSON(400, gin.H{"error": err.Error()})

@@ -60,7 +60,7 @@ func (s ResetPasswordService) createResetPassword(cmd resetPassword.SendResetPas
 	}
 
 	// Check if the user exists
-	_, err := s.userService.GetUserByEmail(cmd.Email, authContext)
+	_, err := s.userService.GetByEmail(cmd.Email, authContext)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return resetPassword.Model{}, constants.ErrorNotFound
@@ -84,13 +84,13 @@ func (s ResetPasswordService) createResetPassword(cmd resetPassword.SendResetPas
 }
 
 // SendResetPasswordEmail sends a reset password email
-func (s ResetPasswordService) SendResetPasswordEmail(c *gin.Context, cmd resetPassword.SendResetPasswordCodeCommand) error {
+func (s ResetPasswordService) SendResetPasswordEmail(cmd resetPassword.SendResetPasswordCodeCommand) error {
 	resetPasswordModel, err := s.createResetPassword(cmd)
 	if err != nil {
 		return err
 	}
 
-	userModel, err := s.userService.GetUserByEmail(cmd.Email, auth.PermissionContext{
+	userModel, err := s.userService.GetByEmail(cmd.Email, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -117,7 +117,7 @@ func (s ResetPasswordService) SendResetPasswordEmail(c *gin.Context, cmd resetPa
 }
 
 // VerifyResetPasswordCode verifies a reset password code
-func (s ResetPasswordService) VerifyResetPasswordCode(c *gin.Context, cmd resetPassword.VerifyResetPasswordCodeCommand) error {
+func (s ResetPasswordService) VerifyResetPasswordCode(cmd resetPassword.VerifyResetPasswordCodeCommand) error {
 	resetPasswordModel, err := s.resetPasswordRepository.GetResetPasswordByCode(cmd.Code)
 	if err != nil {
 		return constants.ErrorNotFound
@@ -140,7 +140,7 @@ func (s ResetPasswordService) ResetPassword(c *gin.Context, cmd resetPassword.Do
 		Code:  cmd.Code,
 		Email: cmd.Email,
 	}
-	err := s.VerifyResetPasswordCode(c, verifyCmd)
+	err := s.VerifyResetPasswordCode(verifyCmd)
 	if err != nil {
 		utils.EvaluateError(err, c)
 	}
@@ -150,7 +150,7 @@ func (s ResetPasswordService) ResetPassword(c *gin.Context, cmd resetPassword.Do
 		UserID:      nil,
 	}
 
-	userToUpdate, err := s.userService.GetUserByEmail(cmd.Email, authCtx)
+	userToUpdate, err := s.userService.GetByEmail(cmd.Email, authCtx)
 	if err != nil {
 		return err
 	}
@@ -158,7 +158,7 @@ func (s ResetPasswordService) ResetPassword(c *gin.Context, cmd resetPassword.Do
 		NewPassword: cmd.NewPassword,
 	}
 
-	err = s.userService.ResetUserPassword(userToUpdate.ID.Hex(), updatePasswordCmd)
+	err = s.userService.ResetPassword(userToUpdate.ID.Hex(), updatePasswordCmd)
 	if err != nil {
 		return err
 	}

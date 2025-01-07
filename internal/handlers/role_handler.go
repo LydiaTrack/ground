@@ -1,7 +1,10 @@
 package handlers
 
 import (
+	"github.com/LydiaTrack/ground/pkg/mongodb/repository"
+	"github.com/LydiaTrack/ground/pkg/responses"
 	"net/http"
+	"strconv"
 
 	"github.com/LydiaTrack/ground/internal/service"
 	"github.com/LydiaTrack/ground/pkg/auth"
@@ -34,18 +37,54 @@ func NewRoleHandler(roleService service.RoleService, authService auth.Service, u
 // @Success 200 {object} map[string]interface{}
 // @Router /roles [get]
 func (h RoleHandler) GetRoles(c *gin.Context) {
-	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
 	}
 
-	roles, err := h.roleService.GetRoles(authContext)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+	// Check if pagination parameters are present
+	pageStr := c.Query("page")
+	limitStr := c.Query("limit")
+	searchText := c.DefaultQuery("search", "")
+
+	if pageStr != "" && limitStr != "" {
+		// Handle paginated query
+		// Handle paginated request
+		page, err := strconv.Atoi(pageStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page parameter"})
+			return
+		}
+
+		limit, err := strconv.Atoi(limitStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid limit parameter"})
+			return
+		}
+
+		var roleQueryPaginatedResult repository.PaginatedResult[role.Model]
+		roleQueryPaginatedResult, err = h.roleService.QueryPaginated(searchText, page, limit, authContext)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, roleQueryPaginatedResult)
+	} else {
+		// Handle non-paginated query
+		var roleQueryResult responses.QueryResult[role.Model]
+		roleQueryResult, err = h.roleService.Query(searchText, authContext)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, roleQueryResult)
 	}
-	c.JSON(http.StatusOK, roles)
 
 }
 
@@ -60,18 +99,18 @@ func (h RoleHandler) GetRoles(c *gin.Context) {
 func (h RoleHandler) GetRole(c *gin.Context) {
 	id := c.Param("id")
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
 	}
 
-	role, err := h.roleService.GetRole(id, authContext)
+	getRoleResult, err := h.roleService.Get(id, authContext)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, role)
+	c.JSON(http.StatusOK, getRoleResult)
 }
 
 // CreateRole godoc
@@ -83,19 +122,19 @@ func (h RoleHandler) GetRole(c *gin.Context) {
 // @Success 200 {object} map[string]interface{}
 // @Router /roles [post]
 func (h RoleHandler) CreateRole(c *gin.Context) {
-	var role role.CreateRoleCommand
-	if err := c.ShouldBindJSON(&role); err != nil {
+	var createCmd role.CreateRoleCommand
+	if err := c.ShouldBindJSON(&createCmd); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
 	}
 
-	roleModel, err := h.roleService.CreateRole(role, authContext)
+	roleModel, err := h.roleService.Create(createCmd, authContext)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -114,13 +153,13 @@ func (h RoleHandler) CreateRole(c *gin.Context) {
 func (h RoleHandler) DeleteRole(c *gin.Context) {
 	id := c.Param("id")
 
-	authContext, err := utils.CreateAuthContext(c, h.authService, h.userService)
+	authContext, err := auth.CreateAuthContext(c, h.authService, &h.userService)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
 	}
 
-	err = h.roleService.DeleteRole(id, authContext)
+	err = h.roleService.Delete(id, authContext)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return

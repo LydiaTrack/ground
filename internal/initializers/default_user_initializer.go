@@ -16,19 +16,22 @@ import (
 
 // InitializeDefaultUser initializes the default user with default credentials
 func InitializeDefaultUser() error {
-	// While using remote connection for MongoDB instead of container, the user can be exist in the database.
+	// While using remote connection for MongoDB instead of container, the user can be existed in the database.
 	// In this case, the default user will not be created.
-	roleService := service.NewRoleService(repository.GetRoleRepository())
-	userService := service.NewUserService(repository.GetUserRepository(), *roleService)
+	roleService := service.NewRoleService(repository.GetRoleMongoRepository())
+	userService := service.NewUserService(repository.GetUserMongoRepository(repository.GetRoleMongoRepository()), *roleService)
 	err := userService.InitializeDefaultRolesForAllUsers()
 	if err != nil {
 		return err
 	}
-	isExists := userService.ExistsByUsername(os.Getenv("DEFAULT_USER_USERNAME"))
+	isExists, err := userService.ExistsByUsername(os.Getenv("DEFAULT_USER_USERNAME"), auth.CreateAdminAuthContext())
+	if err != nil {
+		return err
+	}
 
 	if isExists {
 		log.Log("Default user already exists")
-		userModel, err := repository.GetUserRepository().GetUserByUsername(os.Getenv("DEFAULT_USER_USERNAME"))
+		userModel, err := userService.GetByUsername(os.Getenv("DEFAULT_USER_USERNAME"), auth.CreateAdminAuthContext())
 		if err != nil {
 			return err
 		}
@@ -55,7 +58,7 @@ func InitializeDefaultUser() error {
 			},
 		}
 
-		createdUser, err := userService.CreateUser(userCreateCmd, auth.PermissionContext{
+		createdUser, err := userService.Create(userCreateCmd, auth.PermissionContext{
 			Permissions: []auth.Permission{auth.AdminPermission},
 			UserID:      nil,
 		})
@@ -83,7 +86,7 @@ func addAdminRolesToUser(userModel user.Model, roleService service.RoleService, 
 		log.Log("Default user does not have any roles, adding admin roles...")
 	} else {
 		for _, roleID := range *userRoleIDs {
-			roleModel, err := roleService.GetRole(roleID.Hex(), auth.PermissionContext{
+			roleModel, err := roleService.Get(roleID.Hex(), auth.PermissionContext{
 				Permissions: []auth.Permission{auth.AdminPermission},
 				UserID:      nil,
 			})
@@ -122,7 +125,7 @@ func addAdminRolesToUser(userModel user.Model, roleService service.RoleService, 
 		roleModel = rm
 	} else {
 		// If admin role exists, get the role
-		model, err := roleService.GetRoleByName("ADMIN", auth.PermissionContext{
+		model, err := roleService.GetByName("ADMIN", auth.PermissionContext{
 			Permissions: []auth.Permission{auth.AdminPermission},
 			UserID:      nil,
 		})
@@ -137,7 +140,7 @@ func addAdminRolesToUser(userModel user.Model, roleService service.RoleService, 
 		UserID: userModel.ID,
 		RoleID: roleModel.ID,
 	}
-	err := userService.AddRoleToUser(addRoleCmd, auth.PermissionContext{
+	err := userService.AddRole(addRoleCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
@@ -155,7 +158,7 @@ func createAdminRole(roleService service.RoleService) (role.Model, error) {
 		Info:        "Lydia Admin role for the default user",
 		Permissions: []auth.Permission{auth.AdminPermission},
 	}
-	roleModel, err := roleService.CreateRole(createRoleCmd, auth.PermissionContext{
+	roleModel, err := roleService.Create(createRoleCmd, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
 		UserID:      nil,
 	})
