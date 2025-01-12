@@ -4,7 +4,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 
-	"github.com/LydiaTrack/ground/pkg/auth"
 	"github.com/LydiaTrack/ground/pkg/constants"
 	"github.com/LydiaTrack/ground/pkg/domain/session"
 )
@@ -43,10 +42,7 @@ func (s SessionService) CreateSession(cmd session.CreateSessionCommand) (session
 	if err != nil {
 		return session.InfoModel{}, err
 	}
-	exists, err := s.UserService.Exists(cmd.UserID, auth.PermissionContext{
-		Permissions: []auth.Permission{auth.AdminPermission},
-		UserID:      &userID,
-	})
+	exists, err := s.UserService.Exists(cmd.UserID)
 	if err != nil {
 		return session.InfoModel{}, err
 	}
@@ -70,10 +66,7 @@ func (s SessionService) GetUserSession(id string) (session.InfoModel, error) {
 	if err != nil {
 		return session.InfoModel{}, err
 	}
-	exists, err := s.UserService.Exists(id, auth.PermissionContext{
-		Permissions: []auth.Permission{auth.AdminPermission},
-		UserID:      &userID,
-	})
+	exists, err := s.UserService.Exists(id)
 	if err != nil {
 		return session.InfoModel{}, err
 	}
