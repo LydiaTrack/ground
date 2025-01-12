@@ -107,10 +107,7 @@ func testCreateUser(t *testing.T) {
 	}
 
 	// Check user is exists
-	exists, err := userService.Exists(userModel.ID.Hex(), auth.PermissionContext{
-		Permissions: []auth.Permission{auth.AdminPermission},
-		UserID:      nil,
-	})
+	exists, err := userService.Exists(userModel.ID.Hex())
 
 	if err != nil {
 		t.Errorf("Error checking user exists: %v", err)
