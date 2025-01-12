@@ -16,6 +16,18 @@ func ToObjectID(id interface{}) (primitive.ObjectID, error) {
 		return primitive.ObjectIDFromHex(v)
 	case primitive.ObjectID:
 		return v, nil
+	// If it is a pointer to a string, dereference it and convert to ObjectID
+	case *string:
+		if v == nil {
+			return primitive.NilObjectID, nil
+		}
+		return ToObjectID(*v)
+	// If it is a pointer to an ObjectID, dereference it
+	case *primitive.ObjectID:
+		if v == nil {
+			return primitive.NilObjectID, nil
+		}
+		return *v, nil
 	default:
 		return primitive.NilObjectID, errors.New("invalid ID format")
 	}
