@@ -11,6 +11,7 @@ import (
 	"github.com/LydiaTrack/ground/pkg/mongodb/repository"
 	"github.com/LydiaTrack/ground/pkg/registry"
 	"github.com/LydiaTrack/ground/pkg/responses"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -90,8 +91,19 @@ func (s UserService) Create(command user.CreateUserCommand, authContext auth.Per
 
 // InitializeDefaultRolesForAllUsers initializes default roles for all users
 func (s UserService) InitializeDefaultRolesForAllUsers() error {
-	// Retrieve all users from the repository
-	allUsers, err := s.userRepository.Query(context.Background(), nil, nil, "")
+	// Retrieve all users from the repository which does not have any default roles
+	defaultRoleIDs, err := s.getDefaultRoleIDs()
+	if err != nil {
+		return err
+	}
+
+	if defaultRoleIDs == nil {
+		log.Log("No default roles found in the system. Skipping default role assignment.")
+		return nil
+	}
+
+	filter := bson.M{"roleIds": bson.M{"$nin": defaultRoleIDs}}
+	allUsers, err := s.userRepository.Query(context.Background(), filter, nil, "")
 	if err != nil {
 		return err
 	}
@@ -104,7 +116,7 @@ func (s UserService) InitializeDefaultRolesForAllUsers() error {
 	}
 
 	if allUsers.TotalElements == 0 {
-		log.Log("No users found in the system. Skipping default role assignment.")
+		log.Log("No users found in the system without default roles. Skipping default role assignment.")
 		return nil
 	}
 
@@ -184,10 +196,7 @@ func (s UserService) Get(id string, authContext auth.PermissionContext) (user.Mo
 }
 
 // Exists checks if a user exists by ID
-func (s UserService) Exists(id string, authContext auth.PermissionContext) (bool, error) {
-	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
-		return false, constants.ErrorPermissionDenied
-	}
+func (s UserService) Exists(id string) (bool, error) {
 
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -239,7 +248,7 @@ func (s UserService) Delete(command user.DeleteUserCommand, authContext auth.Per
 		return constants.ErrorPermissionDenied
 	}
 
-	exists, err := s.Exists(command.ID.Hex(), authContext)
+	exists, err := s.Exists(command.ID.Hex())
 	if err != nil {
 		return constants.ErrorNotFound
 	}
@@ -262,7 +271,7 @@ func (s UserService) Update(id string, command user.UpdateUserCommand, authConte
 		return user.Model{}, constants.ErrorPermissionDenied
 	}
 
-	exists, err := s.Exists(id, authContext)
+	exists, err := s.Exists(id)
 	if err != nil {
 		return user.Model{}, constants.ErrorInternalServerError
 	}
@@ -298,7 +307,7 @@ func (s UserService) UpdateSelf(command user.UpdateUserCommand, authContext auth
 		return user.Model{}, constants.ErrorPermissionDenied
 	}
 
-	exists, err := s.Exists(authContext.UserID.Hex(), authContext)
+	exists, err := s.Exists(authContext.UserID.Hex())
 	if err != nil {
 		return user.Model{}, constants.ErrorInternalServerError
 	}
@@ -310,12 +319,12 @@ func (s UserService) UpdateSelf(command user.UpdateUserCommand, authContext auth
 		return user.Model{}, constants.ErrorBadRequest
 	}
 
-	_, err = s.userRepository.Update(context.Background(), authContext.UserID, command)
+	_, err = s.userRepository.Update(context.Background(), *authContext.UserID, command)
 	if err != nil {
 		return user.Model{}, constants.ErrorInternalServerError
 	}
 
-	updatedUser, err := s.userRepository.GetByID(context.Background(), authContext.UserID)
+	updatedUser, err := s.userRepository.GetByID(context.Background(), *authContext.UserID)
 	if err != nil {
 		return user.Model{}, constants.ErrorInternalServerError
 	}
@@ -507,23 +516,39 @@ func (s UserService) GetPermissionList(userID primitive.ObjectID) ([]auth.Permis
 
 // addDefaultRoles adds default roles to a user
 func (s UserService) addDefaultRoles(userID primitive.ObjectID, authContext auth.PermissionContext) error {
-	defaultRoleNames := registry.GetAllDefaultRoleNames()
-	if len(defaultRoleNames) == 0 {
-		return nil
+	defaultRoleIDs, err := s.getDefaultRoleIDs()
+	if err != nil {
+		return err
 	}
 
-	for _, roleName := range defaultRoleNames {
-		roleModel, err := s.roleService.GetByName(roleName, authContext)
-		if err != nil {
-			return err
-		}
+	for _, id := range defaultRoleIDs {
 
-		if err = s.userRepository.AddRole(userID, roleModel.ID); err != nil {
+		if err = s.userRepository.AddRole(userID, id); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+// getDefaultRoleIDs retrieves default role IDs
+func (s UserService) getDefaultRoleIDs() ([]primitive.ObjectID, error) {
+	defaultRoleNames := registry.GetAllDefaultRoleNames()
+	if len(defaultRoleNames) == 0 {
+		return nil, nil
+	}
+
+	var roleIDs []primitive.ObjectID
+	for _, roleName := range defaultRoleNames {
+		roleModel, err := s.roleService.GetByName(roleName, auth.CreateAdminAuthContext())
+		if err != nil {
+			return nil, err
+		}
+
+		roleIDs = append(roleIDs, roleModel.ID)
+	}
+
+	return roleIDs, nil
 }
 
 // hashUserPassword hashes the user's password
