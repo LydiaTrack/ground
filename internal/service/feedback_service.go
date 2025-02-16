@@ -2,11 +2,10 @@ package service
 
 import (
 	"fmt"
+	"github.com/LydiaTrack/ground/pkg/log"
 	"os"
 	"strconv"
 	"time"
-
-	"github.com/LydiaTrack/ground/internal/log"
 
 	"github.com/LydiaTrack/ground/pkg/auth"
 	"github.com/LydiaTrack/ground/pkg/domain/email"

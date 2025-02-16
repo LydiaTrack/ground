@@ -2,12 +2,12 @@ package service
 
 import (
 	"context"
-	"github.com/LydiaTrack/ground/internal/log"
 	"github.com/LydiaTrack/ground/internal/permissions"
 	"github.com/LydiaTrack/ground/pkg/auth"
 	"github.com/LydiaTrack/ground/pkg/constants"
 	"github.com/LydiaTrack/ground/pkg/domain/role"
 	"github.com/LydiaTrack/ground/pkg/domain/user"
+	"github.com/LydiaTrack/ground/pkg/log"
 	"github.com/LydiaTrack/ground/pkg/mongodb/repository"
 	"github.com/LydiaTrack/ground/pkg/registry"
 	"github.com/LydiaTrack/ground/pkg/responses"
@@ -144,9 +144,9 @@ func (s UserService) Query(searchText string, authContext auth.PermissionContext
 }
 
 // QueryPaginated query users by an optional search text with pagination
-func (s UserService) QueryPaginated(searchText string, page, limit int, authContext auth.PermissionContext) (repository.PaginatedResult[user.Model], error) {
+func (s UserService) QueryPaginated(searchText string, page, limit int, authContext auth.PermissionContext) (responses.PaginatedResult[user.Model], error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
-		return repository.PaginatedResult[user.Model]{}, constants.ErrorPermissionDenied
+		return responses.PaginatedResult[user.Model]{}, constants.ErrorPermissionDenied
 	}
 
 	ctx := context.Background()

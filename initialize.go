@@ -1,6 +1,7 @@
 package ground
 
 import (
+	"github.com/LydiaTrack/ground/pkg/log"
 	"reflect"
 	"time"
 
@@ -14,7 +15,6 @@ import (
 	"github.com/LydiaTrack/ground/internal/api"
 	"github.com/LydiaTrack/ground/internal/blocker"
 	"github.com/LydiaTrack/ground/internal/initializers"
-	"github.com/LydiaTrack/ground/internal/log"
 	"github.com/LydiaTrack/ground/pkg/middlewares"
 	"github.com/LydiaTrack/ground/pkg/mongodb"
 	"github.com/LydiaTrack/ground/pkg/service_initializer"
