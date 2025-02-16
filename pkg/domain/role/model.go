@@ -73,3 +73,23 @@ func (r Model) Validate() error {
 
 	return nil
 }
+
+func (r Model) HasPermissions(permissions []auth.Permission) bool {
+	for _, permission := range permissions {
+		if !r.HasPermission(permission) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (r Model) HasPermission(permission auth.Permission) bool {
+	for _, p := range r.Permissions {
+		if p == permission {
+			return true
+		}
+	}
+
+	return false
+}

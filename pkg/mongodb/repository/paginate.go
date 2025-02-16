@@ -2,13 +2,14 @@ package repository
 
 import (
 	"context"
+	"github.com/LydiaTrack/ground/pkg/responses"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Paginate retrieves a paginated list of documents based on the filter, page, limit, and sort criteria.
-func (r *BaseRepository[T]) Paginate(ctx context.Context, filter interface{}, page, limit int, sort interface{}) (PaginatedResult[T], error) {
+func (r *BaseRepository[T]) Paginate(ctx context.Context, filter interface{}, page, limit int, sort interface{}) (responses.PaginatedResult[T], error) {
 	var results []T
 
 	// Ensure page and limit have valid values
@@ -41,23 +42,23 @@ func (r *BaseRepository[T]) Paginate(ctx context.Context, filter interface{}, pa
 	// Execute the query
 	cursor, err := r.Collection.Find(ctx, filter, findOptions)
 	if err != nil {
-		return PaginatedResult[T]{}, err
+		return responses.PaginatedResult[T]{}, err
 	}
 	defer cursor.Close(ctx)
 
 	// Decode the results
 	if err := cursor.All(ctx, &results); err != nil {
-		return PaginatedResult[T]{}, err
+		return responses.PaginatedResult[T]{}, err
 	}
 
 	// Get the total count of documents matching the filter
 	totalElements, err := r.Collection.CountDocuments(ctx, filter)
 	if err != nil {
-		return PaginatedResult[T]{}, err
+		return responses.PaginatedResult[T]{}, err
 	}
 
 	// Construct and return the paginated result
-	return PaginatedResult[T]{
+	return responses.PaginatedResult[T]{
 		Data:          results,
 		TotalElements: totalElements,
 		Page:          page,

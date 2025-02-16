@@ -99,14 +99,14 @@ func (s RoleService) Query(searchText string, authContext auth.PermissionContext
 	return roles, nil
 }
 
-func (s RoleService) QueryPaginated(searchText string, page int, limit int, authContext auth.PermissionContext) (repository.PaginatedResult[role.Model], error) {
+func (s RoleService) QueryPaginated(searchText string, page int, limit int, authContext auth.PermissionContext) (responses.PaginatedResult[role.Model], error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.RoleReadPermission) != nil {
-		return repository.PaginatedResult[role.Model]{}, constants.ErrorPermissionDenied
+		return responses.PaginatedResult[role.Model]{}, constants.ErrorPermissionDenied
 	}
 
 	roles, err := s.roleRepository.QueryPaginate(context.Background(), nil, roleSearchFields, searchText, page, limit, nil)
 	if err != nil {
-		return repository.PaginatedResult[role.Model]{}, err
+		return responses.PaginatedResult[role.Model]{}, err
 	}
 	return roles, nil
 }
