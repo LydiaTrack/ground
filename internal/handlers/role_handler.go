@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"github.com/LydiaTrack/ground/pkg/mongodb/repository"
 	"github.com/LydiaTrack/ground/pkg/responses"
 	"net/http"
 	"strconv"
@@ -64,7 +63,7 @@ func (h RoleHandler) GetRoles(c *gin.Context) {
 			return
 		}
 
-		var roleQueryPaginatedResult repository.PaginatedResult[role.Model]
+		var roleQueryPaginatedResult responses.PaginatedResult[role.Model]
 		roleQueryPaginatedResult, err = h.roleService.QueryPaginated(searchText, page, limit, authContext)
 
 		if err != nil {

@@ -16,13 +16,5 @@ type Repository[T any] interface {
 	Exists(ctx context.Context, filter interface{}) (bool, error)
 	ExistsByID(ctx context.Context, id interface{}) (bool, error)
 	Query(ctx context.Context, filter interface{}, searchFields []string, searchText string) (responses.QueryResult[T], error)
-	QueryPaginate(ctx context.Context, filter interface{}, searchFields []string, searchText string, page, limit int, sort interface{}) (PaginatedResult[T], error)
-}
-
-// PaginatedResult holds the paginated data along with metadata.
-type PaginatedResult[T any] struct {
-	Data          []T   `json:"data"`
-	TotalElements int64 `json:"totalElements"`
-	Page          int   `json:"page"`
-	Limit         int   `json:"limit"`
+	QueryPaginate(ctx context.Context, filter interface{}, searchFields []string, searchText string, page, limit int, sort interface{}) (responses.PaginatedResult[T], error)
 }

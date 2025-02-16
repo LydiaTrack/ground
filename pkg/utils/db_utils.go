@@ -3,10 +3,11 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"reflect"
 	"strings"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // ToObjectID converts various ID formats to a MongoDB ObjectID.
@@ -68,6 +69,10 @@ func GenerateUpdateDocument(updateCommand interface{}) (bson.M, error) {
 		// Check if the field has a non-zero value
 		if !fieldValue.IsZero() {
 			updateDoc[bsonKey] = fieldValue.Interface()
+		}
+		// If field has empty value, check if it is a pointer, and if it is nil just assign it
+		if fieldValue.IsNil() {
+			updateDoc[bsonKey] = nil
 		}
 	}
 

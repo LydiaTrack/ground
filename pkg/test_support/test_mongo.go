@@ -1,7 +1,7 @@
 package test_support
 
 import (
-	"github.com/LydiaTrack/ground/internal/log"
+	"github.com/LydiaTrack/ground/pkg/log"
 	"github.com/LydiaTrack/ground/pkg/mongodb"
 	"github.com/joho/godotenv"
 )

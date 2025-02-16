@@ -1,12 +1,12 @@
 package initializers
 
 import (
+	"github.com/LydiaTrack/ground/pkg/log"
 	"os"
 
 	"github.com/LydiaTrack/ground/pkg/auth"
 	"github.com/LydiaTrack/ground/pkg/domain/role"
 
-	"github.com/LydiaTrack/ground/internal/log"
 	"github.com/LydiaTrack/ground/internal/repository"
 	"github.com/LydiaTrack/ground/internal/service"
 )
