@@ -101,14 +101,14 @@ func (s AuditService) Query(searchText string, authContext auth.PermissionContex
 }
 
 // QueryPaginated retrieves all audits in a paginated manner after permission validation.
-func (s AuditService) QueryPaginated(searchText string, page, limit int, authContext auth.PermissionContext) (repository.PaginatedResult[audit.Model], error) {
+func (s AuditService) QueryPaginated(searchText string, page, limit int, authContext auth.PermissionContext) (responses.PaginatedResult[audit.Model], error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.AuditReadPermission) != nil {
-		return repository.PaginatedResult[audit.Model]{}, constants.ErrorPermissionDenied
+		return responses.PaginatedResult[audit.Model]{}, constants.ErrorPermissionDenied
 	}
 
 	result, err := s.auditRepository.QueryPaginate(context.Background(), nil, auditSearchFields, searchText, page, limit, primitive.M{"instant": 1})
 	if err != nil {
-		return repository.PaginatedResult[audit.Model]{}, constants.ErrorInternalServerError
+		return responses.PaginatedResult[audit.Model]{}, constants.ErrorInternalServerError
 	}
 	return result, nil
 }

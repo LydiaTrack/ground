@@ -8,7 +8,6 @@ import (
 	"github.com/LydiaTrack/ground/internal/service"
 	"github.com/LydiaTrack/ground/pkg/auth"
 	"github.com/LydiaTrack/ground/pkg/domain/user"
-	"github.com/LydiaTrack/ground/pkg/mongodb/repository"
 	"github.com/LydiaTrack/ground/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -99,7 +98,7 @@ func (h UserHandler) GetUsers(c *gin.Context) {
 			return
 		}
 
-		var userQueryPaginatedResult repository.PaginatedResult[user.Model]
+		var userQueryPaginatedResult responses.PaginatedResult[user.Model]
 		userQueryPaginatedResult, err = h.userService.QueryPaginated(searchText, page, limit, authContext)
 
 		if err != nil {

@@ -1,11 +1,10 @@
 package auth
 
 import (
+	"github.com/LydiaTrack/ground/pkg/log"
 	"os"
 	"strconv"
 	"time"
-
-	"github.com/LydiaTrack/ground/internal/log"
 
 	"github.com/LydiaTrack/ground/pkg/constants"
 	"github.com/LydiaTrack/ground/pkg/domain/session"

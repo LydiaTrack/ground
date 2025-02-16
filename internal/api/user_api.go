@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/LydiaTrack/ground/internal/handlers"
-	"github.com/LydiaTrack/ground/internal/log"
+	"github.com/LydiaTrack/ground/pkg/log"
 	"github.com/LydiaTrack/ground/pkg/middlewares"
 	"github.com/LydiaTrack/ground/pkg/service_initializer"
 	"github.com/gin-gonic/gin"

@@ -133,7 +133,7 @@ func (r *BaseRepository[T]) Query(ctx context.Context, filter interface{}, searc
 	return responses.QueryResult[T]{Data: results, TotalElements: len(results)}, nil
 }
 
-func (r *BaseRepository[T]) QueryPaginate(ctx context.Context, filter interface{}, searchFields []string, searchText string, page, limit int, sort interface{}) (PaginatedResult[T], error) {
+func (r *BaseRepository[T]) QueryPaginate(ctx context.Context, filter interface{}, searchFields []string, searchText string, page, limit int, sort interface{}) (responses.PaginatedResult[T], error) {
 	var results []T
 
 	// Ensure filter is not nil
@@ -175,7 +175,7 @@ func (r *BaseRepository[T]) QueryPaginate(ctx context.Context, filter interface{
 	// Execute the query
 	cursor, err := r.Collection.Find(ctx, filter, findOptions)
 	if err != nil {
-		return PaginatedResult[T]{}, err
+		return responses.PaginatedResult[T]{}, err
 	}
 	defer func(cursor *mongo.Cursor, ctx context.Context) {
 		err := cursor.Close(ctx)
@@ -185,20 +185,20 @@ func (r *BaseRepository[T]) QueryPaginate(ctx context.Context, filter interface{
 	}(cursor, ctx)
 
 	if err := cursor.All(ctx, &results); err != nil {
-		return PaginatedResult[T]{}, err
+		return responses.PaginatedResult[T]{}, err
 	}
 
 	// Count total matching documents
 	totalElements, err := r.Collection.CountDocuments(ctx, filter)
 	if err != nil {
-		return PaginatedResult[T]{}, err
+		return responses.PaginatedResult[T]{}, err
 	}
 
 	if results == nil {
 		results = []T{}
 	}
 
-	return PaginatedResult[T]{
+	return responses.PaginatedResult[T]{
 		Data:          results,
 		TotalElements: totalElements,
 		Page:          page,
