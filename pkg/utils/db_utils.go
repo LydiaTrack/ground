@@ -71,7 +71,7 @@ func GenerateUpdateDocument(updateCommand interface{}) (bson.M, error) {
 			updateDoc[bsonKey] = fieldValue.Interface()
 		}
 		// If field has empty value, check if it is a pointer, and if it is nil just assign it
-		if fieldValue.IsNil() {
+		if fieldValue.Kind() == reflect.Ptr && fieldValue.IsNil() {
 			updateDoc[bsonKey] = nil
 		}
 	}
