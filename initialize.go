@@ -36,11 +36,11 @@ func Initialize(r *gin.Engine) {
 		fileName = ".env.development"
 	}
 	err := godotenv.Load(fileName)
+	// Initialize logging
+	log.InitLogging()
 	if err != nil {
 		log.LogFatal("Error loading .env file")
 	}
-	// Initialize logging
-	log.InitLogging()
 
 	// Initialize metrics
 	initMetrics(r)
