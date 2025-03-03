@@ -2,6 +2,7 @@ package ground
 
 import (
 	"github.com/LydiaTrack/ground/pkg/log"
+	"os"
 	"reflect"
 	"time"
 
@@ -25,7 +26,16 @@ import (
 // Initialize initializes the Lydia base server with r as the gin Engine
 func Initialize(r *gin.Engine) {
 	// Initialize environment variables
-	err := godotenv.Load()
+	fileName := ""
+	envType := os.Getenv("ENV_TYPE")
+	if envType == "production" {
+		fileName = ".env.production"
+	} else if envType == "test" {
+		fileName = ".env.test"
+	} else {
+		fileName = ".env.development"
+	}
+	err := godotenv.Load(fileName)
 	if err != nil {
 		log.LogFatal("Error loading .env file")
 	}
