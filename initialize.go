@@ -1,10 +1,12 @@
 package ground
 
 import (
-	"github.com/LydiaTrack/ground/pkg/log"
+	"fmt"
 	"os"
 	"reflect"
 	"time"
+
+	"github.com/LydiaTrack/ground/pkg/log"
 
 	"github.com/LydiaTrack/ground/internal/permissions"
 	"github.com/LydiaTrack/ground/internal/provider"
@@ -29,10 +31,13 @@ func Initialize(r *gin.Engine) {
 	fileName := ""
 	envType := os.Getenv("ENV_TYPE")
 	if envType == "production" {
+		fmt.Println("Running in production mode")
 		fileName = ".env.production"
 	} else if envType == "test" {
+		fmt.Println("Running in test mode")
 		fileName = ".env.test"
 	} else {
+		fmt.Println("Running in development mode")
 		fileName = ".env.development"
 	}
 	err := godotenv.Load(fileName)

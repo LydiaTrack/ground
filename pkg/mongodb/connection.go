@@ -2,8 +2,10 @@ package mongodb
 
 import (
 	"context"
-	"github.com/LydiaTrack/ground/pkg/log"
+	"fmt"
 	"os"
+
+	"github.com/LydiaTrack/ground/pkg/log"
 
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
@@ -105,6 +107,7 @@ func GetCollection(collectionName string) (*mongo.Collection, error) {
 			return nil, err
 		}
 
+		fmt.Println("Connected to local mongodb container with host: " + host + ", port: " + port.Port() + "and DB name: " + os.Getenv("DB_NAME"))
 		return client.Database(os.Getenv("DB_NAME")).Collection(collectionName), nil
 	} else if connectionType == RemoteConnection {
 		serverAPI := options.ServerAPI(options.ServerAPIVersion1)
@@ -115,6 +118,7 @@ func GetCollection(collectionName string) (*mongo.Collection, error) {
 			return nil, err
 		}
 
+		fmt.Println("Connected to remote mongodb container with URI: " + os.Getenv("DB_URI") + "and DB name: " + os.Getenv("DB_NAME"))
 		return client.Database(os.Getenv("DB_NAME")).Collection(collectionName), nil
 	}
 	log.LogFatal("Invalid connection type for mongodb container: " + connectionType)
