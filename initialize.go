@@ -161,7 +161,6 @@ func createDefaultRoles() {
 			return
 		}
 	}
-
 }
 
 func initMetrics(r *gin.Engine) {
