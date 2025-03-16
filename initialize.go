@@ -153,14 +153,15 @@ func createDefaultRoles() {
 
 		}
 		return
+	} else {
+		// Create the role if it does not exist
+		_, err := service_initializer.GetServices().RoleService.Create(selfServiceRoleCmd, authContext)
+		if err != nil {
+			log.LogFatal("Error creating default roles: " + err.Error())
+			return
+		}
 	}
 
-	// Create the role if it does not exist
-	_, err := service_initializer.GetServices().RoleService.Create(selfServiceRoleCmd, authContext)
-	if err != nil {
-		log.LogFatal("Error creating default roles: " + err.Error())
-		return
-	}
 }
 
 func initMetrics(r *gin.Engine) {
