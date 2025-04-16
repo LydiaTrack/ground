@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/LydiaTrack/ground/pkg/constants"
@@ -9,6 +10,7 @@ import (
 )
 
 func EvaluateError(err error, c *gin.Context) {
+	fmt.Print("Error while processing request: " + err.Error())
 	switch {
 	case errors.Is(err, constants.ErrorUnauthorized):
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
