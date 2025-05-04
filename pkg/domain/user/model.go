@@ -22,6 +22,7 @@ type Model struct {
 	LastSeenChangelogVersion string                 `json:"lastSeenChangelogVersion" bson:"lastSeenChangelogVersion"`
 	RoleIDs                  *[]primitive.ObjectID  `json:"roleIDs" bson:"roleIds"`
 	Properties               map[string]interface{} `json:"properties" bson:"properties"`
+	OAuthProviders           map[string]OAuthInfo   `json:"oauthProviders,omitempty" bson:"oauthProviders,omitempty"`
 }
 
 type Option func(*Model) error
@@ -164,4 +165,14 @@ func (p PhoneNumber) Validate() error {
 	}
 
 	return nil
+}
+
+// OAuthInfo represents OAuth provider information for a user
+type OAuthInfo struct {
+	ProviderID    string    `json:"providerId" bson:"providerId"`
+	Email         string    `json:"email" bson:"email"`
+	AccessToken   string    `json:"-" bson:"accessToken"`
+	RefreshToken  string    `json:"-" bson:"refreshToken"`
+	TokenExpiry   time.Time `json:"tokenExpiry" bson:"tokenExpiry"`
+	LastLoginDate time.Time `json:"lastLoginDate" bson:"lastLoginDate"`
 }
