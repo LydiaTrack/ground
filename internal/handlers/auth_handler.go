@@ -6,6 +6,7 @@ import (
 
 	"github.com/LydiaTrack/ground/internal/blocker"
 	"github.com/LydiaTrack/ground/pkg/auth"
+	"github.com/LydiaTrack/ground/pkg/auth/types"
 	"github.com/LydiaTrack/ground/pkg/domain/user"
 	"github.com/LydiaTrack/ground/pkg/utils"
 	"github.com/gin-gonic/gin"
@@ -105,4 +106,38 @@ func (h AuthHandler) RefreshToken(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, tokenPair)
+}
+
+// OAuthLogin godoc
+// @Summary OAuth login
+// @Description login with OAuth provider (Google or Apple).
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param provider path string true "OAuth provider (google or apple)"
+// @Param token body string true "OAuth token"
+// @Success 200 {object} auth.Response
+// @Router /auth/oauth/{provider} [post]
+func (h AuthHandler) OAuthLogin(c *gin.Context) {
+	provider := c.Param("provider")
+	if provider != types.GoogleProvider && provider != types.AppleProvider {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid provider"})
+		return
+	}
+
+	var token struct {
+		Token string `json:"token" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&token); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	response, err := h.authService.OAuthLogin(provider, token.Token)
+	if err != nil {
+		utils.EvaluateError(err, c)
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
 }

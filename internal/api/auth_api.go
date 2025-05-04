@@ -16,4 +16,5 @@ func InitAuth(r *gin.Engine, services service_initializer.Services) {
 	routeGroup.POST("/signup", authHandler.SignUp)
 	routeGroup.GET("/currentUser", authHandler.GetCurrentUser)
 	routeGroup.POST("/refreshToken", authHandler.RefreshToken)
+	routeGroup.POST("/oauth/:provider", authHandler.OAuthLogin)
 }

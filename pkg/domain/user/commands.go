@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+
 	"github.com/LydiaTrack/ground/internal/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -15,12 +16,13 @@ type CreateUserCommand struct {
 }
 
 type UpdateUserCommand struct {
-	Username                 string                 `json:"username" bson:"username"`
-	Avatar                   string                 `json:"avatar,omitempty" bson:"avatar,omitempty"`
-	PersonInfo               *PersonInfo            `json:"personInfo" bson:"personInfo"`
-	ContactInfo              ContactInfo            `json:"contactInfo" bson:"contactInfo"`
-	LastSeenChangelogVersion string                 `json:"lastSeenChangelogVersion" bson:"lastSeenChangelogVersion"`
-	Properties               map[string]interface{} `json:"properties" bson:"properties"`
+	Username       string                 `json:"username,omitempty"`
+	Password       string                 `json:"password,omitempty"`
+	Avatar         string                 `json:"avatar,omitempty"`
+	PersonInfo     *PersonInfo            `json:"personInfo,omitempty"`
+	ContactInfo    *ContactInfo           `json:"contactInfo,omitempty"`
+	Properties     map[string]interface{} `json:"properties,omitempty"`
+	OAuthProviders map[string]OAuthInfo   `json:"oauthProviders,omitempty"`
 }
 
 func (cmd UpdateUserCommand) Validate() error {

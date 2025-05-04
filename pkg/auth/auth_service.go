@@ -1,11 +1,14 @@
 package auth
 
 import (
-	"github.com/LydiaTrack/ground/pkg/log"
 	"os"
 	"strconv"
 	"time"
 
+	"github.com/LydiaTrack/ground/pkg/log"
+
+	"github.com/LydiaTrack/ground/pkg/auth/providers"
+	"github.com/LydiaTrack/ground/pkg/auth/types"
 	"github.com/LydiaTrack/ground/pkg/constants"
 	"github.com/LydiaTrack/ground/pkg/domain/session"
 	"github.com/LydiaTrack/ground/pkg/domain/user"
@@ -20,6 +23,8 @@ type UserService interface {
 	ExistsByEmail(email string, authContext PermissionContext) (bool, error)
 	VerifyUser(username, password string, authContext PermissionContext) (user.Model, error)
 	Get(id string, authContext PermissionContext) (user.Model, error)
+	GetByEmail(email string, authContext PermissionContext) (user.Model, error)
+	Update(id string, command user.UpdateUserCommand, authContext PermissionContext) (user.Model, error)
 }
 
 type SessionService interface {
@@ -32,6 +37,7 @@ type SessionService interface {
 type Service struct {
 	userService    UserService
 	sessionService SessionService
+	oauthProviders map[string]types.OAuthProvider
 }
 
 type Response struct {
@@ -48,9 +54,34 @@ type Request struct {
 }
 
 func NewAuthService(userService UserService, sessionService SessionService) *Service {
+	oauthProviders := make(map[string]types.OAuthProvider)
+
+	// Initialize Google provider if credentials are available
+	if googleClientID := os.Getenv("GOOGLE_CLIENT_ID"); googleClientID != "" {
+		googleProvider := providers.NewGoogleProvider(
+			googleClientID,
+			os.Getenv("GOOGLE_CLIENT_SECRET"),
+			os.Getenv("GOOGLE_REDIRECT_URI"),
+		)
+		oauthProviders[types.GoogleProvider] = googleProvider
+	}
+
+	// Initialize Apple provider if credentials are available
+	if appleClientID := os.Getenv("APPLE_CLIENT_ID"); appleClientID != "" {
+		appleProvider := providers.NewAppleProvider(
+			appleClientID,
+			os.Getenv("APPLE_TEAM_ID"),
+			os.Getenv("APPLE_KEY_ID"),
+			os.Getenv("APPLE_PRIVATE_KEY"),
+			os.Getenv("APPLE_REDIRECT_URI"),
+		)
+		oauthProviders[types.AppleProvider] = appleProvider
+	}
+
 	return &Service{
 		userService:    userService,
 		sessionService: sessionService,
+		oauthProviders: oauthProviders,
 	}
 }
 
@@ -241,4 +272,107 @@ func CheckPermission(Permissions []Permission, Permission Permission) error {
 	}
 
 	return nil
+}
+
+// OAuthLogin handles OAuth authentication
+func (s Service) OAuthLogin(provider string, token string) (Response, error) {
+	// Get the OAuth provider
+	oauthProvider, ok := s.oauthProviders[provider]
+	if !ok {
+		return Response{}, constants.ErrorBadRequest
+	}
+
+	// Validate the token
+	oauthToken, err := oauthProvider.ValidateToken(token)
+	if err != nil {
+		return Response{}, constants.ErrorUnauthorized
+	}
+
+	// Get user info from the provider
+	userInfo, err := oauthProvider.GetUserInfo(oauthToken)
+	if err != nil {
+		return Response{}, constants.ErrorInternalServerError
+	}
+
+	// Check if user exists with this OAuth provider
+	exists, err := s.userService.ExistsByEmail(userInfo.Email, CreateAdminAuthContext())
+	if err != nil {
+		return Response{}, constants.ErrorInternalServerError
+	}
+
+	var userModel user.Model
+	if !exists {
+		// Create new user
+		createCmd := user.CreateUserCommand{
+			Username: userInfo.Email, // Use email as username for OAuth users
+			ContactInfo: user.ContactInfo{
+				Email: userInfo.Email,
+			},
+			PersonInfo: &user.PersonInfo{
+				FirstName: userInfo.FirstName,
+				LastName:  userInfo.LastName,
+			},
+		}
+		userModel, err = s.userService.Create(createCmd, CreateAdminAuthContext())
+		if err != nil {
+			return Response{}, err
+		}
+	} else {
+		// Get existing user
+		userModel, err = s.userService.GetByEmail(userInfo.Email, CreateAdminAuthContext())
+		if err != nil {
+			return Response{}, err
+		}
+	}
+
+	// Update OAuth provider info
+	if userModel.OAuthProviders == nil {
+		userModel.OAuthProviders = make(map[string]user.OAuthInfo)
+	}
+	userModel.OAuthProviders[provider] = user.OAuthInfo{
+		ProviderID:    userInfo.ProviderID,
+		Email:         userInfo.Email,
+		AccessToken:   oauthToken.AccessToken,
+		RefreshToken:  oauthToken.RefreshToken,
+		TokenExpiry:   oauthToken.Expiry,
+		LastLoginDate: time.Now(),
+	}
+
+	// Update user with OAuth info
+	updateCmd := user.UpdateUserCommand{
+		OAuthProviders: userModel.OAuthProviders,
+	}
+	_, err = s.userService.Update(userModel.ID.Hex(), updateCmd, CreateAdminAuthContext())
+	if err != nil {
+		return Response{}, err
+	}
+
+	// Generate JWT token
+	tokenPair, err := jwt.GenerateTokenPair(userModel.ID)
+	if err != nil {
+		return Response{}, err
+	}
+
+	// Set session
+	err = s.SetSession(userModel.ID.Hex(), tokenPair)
+	if err != nil {
+		return Response{}, err
+	}
+
+	return Response{tokenPair}, nil
+}
+
+// IsOAuthProviderEnabled checks if a specific OAuth provider is enabled
+func (s Service) IsOAuthProviderEnabled(provider string) bool {
+	_, exists := s.oauthProviders[provider]
+	return exists
+}
+
+// GetEnabledOAuthProviders returns a list of enabled OAuth providers
+func (s Service) GetEnabledOAuthProviders() []string {
+	providers := make([]string, 0, len(s.oauthProviders))
+	for provider := range s.oauthProviders {
+		providers = append(providers, provider)
+	}
+	return providers
 }
