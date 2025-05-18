@@ -27,7 +27,7 @@ func initializeUserService() {
 		roleService := service.NewRoleService(repository.GetRoleMongoRepository())
 
 		// Create a new user service instance
-		userService = *service.NewUserService(repo, *roleService)
+		userService = *service.NewUserService(repo, *roleService, nil)
 		initializedUser = true
 	}
 }

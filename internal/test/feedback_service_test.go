@@ -28,7 +28,7 @@ func initializeFeedbackService() {
 	if !initializedFeedback {
 		test_support.TestWithMongo()
 		roleService := service.NewRoleService(repository.GetRoleMongoRepository())
-		usrService = *service.NewUserService(repository.GetUserMongoRepository(repository.GetRoleMongoRepository()), *roleService)
+		usrService = *service.NewUserService(repository.GetUserMongoRepository(repository.GetRoleMongoRepository()), *roleService, nil)
 		repo := repository.GetFeedbackRepository()
 		feedbackService = *service.NewFeedbackService(repo, usrService)
 		registerFeedbackEmailTemplate()

@@ -3,8 +3,9 @@ package rest
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/LydiaTrack/ground/pkg/log"
 	"net/http"
+
+	"github.com/LydiaTrack/ground/pkg/log"
 )
 
 const (
