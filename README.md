@@ -22,7 +22,7 @@ git clone git@github.com:Lydia/ground.git
 
 ```bash
 DB_URI=example.mongodb.com
-DB_NAME=renoten-db
+DB_NAME=renoten-test
 # It defines the DB type for mongoDB, it can be either CONTAINER or REMOTE
 DB_CONNECTION_TYPE=CONTAINER
 # DB Container connection port

@@ -5,8 +5,12 @@ import (
 	"regexp"
 )
 
-// ValidateBase64Image checks if the base64 string is a valid image format and within size limits.
-func ValidateBase64Image(avatar string) error {
+// ValidateUserAvatar checks if the base64 string or is a secure URL
+func ValidateUserAvatar(avatar string) error {
+	// Check if the string starts with "https://"
+	if len(avatar) > 8 && avatar[:8] == "https://" {
+		return nil
+	}
 	// Basic base64 regex pattern
 	matched, err := regexp.MatchString(`^data:image\/(png|jpg|jpeg);base64,`, avatar)
 	if err != nil || !matched {

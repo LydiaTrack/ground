@@ -32,6 +32,5 @@ type OAuthUserInfo struct {
 
 // OAuthProvider defines the interface for OAuth providers
 type OAuthProvider interface {
-	GetUserInfo(token *OAuthToken) (*OAuthUserInfo, error)
-	ValidateToken(token string) (*OAuthToken, error)
+	GetUserInfo(token string) (*OAuthUserInfo, error)
 }

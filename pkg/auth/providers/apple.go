@@ -1,7 +1,11 @@
 package providers
 
 import (
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/LydiaTrack/ground/pkg/auth/types"
@@ -27,34 +31,55 @@ func NewAppleProvider(clientID, teamID, keyID, privateKey, redirectURI string) *
 	}
 }
 
-func (p *AppleProvider) ValidateToken(token string) (*types.OAuthToken, error) {
-	// Apple uses JWT tokens, so we need to validate the token signature
-	// This is a simplified version - in production, you should use a proper JWT library
-	// and verify the token signature using Apple's public key
+// GetUserInfo validates the token and returns user information
+func (p *AppleProvider) GetUserInfo(token string) (*types.OAuthUserInfo, error) {
+	// Parse the JWT token without verification (we're just extracting claims)
+	// In production, you should validate the signature with Apple's public key
+	parts := strings.Split(token, ".")
+	if len(parts) != 3 {
+		return nil, fmt.Errorf("invalid token format")
+	}
 
-	// For now, we'll just return a basic token structure
-	return &types.OAuthToken{
-		AccessToken:  token,
-		RefreshToken: "", // Apple doesn't provide refresh tokens
-		ExpiresIn:    3600,
-		TokenType:    "Bearer",
-		Expiry:       time.Now().Add(1 * time.Hour),
-	}, nil
-}
+	// Get the claims part (second part) of the token
+	claimsPart := parts[1]
 
-func (p *AppleProvider) GetUserInfo(token *types.OAuthToken) (*types.OAuthUserInfo, error) {
-	// Apple provides user info in the ID token claims
-	// We need to decode the JWT token to get the claims
-	// This is a simplified version - in production, you should use a proper JWT library
+	// Add padding if needed
+	if len(claimsPart)%4 != 0 {
+		claimsPart += strings.Repeat("=", 4-len(claimsPart)%4)
+	}
 
-	// For now, we'll return a basic user info structure
-	// In a real implementation, you would decode the JWT token and extract the claims
+	// Decode base64
+	claimsBytes, err := base64.URLEncoding.DecodeString(claimsPart)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode token claims: %w", err)
+	}
+
+	// Parse the claims
+	var claims map[string]interface{}
+	if err := json.Unmarshal(claimsBytes, &claims); err != nil {
+		return nil, fmt.Errorf("failed to parse token claims: %w", err)
+	}
+
+	// Extract required fields
+	var sub, email string
+	if val, ok := claims["sub"].(string); ok {
+		sub = val
+	}
+	if val, ok := claims["email"].(string); ok {
+		email = val
+	}
+
+	// If we couldn't get a subject ID, the token is invalid
+	if sub == "" {
+		return nil, fmt.Errorf("invalid token: missing subject ID")
+	}
+
 	return &types.OAuthUserInfo{
-		ProviderID: "apple", // This would be the sub claim from the JWT
-		Email:      "",      // This would be the email claim from the JWT
-		Name:       "",      // Apple doesn't provide name by default
-		FirstName:  "",      // Apple doesn't provide first name by default
-		LastName:   "",      // Apple doesn't provide last name by default
-		Picture:    "",      // Apple doesn't provide picture
+		ProviderID: sub,
+		Email:      email,
+		Name:       "", // Apple doesn't provide name by default
+		FirstName:  "", // These would be populated if the user shared their name
+		LastName:   "",
+		Picture:    "",
 	}, nil
 }
