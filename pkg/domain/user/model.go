@@ -2,8 +2,9 @@ package user
 
 import (
 	"errors"
-	"github.com/LydiaTrack/ground/internal/utils"
 	"time"
+
+	"github.com/LydiaTrack/ground/internal/utils"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -22,6 +23,57 @@ type Model struct {
 	RoleIDs                  *[]primitive.ObjectID  `json:"roleIDs" bson:"roleIds"`
 	Properties               map[string]interface{} `json:"properties" bson:"properties"`
 	OAuthInfo                *OAuthInfo             `json:"OAuthInfo,omitempty" bson:"OAuthInfo,omitempty"`
+}
+
+// StatsModel represents the statistics for a user
+type StatsModel struct {
+	ID          primitive.ObjectID `json:"id" bson:"_id"`
+	UserID      primitive.ObjectID `json:"userId" bson:"userId"`
+	Username    string             `json:"username" bson:"username"`
+	CreatedDate time.Time          `json:"createdDate" bson:"createdDate"`
+	UpdatedDate time.Time          `json:"updatedDate" bson:"updatedDate"`
+
+	// Activity stats
+	TotalLogins     int       `json:"totalLogins" bson:"totalLogins"`
+	LastLoginDate   time.Time `json:"lastLoginDate,omitempty" bson:"lastLoginDate,omitempty"`
+	ActiveDaysCount int       `json:"activeDaysCount" bson:"activeDaysCount"`
+	DayAge          int       `json:"dayAge" bson:"dayAge"` // Days since signup
+
+	// Task stats
+	TasksCreated   int `json:"tasksCreated" bson:"tasksCreated"`
+	TasksCompleted int `json:"tasksCompleted" bson:"tasksCompleted"`
+
+	// Note stats
+	NotesCreated int `json:"notesCreated" bson:"notesCreated"`
+
+	// Time tracking stats
+	TotalTimeTracked int64 `json:"totalTimeTracked" bson:"totalTimeTracked"` // In seconds
+	TimeEntryCount   int   `json:"timeEntryCount" bson:"timeEntryCount"`
+
+	// Project stats
+	ProjectsCreated int `json:"projectsCreated" bson:"projectsCreated"`
+}
+
+// NewStats creates a new stats model for a user
+func NewStats(userID primitive.ObjectID, username string) *StatsModel {
+	now := time.Now()
+	return &StatsModel{
+		ID:               primitive.NewObjectID(),
+		UserID:           userID,
+		Username:         username,
+		CreatedDate:      now,
+		UpdatedDate:      now,
+		TotalLogins:      1,
+		LastLoginDate:    now,
+		ActiveDaysCount:  1,
+		DayAge:           0, // Initially 0 days old
+		TasksCreated:     0,
+		TasksCompleted:   0,
+		NotesCreated:     0,
+		TotalTimeTracked: 0,
+		TimeEntryCount:   0,
+		ProjectsCreated:  0,
+	}
 }
 
 type Option func(*Model) error
