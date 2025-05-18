@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	"github.com/LydiaTrack/ground/internal/permissions"
 	"github.com/LydiaTrack/ground/pkg/auth"
 	"github.com/LydiaTrack/ground/pkg/constants"
@@ -19,14 +20,16 @@ import (
 var userSearchFields = []string{"username", "contactInfo.email"}
 
 type UserService struct {
-	userRepository UserRepository
-	roleService    RoleService
+	userRepository   UserRepository
+	roleService      RoleService
+	userStatsService *UserStatsService
 }
 
-func NewUserService(userRepository UserRepository, roleService RoleService) *UserService {
+func NewUserService(userRepository UserRepository, roleService RoleService, userStatsService *UserStatsService) *UserService {
 	return &UserService{
-		userRepository: userRepository,
-		roleService:    roleService,
+		userRepository:   userRepository,
+		roleService:      roleService,
+		userStatsService: userStatsService,
 	}
 }
 
@@ -83,6 +86,14 @@ func (s UserService) Create(command user.CreateUserCommand, authContext auth.Per
 	err = s.addDefaultRoles(insertedId, authContext)
 	if err != nil {
 		return user.Model{}, err
+	}
+
+	// Create stats for the user
+	if s.userStatsService != nil {
+		if err := s.userStatsService.CreateUserStats(insertedId, userModel.Username); err != nil {
+			log.Log("Warning: Failed to create stats for user %s: %v", insertedId.Hex(), err)
+			// Continue even if stats creation fails
+		}
 	}
 
 	savedUser, err := s.userRepository.GetByID(context.Background(), insertedId)

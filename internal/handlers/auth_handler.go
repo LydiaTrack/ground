@@ -8,6 +8,8 @@ import (
 	"github.com/LydiaTrack/ground/pkg/auth"
 	"github.com/LydiaTrack/ground/pkg/auth/types"
 	"github.com/LydiaTrack/ground/pkg/domain/user"
+	"github.com/LydiaTrack/ground/pkg/log"
+	"github.com/LydiaTrack/ground/pkg/service_initializer"
 	"github.com/LydiaTrack/ground/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -39,6 +41,28 @@ func (h AuthHandler) Login(c *gin.Context) {
 		utils.EvaluateError(err, c)
 		return
 	}
+
+	// Get the current user from the auth service to record login stats
+	userStatsService := service_initializer.GetServices().UserStatsService
+	if userStatsService != nil {
+		// For login stats recording, we need the user's ID
+		// We can get it by querying the user service with the login username
+		userService := service_initializer.GetServices().UserService
+		adminContext := auth.PermissionContext{
+			Permissions: []auth.Permission{auth.AdminPermission},
+			UserID:      nil,
+		}
+
+		userModel, err := userService.GetByUsername(loginCommand.Username, adminContext)
+		if err == nil {
+			// Record the login in user stats
+			if recErr := userStatsService.RecordLogin(userModel.ID, adminContext); recErr != nil {
+				// Log the error but don't fail the login process
+				log.Log("Error recording login stats: %v", recErr)
+			}
+		}
+	}
+
 	c.JSON(http.StatusOK, response)
 }
 
@@ -64,6 +88,25 @@ func (h AuthHandler) SignUp(c *gin.Context) {
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
+	}
+
+	// Ensure user stats are created for the new user
+	// This is typically handled in the UserService, but we'll double-check here
+	userStatsService := service_initializer.GetServices().UserStatsService
+	if userStatsService != nil {
+		adminContext := auth.PermissionContext{
+			Permissions: []auth.Permission{auth.AdminPermission},
+			UserID:      nil,
+		}
+
+		// The stats should already be created as part of user creation, but let's verify
+		_, err := userStatsService.GetUserStats(response.ID, adminContext)
+		if err != nil {
+			// If stats weren't created, create them now
+			if createErr := userStatsService.CreateUserStats(response.ID, response.Username); createErr != nil {
+				log.Log("Failed to create stats for new user: %v", createErr)
+			}
+		}
 	}
 
 	// After user signs up, we should block the user from signing up again for a certain period of time

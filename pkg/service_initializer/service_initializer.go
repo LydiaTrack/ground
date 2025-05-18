@@ -11,6 +11,7 @@ type Services struct {
 	RoleService          *service.RoleService
 	SessionService       *service.SessionService
 	UserService          *service.UserService
+	UserStatsService     *service.UserStatsService
 	ResetPasswordService *service.ResetPasswordService
 	FeedbackService      *service.FeedbackService
 }
@@ -21,7 +22,17 @@ var services Services
 func InitializeServices() {
 	roleRepository := repository.GetRoleMongoRepository()
 	services.RoleService = service.NewRoleService(roleRepository)
-	services.UserService = service.NewUserService(repository.GetUserMongoRepository(roleRepository), *services.RoleService)
+
+	// Initialize UserStatsService before UserService
+	services.UserStatsService = service.NewUserStatsService(repository.GetUserStatsMongoRepository())
+
+	// Pass UserStatsService to UserService
+	services.UserService = service.NewUserService(
+		repository.GetUserMongoRepository(roleRepository),
+		*services.RoleService,
+		services.UserStatsService,
+	)
+
 	services.SessionService = service.NewSessionService(repository.GetSessionRepository(), *services.UserService)
 	services.AuthService = auth.NewAuthService(*services.UserService, *services.SessionService)
 	services.ResetPasswordService = service.NewResetPasswordService(repository.GetResetPasswordRepository(), *services.UserService)

@@ -1,9 +1,10 @@
 package initializers
 
 import (
-	"github.com/LydiaTrack/ground/pkg/log"
 	"os"
 	"time"
+
+	"github.com/LydiaTrack/ground/pkg/log"
 
 	"github.com/LydiaTrack/ground/pkg/auth"
 	"github.com/LydiaTrack/ground/pkg/domain/role"
@@ -19,7 +20,7 @@ func InitializeDefaultUser() error {
 	// While using remote connection for MongoDB instead of container, the user can be existed in the database.
 	// In this case, the default user will not be created.
 	roleService := service.NewRoleService(repository.GetRoleMongoRepository())
-	userService := service.NewUserService(repository.GetUserMongoRepository(repository.GetRoleMongoRepository()), *roleService)
+	userService := service.NewUserService(repository.GetUserMongoRepository(repository.GetRoleMongoRepository()), *roleService, nil)
 	err := userService.InitializeDefaultRolesForAllUsers()
 	if err != nil {
 		return err
