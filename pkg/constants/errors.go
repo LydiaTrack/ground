@@ -9,4 +9,5 @@ var (
 	ErrorNotFound            = errors.New("not found")
 	ErrorInternalServerError = errors.New("internal server error")
 	ErrorConflict            = errors.New("conflict")
+	ErrorOAuthWithPassWord   = errors.New("cannot use password with an account that has OAuth")
 )

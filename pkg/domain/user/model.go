@@ -2,9 +2,8 @@ package user
 
 import (
 	"errors"
-	"time"
-
 	"github.com/LydiaTrack/ground/internal/utils"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -22,7 +21,7 @@ type Model struct {
 	LastSeenChangelogVersion string                 `json:"lastSeenChangelogVersion" bson:"lastSeenChangelogVersion"`
 	RoleIDs                  *[]primitive.ObjectID  `json:"roleIDs" bson:"roleIds"`
 	Properties               map[string]interface{} `json:"properties" bson:"properties"`
-	OAuthProviders           map[string]OAuthInfo   `json:"oauthProviders,omitempty" bson:"oauthProviders,omitempty"`
+	OAuthInfo                *OAuthInfo             `json:"OAuthInfo,omitempty" bson:"OAuthInfo,omitempty"`
 }
 
 type Option func(*Model) error
@@ -97,8 +96,15 @@ func WithRoleIDs(roleIDs *[]primitive.ObjectID) Option {
 	}
 }
 
+func WithOAuthInfo(oauthInfo *OAuthInfo) Option {
+	return func(u *Model) error {
+		u.OAuthInfo = oauthInfo
+		return nil
+	}
+}
+
 func (u Model) Validate() error {
-	if u.Password == "" {
+	if u.Password == "" && u.OAuthInfo == nil {
 		return errors.New("password is required")
 	}
 
@@ -113,7 +119,7 @@ func (u Model) Validate() error {
 	}
 
 	if u.Avatar != "" {
-		if err := utils.ValidateBase64Image(u.Avatar); err != nil {
+		if err := utils.ValidateUserAvatar(u.Avatar); err != nil {
 			return err
 		}
 	}

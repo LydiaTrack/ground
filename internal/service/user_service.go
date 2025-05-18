@@ -55,6 +55,8 @@ func (s UserService) Create(command user.CreateUserCommand, authContext auth.Per
 		user.WithContactInfo(command.ContactInfo),
 		user.WithPersonInfo(command.PersonInfo),
 		user.WithProperties(command.Properties),
+		user.WithAvatar(command.Avatar),
+		user.WithOAuthInfo(command.OAuthInfo),
 	)
 
 	if err := userModel.Validate(); err != nil {
@@ -65,8 +67,10 @@ func (s UserService) Create(command user.CreateUserCommand, authContext auth.Per
 		return user.Model{}, constants.ErrorConflict
 	}
 
-	if err = hashUserPassword(userModel); err != nil {
-		return user.Model{}, constants.ErrorInternalServerError
+	if userModel.OAuthInfo == nil {
+		if err = hashUserPassword(userModel); err != nil {
+			return user.Model{}, constants.ErrorInternalServerError
+		}
 	}
 
 	createResult, err := s.userRepository.Create(context.Background(), *userModel)
@@ -437,6 +441,10 @@ func (s UserService) VerifyUser(username, password string, authContext auth.Perm
 	userModel, err := s.userRepository.GetByUsername(username)
 	if err != nil {
 		return user.Model{}, constants.ErrorNotFound
+	}
+
+	if userModel.OAuthInfo != nil {
+		return user.Model{}, constants.ErrorOAuthWithPassWord
 	}
 
 	if err = bcrypt.CompareHashAndPassword([]byte(userModel.Password), []byte(password)); err != nil {

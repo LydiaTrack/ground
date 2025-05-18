@@ -105,7 +105,7 @@ func (s Service) Login(request Request) (Response, error) {
 	})
 	if err != nil {
 		log.Log("Error verifying user", err)
-		return Response{}, constants.ErrorInternalServerError
+		return Response{}, err
 	}
 
 	// Generate token
@@ -282,16 +282,10 @@ func (s Service) OAuthLogin(provider string, token string) (Response, error) {
 		return Response{}, constants.ErrorBadRequest
 	}
 
-	// Validate the token
-	oauthToken, err := oauthProvider.ValidateToken(token)
+	// Get user info from the provider using the token
+	userInfo, err := oauthProvider.GetUserInfo(token)
 	if err != nil {
 		return Response{}, constants.ErrorUnauthorized
-	}
-
-	// Get user info from the provider
-	userInfo, err := oauthProvider.GetUserInfo(oauthToken)
-	if err != nil {
-		return Response{}, constants.ErrorInternalServerError
 	}
 
 	// Check if user exists with this OAuth provider
@@ -300,6 +294,14 @@ func (s Service) OAuthLogin(provider string, token string) (Response, error) {
 		return Response{}, constants.ErrorInternalServerError
 	}
 
+	oauthInfo := user.OAuthInfo{
+		ProviderID:    userInfo.ProviderID,
+		Email:         userInfo.Email,
+		AccessToken:   token,
+		RefreshToken:  "", // We no longer track refresh tokens separately
+		TokenExpiry:   time.Now().Add(types.DefaultTokenExpiry),
+		LastLoginDate: time.Now(),
+	}
 	var userModel user.Model
 	if !exists {
 		// Create new user
@@ -312,6 +314,9 @@ func (s Service) OAuthLogin(provider string, token string) (Response, error) {
 				FirstName: userInfo.FirstName,
 				LastName:  userInfo.LastName,
 			},
+			// Picture is a link.
+			Avatar:    userInfo.Picture,
+			OAuthInfo: &oauthInfo,
 		}
 		userModel, err = s.userService.Create(createCmd, CreateAdminAuthContext())
 		if err != nil {
@@ -323,28 +328,32 @@ func (s Service) OAuthLogin(provider string, token string) (Response, error) {
 		if err != nil {
 			return Response{}, err
 		}
-	}
-
-	// Update OAuth provider info
-	if userModel.OAuthProviders == nil {
-		userModel.OAuthProviders = make(map[string]user.OAuthInfo)
-	}
-	userModel.OAuthProviders[provider] = user.OAuthInfo{
-		ProviderID:    userInfo.ProviderID,
-		Email:         userInfo.Email,
-		AccessToken:   oauthToken.AccessToken,
-		RefreshToken:  oauthToken.RefreshToken,
-		TokenExpiry:   oauthToken.Expiry,
-		LastLoginDate: time.Now(),
+		// Update OAuth provider info
+		if userModel.OAuthInfo == nil {
+			userModel.OAuthInfo = &oauthInfo
+		}
 	}
 
 	// Update user with OAuth info
-	updateCmd := user.UpdateUserCommand{
-		OAuthProviders: userModel.OAuthProviders,
-	}
-	_, err = s.userService.Update(userModel.ID.Hex(), updateCmd, CreateAdminAuthContext())
-	if err != nil {
-		return Response{}, err
+	anyPropChanged := userModel.Avatar != userInfo.Picture ||
+		userModel.PersonInfo.FirstName != userInfo.FirstName ||
+		userModel.PersonInfo.LastName != userInfo.LastName ||
+		userModel.ContactInfo.Email != userInfo.Email
+	if anyPropChanged {
+		updateCmd := user.UpdateUserCommand{
+			Avatar: userInfo.Picture,
+			PersonInfo: &user.PersonInfo{
+				FirstName: userInfo.FirstName,
+				LastName:  userInfo.LastName,
+			},
+			ContactInfo: &user.ContactInfo{
+				Email: userInfo.Email,
+			},
+		}
+		_, err = s.userService.Update(userModel.ID.Hex(), updateCmd, CreateAdminAuthContext())
+		if err != nil {
+			return Response{}, err
+		}
 	}
 
 	// Generate JWT token
@@ -366,13 +375,4 @@ func (s Service) OAuthLogin(provider string, token string) (Response, error) {
 func (s Service) IsOAuthProviderEnabled(provider string) bool {
 	_, exists := s.oauthProviders[provider]
 	return exists
-}
-
-// GetEnabledOAuthProviders returns a list of enabled OAuth providers
-func (s Service) GetEnabledOAuthProviders() []string {
-	providers := make([]string, 0, len(s.oauthProviders))
-	for provider := range s.oauthProviders {
-		providers = append(providers, provider)
-	}
-	return providers
 }

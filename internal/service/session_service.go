@@ -49,6 +49,7 @@ func (s SessionService) CreateSession(cmd session.CreateSessionCommand) (session
 	if !exists {
 		return session.InfoModel{}, constants.ErrorNotFound
 	}
+	// TODO add a date field to apply TTL
 	sessionInfo := session.InfoModel{
 		ID:           primitive.NewObjectID(),
 		UserID:       userID,

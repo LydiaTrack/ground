@@ -13,16 +13,19 @@ type CreateUserCommand struct {
 	PersonInfo  *PersonInfo            `json:"personInfo"`
 	ContactInfo ContactInfo            `json:"contactInfo"`
 	Properties  map[string]interface{} `json:"properties"`
+	Avatar      string                 `json:"avatar,omitempty"`
+	OAuthInfo   *OAuthInfo             `json:"OAuthInfo,omitempty"`
 }
 
 type UpdateUserCommand struct {
-	Username       string                 `json:"username,omitempty"`
-	Password       string                 `json:"password,omitempty"`
-	Avatar         string                 `json:"avatar,omitempty"`
-	PersonInfo     *PersonInfo            `json:"personInfo,omitempty"`
-	ContactInfo    *ContactInfo           `json:"contactInfo,omitempty"`
-	Properties     map[string]interface{} `json:"properties,omitempty"`
-	OAuthProviders map[string]OAuthInfo   `json:"oauthProviders,omitempty"`
+	Username                 string                 `json:"username,omitempty"`
+	Password                 string                 `json:"password,omitempty"`
+	Avatar                   string                 `json:"avatar,omitempty"`
+	PersonInfo               *PersonInfo            `json:"personInfo,omitempty"`
+	ContactInfo              *ContactInfo           `json:"contactInfo,omitempty"`
+	Properties               map[string]interface{} `json:"properties,omitempty"`
+	LastSeenChangelogVersion string                 `json:"lastSeenChangelogVersion,omitempty"`
+	OAuthProviders           map[string]OAuthInfo   `json:"oauthProviders,omitempty"`
 }
 
 func (cmd UpdateUserCommand) Validate() error {
@@ -37,7 +40,7 @@ func (cmd UpdateUserCommand) Validate() error {
 	}
 
 	if cmd.Avatar != "" {
-		if err := utils.ValidateBase64Image(cmd.Avatar); err != nil {
+		if err := utils.ValidateUserAvatar(cmd.Avatar); err != nil {
 			return err
 		}
 	}
