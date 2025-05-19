@@ -223,6 +223,15 @@ func testAddRoleToUser(t *testing.T) {
 		t.Errorf("Error adding role to user: %v", err)
 	}
 
+	// Refresh userModel
+	userModel, err = userService.Get(userModel.ID.Hex(), auth.PermissionContext{
+		Permissions: []auth.Permission{auth.AdminPermission},
+		UserID:      nil,
+	})
+	if err != nil {
+		t.Errorf("Error getting userModel: %v", err)
+	}
+
 	// Check if the role is added to the user
 	result, err := userService.GetRoles(*userModel.RoleIDs, auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
