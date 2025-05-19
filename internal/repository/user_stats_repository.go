@@ -77,25 +77,50 @@ func (r *UserStatsMongoRepository) IncrementInt64Field(statsID primitive.ObjectI
 
 // UpdateField updates a specific field value
 func (r *UserStatsMongoRepository) UpdateField(statsID primitive.ObjectID, fieldName string, value interface{}) error {
-	_, err := r.Collection.UpdateOne(
+	// Get the current stats to calculate fields
+	var stats user.StatsModel
+	err := r.Collection.FindOne(context.Background(), bson.M{"_id": statsID}).Decode(&stats)
+	if err != nil {
+		return err
+	}
+
+	// Calculate general stat fields
+	stats.CalculateStatFields()
+
+	// Add the updated date and calculated fields to the update
+	updateFields := bson.M{
+		fieldName:        value,
+		"updatedDate":    stats.UpdatedDate,
+		"lastActiveDate": stats.LastActiveDate,
+		"dayAge":         stats.DayAge,
+	}
+
+	_, err = r.Collection.UpdateOne(
 		context.Background(),
 		bson.M{"_id": statsID},
-		bson.M{
-			"$set": bson.M{
-				fieldName:     value,
-				"updatedDate": time.Now(),
-			},
-		},
+		bson.M{"$set": updateFields},
 	)
 	return err
 }
 
 // UpdateFields updates multiple specific fields at once
 func (r *UserStatsMongoRepository) UpdateFields(statsID primitive.ObjectID, fields map[string]interface{}) error {
-	// Add the updated date
-	fields["updatedDate"] = time.Now()
+	// Get the current stats to calculate fields
+	var stats user.StatsModel
+	err := r.Collection.FindOne(context.Background(), bson.M{"_id": statsID}).Decode(&stats)
+	if err != nil {
+		return err
+	}
 
-	_, err := r.Collection.UpdateOne(
+	// Calculate general stat fields
+	stats.CalculateStatFields()
+
+	// Add the calculated fields to the update
+	fields["updatedDate"] = stats.UpdatedDate
+	fields["lastActiveDate"] = stats.LastActiveDate
+	fields["dayAge"] = stats.DayAge
+
+	_, err = r.Collection.UpdateOne(
 		context.Background(),
 		bson.M{"_id": statsID},
 		bson.M{"$set": fields},

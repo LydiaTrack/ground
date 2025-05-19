@@ -18,6 +18,8 @@ type AuthHandler struct {
 	authService auth.Service
 }
 
+var userStatsService = service_initializer.GetServices().UserStatsService
+
 func NewAuthHandler(authService auth.Service) AuthHandler {
 	return AuthHandler{authService: authService}
 }
@@ -90,9 +92,6 @@ func (h AuthHandler) SignUp(c *gin.Context) {
 		return
 	}
 
-	// Ensure user stats are created for the new user
-	// This is typically handled in the UserService, but we'll double-check here
-	userStatsService := service_initializer.GetServices().UserStatsService
 	if userStatsService != nil {
 		adminContext := auth.PermissionContext{
 			Permissions: []auth.Permission{auth.AdminPermission},
@@ -143,12 +142,25 @@ func (h AuthHandler) GetCurrentUser(c *gin.Context) {
 // @Success 200 {object} map[string]interface{}
 // @Router /refreshToken [get]
 func (h AuthHandler) RefreshToken(c *gin.Context) {
-	tokenPair, err := h.authService.RefreshTokenPair(c)
+	response, err := h.authService.RefreshTokenPair(c)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
 	}
-	c.JSON(http.StatusOK, tokenPair)
+
+	// Record the login in user stats
+	if userStatsService != nil {
+		adminContext := auth.PermissionContext{
+			Permissions: []auth.Permission{auth.AdminPermission},
+			UserID:      nil,
+		}
+
+		if recErr := userStatsService.RecordLogin(response.UserID, adminContext); recErr != nil {
+			// Log the error but don't fail the login process
+			log.Log("Error recording login stats: %v", recErr)
+		}
+	}
+	c.JSON(http.StatusOK, response)
 }
 
 // OAuthLogin godoc
@@ -180,6 +192,19 @@ func (h AuthHandler) OAuthLogin(c *gin.Context) {
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
+	}
+
+	// Record the login in user stats
+	if userStatsService != nil {
+		adminContext := auth.PermissionContext{
+			Permissions: []auth.Permission{auth.AdminPermission},
+			UserID:      nil,
+		}
+
+		if recErr := userStatsService.RecordLogin(response.UserID, adminContext); recErr != nil {
+			// Log the error but don't fail the login process
+			log.Log("Error recording login stats: %v", recErr)
+		}
 	}
 
 	c.JSON(http.StatusOK, response)
