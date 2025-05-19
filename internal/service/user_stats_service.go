@@ -1,7 +1,6 @@
 package service
 
 import (
-	"math"
 	"time"
 
 	"github.com/LydiaTrack/ground/pkg/auth"
@@ -62,6 +61,9 @@ func (s *UserStatsService) UpdateUserStats(stats *user.StatsModel, authContext a
 		return constants.ErrorPermissionDenied
 	}
 
+	// Calculate general stat fields before updating
+	stats.CalculateStatFields()
+
 	if err := s.userStatsRepository.UpdateStats(stats); err != nil {
 		return constants.ErrorInternalServerError
 	}
@@ -75,24 +77,8 @@ func (s *UserStatsService) RecordLogin(userID primitive.ObjectID, authContext au
 		return err
 	}
 
-	now := time.Now()
-	lastLoginDate := stats.LastLoginDate
-
-	// Update multiple fields that change during login
 	fields := make(map[string]interface{})
 	fields["totalLogins"] = stats.TotalLogins + 1
-	fields["lastLoginDate"] = now
-
-	// Check if this is a login on a new day
-	if lastLoginDate.IsZero() || !isSameDay(lastLoginDate, now) {
-		fields["activeDaysCount"] = stats.ActiveDaysCount + 1
-	}
-
-	// Calculate day age (days since signup)
-	if !stats.CreatedDate.IsZero() {
-		daysSinceSignup := int(math.Floor(now.Sub(stats.CreatedDate).Hours() / 24))
-		fields["dayAge"] = daysSinceSignup
-	}
 
 	return s.userStatsRepository.UpdateFields(stats.ID, fields)
 }

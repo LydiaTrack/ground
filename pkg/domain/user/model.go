@@ -35,7 +35,7 @@ type StatsModel struct {
 
 	// Activity stats
 	TotalLogins     int       `json:"totalLogins" bson:"totalLogins"`
-	LastLoginDate   time.Time `json:"lastLoginDate,omitempty" bson:"lastLoginDate,omitempty"`
+	LastActiveDate  time.Time `json:"lastActiveDate,omitempty" bson:"lastActiveDate,omitempty"`
 	ActiveDaysCount int       `json:"activeDaysCount" bson:"activeDaysCount"`
 	DayAge          int       `json:"dayAge" bson:"dayAge"` // Days since signup
 
@@ -64,7 +64,7 @@ func NewStats(userID primitive.ObjectID, username string) *StatsModel {
 		CreatedDate:      now,
 		UpdatedDate:      now,
 		TotalLogins:      1,
-		LastLoginDate:    now,
+		LastActiveDate:   now,
 		ActiveDaysCount:  1,
 		DayAge:           0, // Initially 0 days old
 		TasksCreated:     0,
@@ -227,10 +227,24 @@ func (p PhoneNumber) Validate() error {
 
 // OAuthInfo represents OAuth provider information for a user
 type OAuthInfo struct {
-	ProviderID    string    `json:"providerId" bson:"providerId"`
-	Email         string    `json:"email" bson:"email"`
-	AccessToken   string    `json:"-" bson:"accessToken"`
-	RefreshToken  string    `json:"-" bson:"refreshToken"`
-	TokenExpiry   time.Time `json:"tokenExpiry" bson:"tokenExpiry"`
-	LastLoginDate time.Time `json:"lastLoginDate" bson:"lastLoginDate"`
+	ProviderID     string    `json:"providerId" bson:"providerId"`
+	Email          string    `json:"email" bson:"email"`
+	AccessToken    string    `json:"-" bson:"accessToken"`
+	RefreshToken   string    `json:"-" bson:"refreshToken"`
+	TokenExpiry    time.Time `json:"tokenExpiry" bson:"tokenExpiry"`
+	LastActiveDate time.Time `json:"lastActiveDate" bson:"lastActiveDate"`
+}
+
+// CalculateStatFields updates general stat fields that should be updated on every stat change
+func (s *StatsModel) CalculateStatFields() {
+	now := time.Now()
+
+	// Update last active date
+	s.LastActiveDate = now
+
+	// Calculate day age (days since signup)
+	s.DayAge = int(now.Sub(s.CreatedDate).Hours() / 24)
+
+	// Update the updated date
+	s.UpdatedDate = now
 }

@@ -295,12 +295,12 @@ func (s Service) OAuthLogin(provider string, token string) (Response, error) {
 	}
 
 	oauthInfo := user.OAuthInfo{
-		ProviderID:    userInfo.ProviderID,
-		Email:         userInfo.Email,
-		AccessToken:   token,
-		RefreshToken:  "", // We no longer track refresh tokens separately
-		TokenExpiry:   time.Now().Add(types.DefaultTokenExpiry),
-		LastLoginDate: time.Now(),
+		ProviderID:     userInfo.ProviderID,
+		Email:          userInfo.Email,
+		AccessToken:    token,
+		RefreshToken:   "", // We no longer track refresh tokens separately
+		TokenExpiry:    time.Now().Add(types.DefaultTokenExpiry),
+		LastActiveDate: time.Now(),
 	}
 	var userModel user.Model
 	if !exists {

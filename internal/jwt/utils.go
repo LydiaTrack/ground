@@ -23,8 +23,9 @@ const (
 )
 
 type TokenPair struct {
-	Token        string `json:"token"`
-	RefreshToken string `json:"refreshToken"`
+	Token        string             `json:"token"`
+	RefreshToken string             `json:"refreshToken"`
+	UserID       primitive.ObjectID `json:"-"`
 }
 
 // GenerateTokenPair generates a jwt and refresh token
@@ -50,7 +51,7 @@ func GenerateTokenPair(userID primitive.ObjectID) (TokenPair, error) {
 	// Refresh token is a random string
 	refreshTokenStr := primitive.NewObjectID().Hex()
 
-	return TokenPair{Token: tokenStr, RefreshToken: refreshTokenStr}, nil
+	return TokenPair{Token: tokenStr, RefreshToken: refreshTokenStr, UserID: userID}, nil
 }
 
 // IsTokenValid validates the token
