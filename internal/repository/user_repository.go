@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/LydiaTrack/ground/pkg/domain/role"
 	"github.com/LydiaTrack/ground/pkg/domain/user"
@@ -76,16 +77,22 @@ func (r *UserMongoRepository) RemoveRole(userID, roleID primitive.ObjectID) erro
 }
 
 // GetUserRoles retrieves roles for a user
-func (r *UserMongoRepository) GetUserRoles(userID primitive.ObjectID) (responses.QueryResult[role.Model], error) {
-	userModel, err := r.GetByID(context.Background(), userID)
+func (r *UserMongoRepository) GetUserRoles(roleIds []primitive.ObjectID) (responses.QueryResult[role.Model], error) {
+	var roles []role.Model
+
+	rolesCursor, err := r.roleRepository.Collection.Find(context.Background(), bson.M{"_id": bson.M{"$in": roleIds}})
 	if err != nil {
 		return responses.QueryResult[role.Model]{}, err
 	}
-
-	var roles []role.Model
-	for _, roleID := range *userModel.RoleIDs {
-		roleModel, err := r.roleRepository.GetByID(context.Background(), roleID)
+	defer func(rolesCursor *mongo.Cursor, ctx context.Context) {
+		err := rolesCursor.Close(ctx)
 		if err != nil {
+			panic(err)
+		}
+	}(rolesCursor, context.Background())
+	for rolesCursor.Next(context.Background()) {
+		var roleModel role.Model
+		if err := rolesCursor.Decode(&roleModel); err != nil {
 			return responses.QueryResult[role.Model]{}, err
 		}
 		roles = append(roles, roleModel)

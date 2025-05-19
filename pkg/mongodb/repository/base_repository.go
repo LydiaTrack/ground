@@ -3,8 +3,10 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/LydiaTrack/ground/pkg/responses"
 	"github.com/LydiaTrack/ground/pkg/utils"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -53,6 +55,7 @@ func (r *BaseRepository[T]) ExistsByID(ctx context.Context, id interface{}) (boo
 
 // GetByID retrieves a document by its ID.
 func (r *BaseRepository[T]) GetByID(ctx context.Context, id interface{}) (T, error) {
+	now := time.Now()
 	var result T
 	objectID, err := utils.ToObjectID(id)
 	if err != nil {
@@ -60,11 +63,18 @@ func (r *BaseRepository[T]) GetByID(ctx context.Context, id interface{}) (T, err
 	}
 	filter := bson.M{"_id": objectID}
 	err = r.Collection.FindOne(ctx, filter).Decode(&result)
+	if err != nil {
+		elapsed := time.Since(now)
+		if elapsed > 100*time.Millisecond {
+			fmt.Println("GetByID took too long, collection: ", r.Collection.Name(), " elapsed: ", elapsed)
+		}
+	}
 	return result, err
 }
 
 // Update modifies an existing document identified by its ID.
 func (r *BaseRepository[T]) Update(ctx context.Context, id interface{}, updateCommand interface{}) (*mongo.UpdateResult, error) {
+	now := time.Now()
 	// Convert the ID to ObjectID
 	objectID, err := utils.ToObjectID(id)
 	if err != nil {
@@ -78,7 +88,15 @@ func (r *BaseRepository[T]) Update(ctx context.Context, id interface{}, updateCo
 	}
 
 	// Perform the update
-	return r.Collection.UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"$set": updateDoc})
+	result, err := r.Collection.UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"$set": updateDoc})
+	if err != nil {
+		elapsed := time.Since(now)
+		if elapsed > 100*time.Millisecond {
+			fmt.Println("Update took too long, collection: ", r.Collection.Name(), " elapsed: ", elapsed)
+		}
+		return nil, err
+	}
+	return result, nil
 }
 
 // Delete removes a document from the collection by its ID.
@@ -111,6 +129,7 @@ func (r *BaseRepository[T]) Query(ctx context.Context, filter interface{}, searc
 	}
 
 	// Execute the query
+	now := time.Now()
 	cursor, err := r.Collection.Find(ctx, filter)
 	if err != nil {
 		return responses.QueryResult[T]{}, err
@@ -122,8 +141,17 @@ func (r *BaseRepository[T]) Query(ctx context.Context, filter interface{}, searc
 		}
 	}(cursor, ctx)
 
+	elapsed := time.Since(now)
+	if elapsed > 100*time.Millisecond {
+		fmt.Println("Query took too long, collection: ", r.Collection.Name(), " elapsed: ", elapsed)
+	}
 	if err := cursor.All(ctx, &results); err != nil {
 		return responses.QueryResult[T]{}, err
+	}
+	// Log the query execution time
+	elapsed = time.Since(now) - elapsed
+	if elapsed > 50*time.Millisecond {
+		fmt.Println("Deserialization took too long, collection: ", r.Collection.Name(), " elapsed: ", elapsed)
 	}
 
 	if results == nil {

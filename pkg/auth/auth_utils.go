@@ -1,23 +1,32 @@
 package auth
 
 import (
+	"fmt"
 	"github.com/LydiaTrack/ground/pkg/constants"
+	"github.com/LydiaTrack/ground/pkg/domain/user"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
 )
 
 type userService interface {
-	GetPermissionList(userID primitive.ObjectID) ([]Permission, error)
+	GetPermissionList(userModel user.Model) ([]Permission, error)
 }
 
 func CreateAuthContext(c *gin.Context, authService Service, userService userService) (PermissionContext, error) {
+	now := time.Now()
 	currentUser, err := authService.GetCurrentUser(c)
 	if err != nil {
 		return PermissionContext{}, constants.ErrorNotFound
 	}
-	currentUserPermissions, err := userService.GetPermissionList(currentUser.ID)
+	elapsedCurrentUser := time.Since(now)
+	currentUserPermissions, err := userService.GetPermissionList(currentUser)
 	if err != nil {
 		return PermissionContext{}, constants.ErrorNotFound
+	}
+	elapsedPermissions := time.Since(now) - elapsedCurrentUser
+	elapsed := time.Since(now)
+	if elapsed > 100*time.Millisecond {
+		fmt.Printf("Auth context took too long to create, elapsed %v, user: %v, permissions: %v\n", elapsed, elapsedCurrentUser, elapsedPermissions)
 	}
 
 	return PermissionContext{

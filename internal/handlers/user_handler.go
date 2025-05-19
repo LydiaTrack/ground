@@ -285,7 +285,7 @@ func (h UserHandler) GetUserRoles(c *gin.Context) {
 		utils.EvaluateError(err, c)
 		return
 	}
-	result, err := h.userService.GetRoles(userID, authContext)
+	result, err := h.userService.GetRolesByUserId(userID, authContext)
 	if err != nil {
 		utils.EvaluateError(err, c)
 		return
