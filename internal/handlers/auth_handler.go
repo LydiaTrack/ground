@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/LydiaTrack/ground/internal/service"
 	"net/http"
 	"time"
 
@@ -18,9 +19,10 @@ type AuthHandler struct {
 	authService auth.Service
 }
 
-var userStatsService = service_initializer.GetServices().UserStatsService
+var userStatsService *service.UserStatsService
 
 func NewAuthHandler(authService auth.Service) AuthHandler {
+	userStatsService = service_initializer.GetServices().UserStatsService
 	return AuthHandler{authService: authService}
 }
 
