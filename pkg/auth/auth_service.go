@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"github.com/LydiaTrack/ground/pkg/jwt"
 	"os"
 	"strconv"
 	"time"
@@ -13,7 +14,6 @@ import (
 	"github.com/LydiaTrack/ground/pkg/domain/session"
 	"github.com/LydiaTrack/ground/pkg/domain/user"
 
-	"github.com/LydiaTrack/ground/internal/jwt"
 	"github.com/gin-gonic/gin"
 )
 

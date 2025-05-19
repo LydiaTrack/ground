@@ -42,7 +42,7 @@ type UserRepository interface {
 	GetByEmail(email string) (user.Model, error)
 	AddRole(userID, roleID primitive.ObjectID) error
 	RemoveRole(userID, roleID primitive.ObjectID) error
-	GetUserRoles(userID primitive.ObjectID) (responses.QueryResult[role.Model], error)
+	GetUserRoles(roleIds []primitive.ObjectID) (responses.QueryResult[role.Model], error)
 	UpdateUserPassword(id primitive.ObjectID, password string) error
 }
 
@@ -466,12 +466,26 @@ func (s UserService) VerifyUser(username, password string, authContext auth.Perm
 }
 
 // GetRoles retrieves roles for a user
-func (s UserService) GetRoles(userID primitive.ObjectID, authContext auth.PermissionContext) (responses.QueryResult[role.Model], error) {
+func (s UserService) GetRoles(roleIds []primitive.ObjectID, authContext auth.PermissionContext) (responses.QueryResult[role.Model], error) {
 	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
 		return responses.QueryResult[role.Model]{}, constants.ErrorPermissionDenied
 	}
 
-	return s.userRepository.GetUserRoles(userID)
+	return s.userRepository.GetUserRoles(roleIds)
+}
+
+// GetRolesByUserId retrieves roles for a user
+func (s UserService) GetRolesByUserId(userId primitive.ObjectID, authContext auth.PermissionContext) (responses.QueryResult[role.Model], error) {
+	if auth.CheckPermission(authContext.Permissions, permissions.UserReadPermission) != nil {
+		return responses.QueryResult[role.Model]{}, constants.ErrorPermissionDenied
+	}
+
+	userModel, err := s.Get(userId.Hex(), authContext)
+	if err != nil {
+		return responses.QueryResult[role.Model]{}, constants.ErrorNotFound
+	}
+
+	return s.userRepository.GetUserRoles(*userModel.RoleIDs)
 }
 
 // AddRole adds a role to a user
@@ -519,8 +533,8 @@ func (s UserService) RemoveRole(command user.RemoveRoleFromUserCommand, authCont
 }
 
 // GetPermissionList retrieves permissions for a user
-func (s UserService) GetPermissionList(userID primitive.ObjectID) ([]auth.Permission, error) {
-	userRoles, err := s.GetRoles(userID, auth.CreateAdminAuthContext())
+func (s UserService) GetPermissionList(userModel user.Model) ([]auth.Permission, error) {
+	userRoles, err := s.GetRoles(*userModel.RoleIDs, auth.CreateAdminAuthContext())
 	if err != nil {
 		return nil, err
 	}
