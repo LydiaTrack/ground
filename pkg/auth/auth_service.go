@@ -42,6 +42,7 @@ type Service struct {
 
 type Response struct {
 	jwt.TokenPair
+	IsRegistered bool `json:"isRegistered"`
 }
 
 type RefreshTokenRequest struct {
@@ -123,6 +124,7 @@ func (s Service) Login(request Request) (Response, error) {
 
 	return Response{
 		tokenPair,
+		false,
 	}, nil
 }
 
@@ -368,7 +370,9 @@ func (s Service) OAuthLogin(provider string, token string) (Response, error) {
 		return Response{}, err
 	}
 
-	return Response{tokenPair}, nil
+	return Response{tokenPair,
+		!exists,
+	}, nil
 }
 
 // IsOAuthProviderEnabled checks if a specific OAuth provider is enabled
