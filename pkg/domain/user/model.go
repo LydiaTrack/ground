@@ -242,6 +242,11 @@ func (s *StatsModel) CalculateStatFields() {
 	// Update last active date
 	s.LastActiveDate = now
 
+	if s.LastActiveDate.Year() != now.Year() ||
+		s.LastActiveDate.YearDay() != now.YearDay() {
+		s.ActiveDaysCount++
+	}
+
 	// Calculate day age (days since signup)
 	s.DayAge = int(now.Sub(s.CreatedDate).Hours() / 24)
 
