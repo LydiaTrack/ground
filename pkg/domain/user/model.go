@@ -239,17 +239,24 @@ type OAuthInfo struct {
 func (s *StatsModel) CalculateStatFields() {
 	now := time.Now()
 
-	// Update last active date
-	s.LastActiveDate = now
-
-	if s.LastActiveDate.Year() != now.Year() ||
-		s.LastActiveDate.YearDay() != now.YearDay() {
+	// Check if this is a new day compared to the last active date before updating it
+	if !s.LastActiveDate.IsZero() && !isSameDay(s.LastActiveDate, now) {
 		s.ActiveDaysCount++
 	}
+
+	// Update last active date
+	s.LastActiveDate = now
 
 	// Calculate day age (days since signup)
 	s.DayAge = int(now.Sub(s.CreatedDate).Hours() / 24)
 
 	// Update the updated date
 	s.UpdatedDate = now
+}
+
+// Helper function to check if two times are on the same day
+func isSameDay(t1, t2 time.Time) bool {
+	y1, m1, d1 := t1.Date()
+	y2, m2, d2 := t2.Date()
+	return y1 == y2 && m1 == m2 && d1 == d2
 }
