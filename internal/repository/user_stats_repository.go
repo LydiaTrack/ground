@@ -89,10 +89,11 @@ func (r *UserStatsMongoRepository) UpdateField(statsID primitive.ObjectID, field
 
 	// Add the updated date and calculated fields to the update
 	updateFields := bson.M{
-		fieldName:        value,
-		"updatedDate":    stats.UpdatedDate,
-		"lastActiveDate": stats.LastActiveDate,
-		"dayAge":         stats.DayAge,
+		fieldName:         value,
+		"updatedDate":     stats.UpdatedDate,
+		"lastActiveDate":  stats.LastActiveDate,
+		"dayAge":          stats.DayAge,
+		"activeDaysCount": stats.ActiveDaysCount,
 	}
 
 	_, err = r.Collection.UpdateOne(
@@ -119,6 +120,7 @@ func (r *UserStatsMongoRepository) UpdateFields(statsID primitive.ObjectID, fiel
 	fields["updatedDate"] = stats.UpdatedDate
 	fields["lastActiveDate"] = stats.LastActiveDate
 	fields["dayAge"] = stats.DayAge
+	fields["activeDaysCount"] = stats.ActiveDaysCount
 
 	_, err = r.Collection.UpdateOne(
 		context.Background(),
