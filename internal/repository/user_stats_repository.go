@@ -51,12 +51,28 @@ func (r *UserStatsMongoRepository) UpdateStats(stats *user.StatsModel) error {
 
 // IncrementField increments a numeric field by a specific value
 func (r *UserStatsMongoRepository) IncrementField(statsID primitive.ObjectID, fieldName string, increment int) error {
-	_, err := r.Collection.UpdateOne(
+	// Get the current stats to calculate fields
+	var stats user.StatsModel
+	err := r.Collection.FindOne(context.Background(), bson.M{"_id": statsID}).Decode(&stats)
+	if err != nil {
+		return err
+	}
+
+	// Calculate general stat fields
+	stats.CalculateStatFields()
+
+	// Perform the increment and update calculated fields in a single operation
+	_, err = r.Collection.UpdateOne(
 		context.Background(),
 		bson.M{"_id": statsID},
 		bson.M{
 			"$inc": bson.M{fieldName: increment},
-			"$set": bson.M{"updatedDate": time.Now()},
+			"$set": bson.M{
+				"updatedDate":     stats.UpdatedDate,
+				"lastActiveDate":  stats.LastActiveDate,
+				"dayAge":          stats.DayAge,
+				"activeDaysCount": stats.ActiveDaysCount,
+			},
 		},
 	)
 	return err
@@ -64,12 +80,28 @@ func (r *UserStatsMongoRepository) IncrementField(statsID primitive.ObjectID, fi
 
 // IncrementInt64Field increments an int64 field by a specific value
 func (r *UserStatsMongoRepository) IncrementInt64Field(statsID primitive.ObjectID, fieldName string, increment int64) error {
-	_, err := r.Collection.UpdateOne(
+	// Get the current stats to calculate fields
+	var stats user.StatsModel
+	err := r.Collection.FindOne(context.Background(), bson.M{"_id": statsID}).Decode(&stats)
+	if err != nil {
+		return err
+	}
+
+	// Calculate general stat fields
+	stats.CalculateStatFields()
+
+	// Perform the increment and update calculated fields in a single operation
+	_, err = r.Collection.UpdateOne(
 		context.Background(),
 		bson.M{"_id": statsID},
 		bson.M{
 			"$inc": bson.M{fieldName: increment},
-			"$set": bson.M{"updatedDate": time.Now()},
+			"$set": bson.M{
+				"updatedDate":     stats.UpdatedDate,
+				"lastActiveDate":  stats.LastActiveDate,
+				"dayAge":          stats.DayAge,
+				"activeDaysCount": stats.ActiveDaysCount,
+			},
 		},
 	)
 	return err
