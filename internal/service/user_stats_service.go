@@ -81,58 +81,42 @@ func (s *UserStatsService) RecordLogin(userID primitive.ObjectID, authContext au
 	return s.userStatsRepository.UpdateFields(stats.ID, fields)
 }
 
-// RecordTaskCreated increments the tasks created count
-func (s *UserStatsService) RecordTaskCreated(userID primitive.ObjectID, authContext auth.PermissionContext) error {
+// IncrementField increments a numeric field in the user's stats
+func (s *UserStatsService) IncrementField(userID primitive.ObjectID, fieldName string, increment int, authContext auth.PermissionContext) error {
 	stats, err := s.GetUserStats(userID, authContext)
 	if err != nil {
 		return err
 	}
 
-	return s.userStatsRepository.IncrementField(stats.ID, "tasksCreated", 1)
+	return s.userStatsRepository.IncrementField(stats.ID, fieldName, increment)
 }
 
-// RecordTaskCompleted increments the tasks completed count
-func (s *UserStatsService) RecordTaskCompleted(userID primitive.ObjectID, authContext auth.PermissionContext) error {
+// IncrementInt64Field increments a numeric int64 field in the user's stats
+func (s *UserStatsService) IncrementInt64Field(userID primitive.ObjectID, fieldName string, increment int64, authContext auth.PermissionContext) error {
 	stats, err := s.GetUserStats(userID, authContext)
 	if err != nil {
 		return err
 	}
 
-	return s.userStatsRepository.IncrementField(stats.ID, "tasksCompleted", 1)
+	return s.userStatsRepository.IncrementInt64Field(stats.ID, fieldName, increment)
 }
 
-// RecordNoteCreated increments the notes created count
-func (s *UserStatsService) RecordNoteCreated(userID primitive.ObjectID, authContext auth.PermissionContext) error {
+// UpdateField updates a specific field in the user's stats
+func (s *UserStatsService) UpdateField(userID primitive.ObjectID, fieldName string, value interface{}, authContext auth.PermissionContext) error {
 	stats, err := s.GetUserStats(userID, authContext)
 	if err != nil {
 		return err
 	}
 
-	return s.userStatsRepository.IncrementField(stats.ID, "notesCreated", 1)
+	return s.userStatsRepository.UpdateField(stats.ID, fieldName, value)
 }
 
-// RecordTimeEntry adds time tracking data
-func (s *UserStatsService) RecordTimeEntry(userID primitive.ObjectID, durationSeconds int64, authContext auth.PermissionContext) error {
+// UpdateFields updates multiple fields in the user's stats
+func (s *UserStatsService) UpdateFields(userID primitive.ObjectID, fields map[string]interface{}, authContext auth.PermissionContext) error {
 	stats, err := s.GetUserStats(userID, authContext)
 	if err != nil {
 		return err
 	}
 
-	// First increment the time entry count
-	if err := s.userStatsRepository.IncrementField(stats.ID, "timeEntryCount", 1); err != nil {
-		return err
-	}
-
-	// Then update the total time tracked
-	return s.userStatsRepository.IncrementInt64Field(stats.ID, "totalTimeTracked", durationSeconds)
-}
-
-// RecordProjectCreated increments the projects created count
-func (s *UserStatsService) RecordProjectCreated(userID primitive.ObjectID, authContext auth.PermissionContext) error {
-	stats, err := s.GetUserStats(userID, authContext)
-	if err != nil {
-		return err
-	}
-
-	return s.userStatsRepository.IncrementField(stats.ID, "projectsCreated", 1)
+	return s.userStatsRepository.UpdateFields(stats.ID, fields)
 }
