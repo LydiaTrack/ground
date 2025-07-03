@@ -1,10 +1,11 @@
 package auth
 
 import (
-	"github.com/LydiaTrack/ground/pkg/jwt"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/LydiaTrack/ground/pkg/jwt"
 
 	"github.com/LydiaTrack/ground/pkg/log"
 
@@ -151,14 +152,27 @@ func (s Service) SignUp(cmd user.CreateUserCommand) (user.Model, error) {
 // SetSession is a function that sets the session with the given user id and token pair
 func (s Service) SetSession(userID string, tokenPair jwt.TokenPair) error {
 	// Start a session
-	refreshTokenLifespan, err := strconv.Atoi(os.Getenv(jwt.RefreshExpirationKey))
+	refreshTokenLifespanStr := os.Getenv(jwt.RefreshExpirationKey)
+	if refreshTokenLifespanStr == "" {
+		log.Log("JWT_REFRESH_EXPIRES_IN_HOUR environment variable not set")
+		return constants.ErrorInternalServerError
+	}
+
+	refreshTokenLifespan, err := strconv.Atoi(refreshTokenLifespanStr)
 	if err != nil {
+		log.Log("Invalid JWT_REFRESH_EXPIRES_IN_HOUR value: %v", err)
+		return constants.ErrorInternalServerError
+	}
+
+	if refreshTokenLifespan <= 0 {
+		log.Log("JWT_REFRESH_EXPIRES_IN_HOUR must be a positive number")
 		return constants.ErrorInternalServerError
 	}
 
 	// If there is a session for the user, delete it
 	err = s.sessionService.DeleteSessionByUser(userID)
 	if err != nil {
+		log.Log("Error deleting existing session for user %s: %v", userID, err)
 		return constants.ErrorInternalServerError
 	}
 
@@ -170,6 +184,7 @@ func (s Service) SetSession(userID string, tokenPair jwt.TokenPair) error {
 	}
 	_, err = s.sessionService.CreateSession(createSessionCmd)
 	if err != nil {
+		log.Log("Error creating new session for user %s: %v", userID, err)
 		return constants.ErrorInternalServerError
 	}
 
@@ -204,10 +219,10 @@ func (s Service) RefreshTokenPair(c *gin.Context) (jwt.TokenPair, error) {
 		return jwt.TokenPair{}, constants.ErrorUnauthorized
 	}
 
-	// Get the session by user id
+	// Get the session by refresh token
 	sessionInfo, err := s.sessionService.GetSessionByRefreshToken(refreshTokenRequest.RefreshToken)
 	if err != nil {
-		return jwt.TokenPair{}, constants.ErrorInternalServerError
+		return jwt.TokenPair{}, constants.ErrorUnauthorized // Changed from ErrorInternalServerError
 	}
 
 	// Check if the refresh token is valid
@@ -215,7 +230,16 @@ func (s Service) RefreshTokenPair(c *gin.Context) (jwt.TokenPair, error) {
 		return jwt.TokenPair{}, constants.ErrorUnauthorized
 	}
 
-	// Now that we know the token is valid, we can extract the user id from it
+	// ✅ ADD SESSION EXPIRATION VALIDATION
+	// Check if the session has expired
+	currentTime := time.Now().Unix()
+	if sessionInfo.ExpireTime < currentTime {
+		// Session has expired, delete it and return unauthorized
+		_ = s.sessionService.DeleteSessionByUser(sessionInfo.UserID.Hex()) // Clean up expired session
+		return jwt.TokenPair{}, constants.ErrorUnauthorized
+	}
+
+	// Now that we know the token is valid and not expired, generate new tokens
 	tokenPair, err := jwt.GenerateTokenPair(sessionInfo.UserID)
 	if err != nil {
 		return jwt.TokenPair{}, constants.ErrorInternalServerError

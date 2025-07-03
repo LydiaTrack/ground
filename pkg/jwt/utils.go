@@ -31,10 +31,23 @@ type TokenPair struct {
 // GenerateTokenPair generates a jwt and refresh token
 func GenerateTokenPair(userID primitive.ObjectID) (TokenPair, error) {
 
-	tokenLifespan, err := strconv.Atoi(os.Getenv(JwtExpirationKey))
+	tokenLifespanStr := os.Getenv(JwtExpirationKey)
+	if tokenLifespanStr == "" {
+		return TokenPair{}, fmt.Errorf("JWT_EXPIRES_IN_HOUR environment variable not set")
+	}
 
+	tokenLifespan, err := strconv.Atoi(tokenLifespanStr)
 	if err != nil {
-		return TokenPair{}, err
+		return TokenPair{}, fmt.Errorf("invalid JWT_EXPIRES_IN_HOUR value: %v", err)
+	}
+
+	if tokenLifespan <= 0 {
+		return TokenPair{}, fmt.Errorf("JWT_EXPIRES_IN_HOUR must be a positive number")
+	}
+
+	jwtSecret := os.Getenv(JwtSecretKey)
+	if jwtSecret == "" {
+		return TokenPair{}, fmt.Errorf("JWT_SECRET environment variable not set")
 	}
 
 	claims := jwt.MapClaims{}
@@ -43,9 +56,9 @@ func GenerateTokenPair(userID primitive.ObjectID) (TokenPair, error) {
 	claims[ExpKey] = time.Now().Add(time.Hour * time.Duration(tokenLifespan)).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	tokenStr, err := token.SignedString([]byte(os.Getenv(JwtSecretKey)))
+	tokenStr, err := token.SignedString([]byte(jwtSecret))
 	if err != nil {
-		return TokenPair{}, err
+		return TokenPair{}, fmt.Errorf("failed to sign JWT token: %v", err)
 	}
 
 	// Refresh token is a random string
@@ -56,11 +69,16 @@ func GenerateTokenPair(userID primitive.ObjectID) (TokenPair, error) {
 
 // IsTokenValid validates the token
 func IsTokenValid(token string) error {
+	jwtSecret := os.Getenv(JwtSecretKey)
+	if jwtSecret == "" {
+		return fmt.Errorf("JWT_SECRET environment variable not set")
+	}
+
 	_, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(os.Getenv(JwtSecretKey)), nil
+		return []byte(jwtSecret), nil
 	})
 
 	if err != nil {
@@ -101,11 +119,16 @@ func ExtractUserIDFromContext(c *gin.Context) (string, error) {
 		return "", err
 	}
 
+	jwtSecret := os.Getenv(JwtSecretKey)
+	if jwtSecret == "" {
+		return "", fmt.Errorf("JWT_SECRET environment variable not set")
+	}
+
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(os.Getenv(JwtSecretKey)), nil
+		return []byte(jwtSecret), nil
 	})
 
 	if err != nil {

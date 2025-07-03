@@ -25,54 +25,115 @@ type Model struct {
 	OAuthInfo                *OAuthInfo             `json:"OAuthInfo,omitempty" bson:"OAuthInfo,omitempty"`
 }
 
-// StatsModel represents the statistics for a user
-type StatsModel struct {
+// StatsDocument represents a flexible statistics document for a user
+// Uses map[string]interface{} to allow dynamic fields without changing the Ground library structure
+type StatsDocument map[string]interface{}
+
+// StatsCore contains the core required fields for user stats
+type StatsCore struct {
 	ID          primitive.ObjectID `json:"id" bson:"_id"`
 	UserID      primitive.ObjectID `json:"userId" bson:"userId"`
 	Username    string             `json:"username" bson:"username"`
 	CreatedDate time.Time          `json:"createdDate" bson:"createdDate"`
 	UpdatedDate time.Time          `json:"updatedDate" bson:"updatedDate"`
-
-	// Activity stats
-	TotalLogins     int       `json:"totalLogins" bson:"totalLogins"`
-	LastActiveDate  time.Time `json:"lastActiveDate,omitempty" bson:"lastActiveDate,omitempty"`
-	ActiveDaysCount int       `json:"activeDaysCount" bson:"activeDaysCount"`
-	DayAge          int       `json:"dayAge" bson:"dayAge"` // Days since signup
-
-	// Task stats
-	TasksCreated   int `json:"tasksCreated" bson:"tasksCreated"`
-	TasksCompleted int `json:"tasksCompleted" bson:"tasksCompleted"`
-
-	// Note stats
-	NotesCreated int `json:"notesCreated" bson:"notesCreated"`
-
-	// Time tracking stats
-	TotalTimeTracked int64 `json:"totalTimeTracked" bson:"totalTimeTracked"` // In seconds
-	TimeEntryCount   int   `json:"timeEntryCount" bson:"timeEntryCount"`
-
-	// Project stats
-	ProjectsCreated int `json:"projectsCreated" bson:"projectsCreated"`
 }
 
-// NewStats creates a new stats model for a user
-func NewStats(userID primitive.ObjectID, username string) *StatsModel {
+// NewStatsDocument creates a new flexible stats document for a user
+func NewStatsDocument(userID primitive.ObjectID, username string) StatsDocument {
 	now := time.Now()
-	return &StatsModel{
-		ID:               primitive.NewObjectID(),
-		UserID:           userID,
-		Username:         username,
-		CreatedDate:      now,
-		UpdatedDate:      now,
-		TotalLogins:      1,
-		LastActiveDate:   now,
-		ActiveDaysCount:  1,
-		DayAge:           0, // Initially 0 days old
-		TasksCreated:     0,
-		TasksCompleted:   0,
-		NotesCreated:     0,
-		TotalTimeTracked: 0,
-		TimeEntryCount:   0,
-		ProjectsCreated:  0,
+	stats := StatsDocument{
+		"_id":         primitive.NewObjectID(),
+		"userId":      userID,
+		"username":    username,
+		"createdDate": now,
+		"updatedDate": now,
+		// Core activity stats
+		"totalLogins":     1,
+		"lastActiveDate":  now,
+		"activeDaysCount": 1,
+		"dayAge":          0, // Initially 0 days old
+	}
+	return stats
+}
+
+// GetCoreFields extracts core stats fields from the document
+func (s StatsDocument) GetCoreFields() StatsCore {
+	return StatsCore{
+		ID:          s.GetObjectID("_id"),
+		UserID:      s.GetObjectID("userId"),
+		Username:    s.GetString("username"),
+		CreatedDate: s.GetTime("createdDate"),
+		UpdatedDate: s.GetTime("updatedDate"),
+	}
+}
+
+// Helper methods for type-safe field access
+func (s StatsDocument) GetObjectID(key string) primitive.ObjectID {
+	if val, ok := s[key].(primitive.ObjectID); ok {
+		return val
+	}
+	return primitive.NilObjectID
+}
+
+func (s StatsDocument) GetString(key string) string {
+	if val, ok := s[key].(string); ok {
+		return val
+	}
+	return ""
+}
+
+func (s StatsDocument) GetInt(key string) int {
+	if val, ok := s[key].(int); ok {
+		return val
+	}
+	if val, ok := s[key].(int32); ok {
+		return int(val)
+	}
+	if val, ok := s[key].(int64); ok {
+		return int(val)
+	}
+	return 0
+}
+
+func (s StatsDocument) GetInt64(key string) int64 {
+	if val, ok := s[key].(int64); ok {
+		return val
+	}
+	if val, ok := s[key].(int32); ok {
+		return int64(val)
+	}
+	if val, ok := s[key].(int); ok {
+		return int64(val)
+	}
+	return 0
+}
+
+func (s StatsDocument) GetTime(key string) time.Time {
+	if val, ok := s[key].(time.Time); ok {
+		return val
+	}
+	if val, ok := s[key].(primitive.DateTime); ok {
+		return val.Time()
+	}
+	return time.Time{}
+}
+
+// SetField sets a field value in the document
+func (s StatsDocument) SetField(key string, value interface{}) {
+	s[key] = value
+}
+
+// IncrementField increments a numeric field by the given amount
+func (s StatsDocument) IncrementField(key string, increment interface{}) {
+	switch inc := increment.(type) {
+	case int:
+		s[key] = s.GetInt(key) + inc
+	case int32:
+		s[key] = int32(s.GetInt(key)) + inc
+	case int64:
+		s[key] = s.GetInt64(key) + inc
+	default:
+		s[key] = increment
 	}
 }
 
@@ -236,22 +297,27 @@ type OAuthInfo struct {
 }
 
 // CalculateStatFields updates general stat fields that should be updated on every stat change
-func (s *StatsModel) CalculateStatFields() {
+func (s StatsDocument) CalculateStatFields() {
 	now := time.Now()
+	createdDate := s.GetTime("createdDate")
+	lastActiveDate := s.GetTime("lastActiveDate")
+	activeDaysCount := s.GetInt("activeDaysCount")
 
 	// Check if this is a new day compared to the last active date before updating it
-	if !s.LastActiveDate.IsZero() && !isSameDay(s.LastActiveDate, now) {
-		s.ActiveDaysCount++
+	if !lastActiveDate.IsZero() && !isSameDay(lastActiveDate, now) {
+		activeDaysCount++
+		s.SetField("activeDaysCount", activeDaysCount)
 	}
 
 	// Update last active date
-	s.LastActiveDate = now
+	s.SetField("lastActiveDate", now)
 
 	// Calculate day age (days since signup)
-	s.DayAge = int(now.Sub(s.CreatedDate).Hours() / 24)
+	dayAge := int(now.Sub(createdDate).Hours() / 24)
+	s.SetField("dayAge", dayAge)
 
 	// Update the updated date
-	s.UpdatedDate = now
+	s.SetField("updatedDate", now)
 }
 
 // Helper function to check if two times are on the same day
