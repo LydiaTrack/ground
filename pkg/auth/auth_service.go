@@ -216,17 +216,20 @@ func (s Service) RefreshTokenPair(c *gin.Context) (jwt.TokenPair, error) {
 	}
 
 	if refreshTokenRequest.RefreshToken == "" {
+		log.Log("Refresh token is empty")
 		return jwt.TokenPair{}, constants.ErrorUnauthorized
 	}
 
 	// Get the session by refresh token
 	sessionInfo, err := s.sessionService.GetSessionByRefreshToken(refreshTokenRequest.RefreshToken)
 	if err != nil {
+		log.Log("Error getting session by refresh token", err)
 		return jwt.TokenPair{}, constants.ErrorUnauthorized // Changed from ErrorInternalServerError
 	}
 
 	// Check if the refresh token is valid
 	if sessionInfo.RefreshToken != refreshTokenRequest.RefreshToken {
+		log.Log("Invalid refresh token for user %s", sessionInfo.UserID.Hex())
 		return jwt.TokenPair{}, constants.ErrorUnauthorized
 	}
 
@@ -242,11 +245,13 @@ func (s Service) RefreshTokenPair(c *gin.Context) (jwt.TokenPair, error) {
 	// Now that we know the token is valid and not expired, generate new tokens
 	tokenPair, err := jwt.GenerateTokenPair(sessionInfo.UserID)
 	if err != nil {
+		log.Log("Error generating new token pair", err)
 		return jwt.TokenPair{}, constants.ErrorInternalServerError
 	}
 
 	err = s.SetSession(sessionInfo.UserID.Hex(), tokenPair)
 	if err != nil {
+		log.Log("Error setting new session for user %s", sessionInfo.UserID.Hex())
 		return jwt.TokenPair{}, constants.ErrorInternalServerError
 	}
 
