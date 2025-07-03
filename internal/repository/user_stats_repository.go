@@ -6,13 +6,13 @@ import (
 
 	"github.com/LydiaTrack/ground/pkg/domain/user"
 	"github.com/LydiaTrack/ground/pkg/mongodb"
-	"github.com/LydiaTrack/ground/pkg/mongodb/repository"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type UserStatsMongoRepository struct {
-	*repository.BaseRepository[user.StatsModel]
+	Collection *mongo.Collection
 }
 
 func GetUserStatsMongoRepository() *UserStatsMongoRepository {
@@ -21,29 +21,30 @@ func GetUserStatsMongoRepository() *UserStatsMongoRepository {
 		panic(err)
 	}
 	return &UserStatsMongoRepository{
-		BaseRepository: repository.NewBaseRepository[user.StatsModel](collection),
+		Collection: collection,
 	}
 }
 
 // GetStatsByUserID retrieves stats for a specific user
-func (r *UserStatsMongoRepository) GetStatsByUserID(userID primitive.ObjectID) (user.StatsModel, error) {
-	var statsModel user.StatsModel
-	err := r.Collection.FindOne(context.Background(), bson.M{"userId": userID}).Decode(&statsModel)
-	return statsModel, err
+func (r *UserStatsMongoRepository) GetStatsByUserID(userID primitive.ObjectID) (user.StatsDocument, error) {
+	var statsDoc user.StatsDocument
+	err := r.Collection.FindOne(context.Background(), bson.M{"userId": userID}).Decode(&statsDoc)
+	return statsDoc, err
 }
 
 // CreateStats creates a new stats document for a user
-func (r *UserStatsMongoRepository) CreateStats(stats *user.StatsModel) error {
+func (r *UserStatsMongoRepository) CreateStats(stats user.StatsDocument) error {
 	_, err := r.Collection.InsertOne(context.Background(), stats)
 	return err
 }
 
 // UpdateStats updates a user's stats (full document update)
-func (r *UserStatsMongoRepository) UpdateStats(stats *user.StatsModel) error {
-	stats.UpdatedDate = time.Now()
+func (r *UserStatsMongoRepository) UpdateStats(stats user.StatsDocument) error {
+	stats.SetField("updatedDate", time.Now())
+	core := stats.GetCoreFields()
 	_, err := r.Collection.UpdateOne(
 		context.Background(),
-		bson.M{"_id": stats.ID},
+		bson.M{"_id": core.ID},
 		bson.M{"$set": stats},
 	)
 	return err
@@ -52,7 +53,7 @@ func (r *UserStatsMongoRepository) UpdateStats(stats *user.StatsModel) error {
 // IncrementField increments a numeric field by a specific value
 func (r *UserStatsMongoRepository) IncrementField(statsID primitive.ObjectID, fieldName string, increment int) error {
 	// Get the current stats to calculate fields
-	var stats user.StatsModel
+	var stats user.StatsDocument
 	err := r.Collection.FindOne(context.Background(), bson.M{"_id": statsID}).Decode(&stats)
 	if err != nil {
 		return err
@@ -68,10 +69,10 @@ func (r *UserStatsMongoRepository) IncrementField(statsID primitive.ObjectID, fi
 		bson.M{
 			"$inc": bson.M{fieldName: increment},
 			"$set": bson.M{
-				"updatedDate":     stats.UpdatedDate,
-				"lastActiveDate":  stats.LastActiveDate,
-				"dayAge":          stats.DayAge,
-				"activeDaysCount": stats.ActiveDaysCount,
+				"updatedDate":     stats.GetTime("updatedDate"),
+				"lastActiveDate":  stats.GetTime("lastActiveDate"),
+				"dayAge":          stats.GetInt("dayAge"),
+				"activeDaysCount": stats.GetInt("activeDaysCount"),
 			},
 		},
 	)
@@ -81,7 +82,7 @@ func (r *UserStatsMongoRepository) IncrementField(statsID primitive.ObjectID, fi
 // IncrementInt64Field increments an int64 field by a specific value
 func (r *UserStatsMongoRepository) IncrementInt64Field(statsID primitive.ObjectID, fieldName string, increment int64) error {
 	// Get the current stats to calculate fields
-	var stats user.StatsModel
+	var stats user.StatsDocument
 	err := r.Collection.FindOne(context.Background(), bson.M{"_id": statsID}).Decode(&stats)
 	if err != nil {
 		return err
@@ -97,10 +98,10 @@ func (r *UserStatsMongoRepository) IncrementInt64Field(statsID primitive.ObjectI
 		bson.M{
 			"$inc": bson.M{fieldName: increment},
 			"$set": bson.M{
-				"updatedDate":     stats.UpdatedDate,
-				"lastActiveDate":  stats.LastActiveDate,
-				"dayAge":          stats.DayAge,
-				"activeDaysCount": stats.ActiveDaysCount,
+				"updatedDate":     stats.GetTime("updatedDate"),
+				"lastActiveDate":  stats.GetTime("lastActiveDate"),
+				"dayAge":          stats.GetInt("dayAge"),
+				"activeDaysCount": stats.GetInt("activeDaysCount"),
 			},
 		},
 	)
@@ -110,7 +111,7 @@ func (r *UserStatsMongoRepository) IncrementInt64Field(statsID primitive.ObjectI
 // UpdateField updates a specific field value
 func (r *UserStatsMongoRepository) UpdateField(statsID primitive.ObjectID, fieldName string, value interface{}) error {
 	// Get the current stats to calculate fields
-	var stats user.StatsModel
+	var stats user.StatsDocument
 	err := r.Collection.FindOne(context.Background(), bson.M{"_id": statsID}).Decode(&stats)
 	if err != nil {
 		return err
@@ -122,10 +123,10 @@ func (r *UserStatsMongoRepository) UpdateField(statsID primitive.ObjectID, field
 	// Add the updated date and calculated fields to the update
 	updateFields := bson.M{
 		fieldName:         value,
-		"updatedDate":     stats.UpdatedDate,
-		"lastActiveDate":  stats.LastActiveDate,
-		"dayAge":          stats.DayAge,
-		"activeDaysCount": stats.ActiveDaysCount,
+		"updatedDate":     stats.GetTime("updatedDate"),
+		"lastActiveDate":  stats.GetTime("lastActiveDate"),
+		"dayAge":          stats.GetInt("dayAge"),
+		"activeDaysCount": stats.GetInt("activeDaysCount"),
 	}
 
 	_, err = r.Collection.UpdateOne(
@@ -139,7 +140,7 @@ func (r *UserStatsMongoRepository) UpdateField(statsID primitive.ObjectID, field
 // UpdateFields updates multiple specific fields at once
 func (r *UserStatsMongoRepository) UpdateFields(statsID primitive.ObjectID, fields map[string]interface{}) error {
 	// Get the current stats to calculate fields
-	var stats user.StatsModel
+	var stats user.StatsDocument
 	err := r.Collection.FindOne(context.Background(), bson.M{"_id": statsID}).Decode(&stats)
 	if err != nil {
 		return err
@@ -149,10 +150,10 @@ func (r *UserStatsMongoRepository) UpdateFields(statsID primitive.ObjectID, fiel
 	stats.CalculateStatFields()
 
 	// Add the calculated fields to the update
-	fields["updatedDate"] = stats.UpdatedDate
-	fields["lastActiveDate"] = stats.LastActiveDate
-	fields["dayAge"] = stats.DayAge
-	fields["activeDaysCount"] = stats.ActiveDaysCount
+	fields["updatedDate"] = stats.GetTime("updatedDate")
+	fields["lastActiveDate"] = stats.GetTime("lastActiveDate")
+	fields["dayAge"] = stats.GetInt("dayAge")
+	fields["activeDaysCount"] = stats.GetInt("activeDaysCount")
 
 	_, err = r.Collection.UpdateOne(
 		context.Background(),

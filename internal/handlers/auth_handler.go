@@ -1,9 +1,10 @@
 package handlers
 
 import (
-	"github.com/LydiaTrack/ground/internal/service"
 	"net/http"
 	"time"
+
+	"github.com/LydiaTrack/ground/internal/service"
 
 	"github.com/LydiaTrack/ground/internal/blocker"
 	"github.com/LydiaTrack/ground/pkg/auth"
@@ -49,22 +50,24 @@ func (h AuthHandler) Login(c *gin.Context) {
 	// Get the current user from the auth service to record login stats
 	userStatsService := service_initializer.GetServices().UserStatsService
 	if userStatsService != nil {
-		// For login stats recording, we need the user's ID
-		// We can get it by querying the user service with the login username
-		userService := service_initializer.GetServices().UserService
-		adminContext := auth.PermissionContext{
-			Permissions: []auth.Permission{auth.AdminPermission},
-			UserID:      nil,
-		}
-
-		userModel, err := userService.GetByUsername(loginCommand.Username, adminContext)
-		if err == nil {
-			// Record the login in user stats
-			if recErr := userStatsService.RecordLogin(userModel.ID, adminContext); recErr != nil {
-				// Log the error but don't fail the login process
-				log.Log("Error recording login stats: %v", recErr)
+		go func() {
+			// For login stats recording, we need the user's ID
+			// We can get it by querying the user service with the login username
+			userService := service_initializer.GetServices().UserService
+			adminContext := auth.PermissionContext{
+				Permissions: []auth.Permission{auth.AdminPermission},
+				UserID:      nil,
 			}
-		}
+
+			userModel, err := userService.GetByUsername(loginCommand.Username, adminContext)
+			if err == nil {
+				// Record the login in user stats
+				if recErr := userStatsService.RecordLogin(userModel.ID, adminContext); recErr != nil {
+					// Log the error but don't fail the login process
+					log.Log("Error recording login stats: %v", recErr)
+				}
+			}
+		}()
 	}
 
 	c.JSON(http.StatusOK, response)
@@ -95,19 +98,21 @@ func (h AuthHandler) SignUp(c *gin.Context) {
 	}
 
 	if userStatsService != nil {
-		adminContext := auth.PermissionContext{
-			Permissions: []auth.Permission{auth.AdminPermission},
-			UserID:      nil,
-		}
-
-		// The stats should already be created as part of user creation, but let's verify
-		_, err := userStatsService.GetUserStats(response.ID, adminContext)
-		if err != nil {
-			// If stats weren't created, create them now
-			if createErr := userStatsService.CreateUserStats(response.ID, response.Username); createErr != nil {
-				log.Log("Failed to create stats for new user: %v", createErr)
+		go func() {
+			adminContext := auth.PermissionContext{
+				Permissions: []auth.Permission{auth.AdminPermission},
+				UserID:      nil,
 			}
-		}
+
+			// The stats should already be created as part of user creation, but let's verify
+			_, err := userStatsService.GetUserStats(response.ID, adminContext)
+			if err != nil {
+				// If stats weren't created, create them now
+				if createErr := userStatsService.CreateUserStats(response.ID, response.Username); createErr != nil {
+					log.Log("Failed to create stats for new user: %v", createErr)
+				}
+			}
+		}()
 	}
 
 	// After user signs up, we should block the user from signing up again for a certain period of time
@@ -152,15 +157,17 @@ func (h AuthHandler) RefreshToken(c *gin.Context) {
 
 	// Record the login in user stats
 	if userStatsService != nil {
-		adminContext := auth.PermissionContext{
-			Permissions: []auth.Permission{auth.AdminPermission},
-			UserID:      nil,
-		}
+		go func() {
+			adminContext := auth.PermissionContext{
+				Permissions: []auth.Permission{auth.AdminPermission},
+				UserID:      nil,
+			}
 
-		if recErr := userStatsService.RecordLogin(response.UserID, adminContext); recErr != nil {
-			// Log the error but don't fail the login process
-			log.Log("Error recording login stats: %v", recErr)
-		}
+			if recErr := userStatsService.RecordLogin(response.UserID, adminContext); recErr != nil {
+				// Log the error but don't fail the login process
+				log.Log("Error recording login stats: %v", recErr)
+			}
+		}()
 	}
 	c.JSON(http.StatusOK, response)
 }
@@ -198,15 +205,17 @@ func (h AuthHandler) OAuthLogin(c *gin.Context) {
 
 	// Record the login in user stats
 	if userStatsService != nil {
-		adminContext := auth.PermissionContext{
-			Permissions: []auth.Permission{auth.AdminPermission},
-			UserID:      nil,
-		}
+		go func() {
+			adminContext := auth.PermissionContext{
+				Permissions: []auth.Permission{auth.AdminPermission},
+				UserID:      nil,
+			}
 
-		if recErr := userStatsService.RecordLogin(response.UserID, adminContext); recErr != nil {
-			// Log the error but don't fail the login process
-			log.Log("Error recording login stats: %v", recErr)
-		}
+			if recErr := userStatsService.RecordLogin(response.UserID, adminContext); recErr != nil {
+				// Log the error but don't fail the login process
+				log.Log("Error recording login stats: %v", recErr)
+			}
+		}()
 	}
 
 	c.JSON(http.StatusOK, response)

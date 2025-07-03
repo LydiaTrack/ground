@@ -14,14 +14,14 @@ import (
 
 // MockUserStatsRepository is a mock implementation of UserStatsRepository for testing
 type MockUserStatsRepository struct {
-	stats             map[primitive.ObjectID]user.StatsModel
+	stats             map[primitive.ObjectID]user.StatsDocument
 	shouldReturnError bool
 	errorMessage      string
 }
 
 func NewMockUserStatsRepository() *MockUserStatsRepository {
 	return &MockUserStatsRepository{
-		stats: make(map[primitive.ObjectID]user.StatsModel),
+		stats: make(map[primitive.ObjectID]user.StatsDocument),
 	}
 }
 
@@ -30,34 +30,36 @@ func (m *MockUserStatsRepository) SetError(shouldError bool, message string) {
 	m.errorMessage = message
 }
 
-func (m *MockUserStatsRepository) GetStatsByUserID(userID primitive.ObjectID) (user.StatsModel, error) {
+func (m *MockUserStatsRepository) GetStatsByUserID(userID primitive.ObjectID) (user.StatsDocument, error) {
 	if m.shouldReturnError {
-		return user.StatsModel{}, errors.New(m.errorMessage)
+		return user.StatsDocument{}, errors.New(m.errorMessage)
 	}
 
 	for _, stats := range m.stats {
-		if stats.UserID == userID {
+		if stats.GetObjectID("userId") == userID {
 			return stats, nil
 		}
 	}
-	return user.StatsModel{}, errors.New("stats not found")
+	return user.StatsDocument{}, errors.New("stats not found")
 }
 
-func (m *MockUserStatsRepository) CreateStats(stats *user.StatsModel) error {
+func (m *MockUserStatsRepository) CreateStats(stats user.StatsDocument) error {
 	if m.shouldReturnError {
 		return errors.New(m.errorMessage)
 	}
 
-	m.stats[stats.ID] = *stats
+	core := stats.GetCoreFields()
+	m.stats[core.ID] = stats
 	return nil
 }
 
-func (m *MockUserStatsRepository) UpdateStats(stats *user.StatsModel) error {
+func (m *MockUserStatsRepository) UpdateStats(stats user.StatsDocument) error {
 	if m.shouldReturnError {
 		return errors.New(m.errorMessage)
 	}
 
-	m.stats[stats.ID] = *stats
+	core := stats.GetCoreFields()
+	m.stats[core.ID] = stats
 	return nil
 }
 
@@ -71,21 +73,8 @@ func (m *MockUserStatsRepository) IncrementField(statsID primitive.ObjectID, fie
 		return errors.New("stats not found")
 	}
 
-	// Simulate field increment based on field name
-	switch fieldName {
-	case "tasksCreated":
-		stats.TasksCreated += increment
-	case "tasksCompleted":
-		stats.TasksCompleted += increment
-	case "notesCreated":
-		stats.NotesCreated += increment
-	case "timeEntryCount":
-		stats.TimeEntryCount += increment
-	case "projectsCreated":
-		stats.ProjectsCreated += increment
-	case "totalLogins":
-		stats.TotalLogins += increment
-	}
+	// Increment the field using the document method
+	stats.IncrementField(fieldName, increment)
 
 	// Update calculated fields
 	stats.CalculateStatFields()
@@ -103,11 +92,8 @@ func (m *MockUserStatsRepository) IncrementInt64Field(statsID primitive.ObjectID
 		return errors.New("stats not found")
 	}
 
-	// Simulate field increment based on field name
-	switch fieldName {
-	case "totalTimeTracked":
-		stats.TotalTimeTracked += increment
-	}
+	// Increment the field using the document method
+	stats.IncrementField(fieldName, increment)
 
 	// Update calculated fields
 	stats.CalculateStatFields()
@@ -125,17 +111,8 @@ func (m *MockUserStatsRepository) UpdateField(statsID primitive.ObjectID, fieldN
 		return errors.New("stats not found")
 	}
 
-	// Simulate field update based on field name
-	switch fieldName {
-	case "totalLogins":
-		if v, ok := value.(int); ok {
-			stats.TotalLogins = v
-		}
-	case "tasksCreated":
-		if v, ok := value.(int); ok {
-			stats.TasksCreated = v
-		}
-	}
+	// Update the field using the document method
+	stats.SetField(fieldName, value)
 
 	// Update calculated fields
 	stats.CalculateStatFields()
@@ -153,18 +130,9 @@ func (m *MockUserStatsRepository) UpdateFields(statsID primitive.ObjectID, field
 		return errors.New("stats not found")
 	}
 
-	// Simulate field updates
+	// Update fields using the document method
 	for fieldName, value := range fields {
-		switch fieldName {
-		case "totalLogins":
-			if v, ok := value.(int); ok {
-				stats.TotalLogins = v
-			}
-		case "tasksCreated":
-			if v, ok := value.(int); ok {
-				stats.TasksCreated = v
-			}
-		}
+		stats.SetField(fieldName, value)
 	}
 
 	// Update calculated fields
@@ -217,12 +185,13 @@ func testCreateUserStats(t *testing.T) {
 		t.Errorf("Expected stats to be created and retrievable, got error: %v", err)
 	}
 
-	if retrievedStats.UserID != userID {
-		t.Errorf("Expected userID %v, got %v", userID, retrievedStats.UserID)
+	core := retrievedStats.GetCoreFields()
+	if core.UserID != userID {
+		t.Errorf("Expected userID %v, got %v", userID, core.UserID)
 	}
 
-	if retrievedStats.Username != username {
-		t.Errorf("Expected username %s, got %s", username, retrievedStats.Username)
+	if core.Username != username {
+		t.Errorf("Expected username %s, got %s", username, core.Username)
 	}
 
 	// Test creation with repository error
@@ -240,7 +209,7 @@ func testGetUserStats(t *testing.T) {
 	username := "testuser"
 
 	// Create test stats
-	stats := user.NewStats(userID, username)
+	stats := user.NewStatsDocument(userID, username)
 	mockRepo.CreateStats(stats)
 
 	// Test successful retrieval with admin permission
@@ -254,8 +223,9 @@ func testGetUserStats(t *testing.T) {
 		t.Errorf("Expected no error, got %v", err)
 	}
 
-	if retrievedStats.UserID != userID {
-		t.Errorf("Expected userID %v, got %v", userID, retrievedStats.UserID)
+	core := retrievedStats.GetCoreFields()
+	if core.UserID != userID {
+		t.Errorf("Expected userID %v, got %v", userID, core.UserID)
 	}
 
 	// Test retrieval as the same user
@@ -296,12 +266,12 @@ func testUpdateUserStats(t *testing.T) {
 	username := "testuser"
 
 	// Create test stats
-	stats := user.NewStats(userID, username)
+	stats := user.NewStatsDocument(userID, username)
 	mockRepo.CreateStats(stats)
 
 	// Update some fields
-	stats.TasksCreated = 5
-	stats.TasksCompleted = 3
+	stats.SetField("tasksCreated", 5)
+	stats.SetField("tasksCompleted", 3)
 
 	adminContext := auth.PermissionContext{
 		Permissions: []auth.Permission{auth.AdminPermission},
@@ -341,7 +311,7 @@ func testRecordLogin(t *testing.T) {
 	username := "testuser"
 
 	// Create test stats
-	stats := user.NewStats(userID, username)
+	stats := user.NewStatsDocument(userID, username)
 	mockRepo.CreateStats(stats)
 
 	adminContext := auth.PermissionContext{
@@ -351,7 +321,7 @@ func testRecordLogin(t *testing.T) {
 
 	// Get initial login count
 	initialStats, _ := statsService.GetUserStats(userID, adminContext)
-	initialLogins := initialStats.TotalLogins
+	initialLogins := initialStats.GetInt("totalLogins")
 
 	// Test successful login recording
 	err := statsService.RecordLogin(userID, adminContext)
@@ -361,8 +331,8 @@ func testRecordLogin(t *testing.T) {
 
 	// Verify login count was incremented
 	updatedStats, _ := statsService.GetUserStats(userID, adminContext)
-	if updatedStats.TotalLogins != initialLogins+1 {
-		t.Errorf("Expected login count %d, got %d", initialLogins+1, updatedStats.TotalLogins)
+	if updatedStats.GetInt("totalLogins") != initialLogins+1 {
+		t.Errorf("Expected login count %d, got %d", initialLogins+1, updatedStats.GetInt("totalLogins"))
 	}
 }
 
@@ -373,7 +343,7 @@ func testIncrementField(t *testing.T) {
 	username := "testuser"
 
 	// Create test stats
-	stats := user.NewStats(userID, username)
+	stats := user.NewStatsDocument(userID, username)
 	mockRepo.CreateStats(stats)
 
 	adminContext := auth.PermissionContext{
@@ -389,8 +359,8 @@ func testIncrementField(t *testing.T) {
 
 	// Verify the field was incremented
 	updatedStats, _ := statsService.GetUserStats(userID, adminContext)
-	if updatedStats.TasksCreated != 3 {
-		t.Errorf("Expected tasksCreated to be 3, got %d", updatedStats.TasksCreated)
+	if updatedStats.GetInt("tasksCreated") != 3 {
+		t.Errorf("Expected tasksCreated to be 3, got %d", updatedStats.GetInt("tasksCreated"))
 	}
 
 	// Test incrementing again
@@ -400,8 +370,8 @@ func testIncrementField(t *testing.T) {
 	}
 
 	updatedStats, _ = statsService.GetUserStats(userID, adminContext)
-	if updatedStats.TasksCreated != 5 {
-		t.Errorf("Expected tasksCreated to be 5, got %d", updatedStats.TasksCreated)
+	if updatedStats.GetInt("tasksCreated") != 5 {
+		t.Errorf("Expected tasksCreated to be 5, got %d", updatedStats.GetInt("tasksCreated"))
 	}
 }
 
@@ -412,7 +382,7 @@ func testIncrementInt64Field(t *testing.T) {
 	username := "testuser"
 
 	// Create test stats
-	stats := user.NewStats(userID, username)
+	stats := user.NewStatsDocument(userID, username)
 	mockRepo.CreateStats(stats)
 
 	adminContext := auth.PermissionContext{
@@ -428,8 +398,8 @@ func testIncrementInt64Field(t *testing.T) {
 
 	// Verify the field was incremented
 	updatedStats, _ := statsService.GetUserStats(userID, adminContext)
-	if updatedStats.TotalTimeTracked != 3600 {
-		t.Errorf("Expected totalTimeTracked to be 3600, got %d", updatedStats.TotalTimeTracked)
+	if updatedStats.GetInt64("totalTimeTracked") != 3600 {
+		t.Errorf("Expected totalTimeTracked to be 3600, got %d", updatedStats.GetInt64("totalTimeTracked"))
 	}
 }
 
@@ -440,7 +410,7 @@ func testUpdateField(t *testing.T) {
 	username := "testuser"
 
 	// Create test stats
-	stats := user.NewStats(userID, username)
+	stats := user.NewStatsDocument(userID, username)
 	mockRepo.CreateStats(stats)
 
 	adminContext := auth.PermissionContext{
@@ -456,8 +426,8 @@ func testUpdateField(t *testing.T) {
 
 	// Verify the field was updated
 	updatedStats, _ := statsService.GetUserStats(userID, adminContext)
-	if updatedStats.TotalLogins != 10 {
-		t.Errorf("Expected totalLogins to be 10, got %d", updatedStats.TotalLogins)
+	if updatedStats.GetInt("totalLogins") != 10 {
+		t.Errorf("Expected totalLogins to be 10, got %d", updatedStats.GetInt("totalLogins"))
 	}
 }
 
@@ -468,7 +438,7 @@ func testUpdateFields(t *testing.T) {
 	username := "testuser"
 
 	// Create test stats
-	stats := user.NewStats(userID, username)
+	stats := user.NewStatsDocument(userID, username)
 	mockRepo.CreateStats(stats)
 
 	adminContext := auth.PermissionContext{
@@ -489,11 +459,11 @@ func testUpdateFields(t *testing.T) {
 
 	// Verify the fields were updated
 	updatedStats, _ := statsService.GetUserStats(userID, adminContext)
-	if updatedStats.TotalLogins != 15 {
-		t.Errorf("Expected totalLogins to be 15, got %d", updatedStats.TotalLogins)
+	if updatedStats.GetInt("totalLogins") != 15 {
+		t.Errorf("Expected totalLogins to be 15, got %d", updatedStats.GetInt("totalLogins"))
 	}
-	if updatedStats.TasksCreated != 8 {
-		t.Errorf("Expected tasksCreated to be 8, got %d", updatedStats.TasksCreated)
+	if updatedStats.GetInt("tasksCreated") != 8 {
+		t.Errorf("Expected tasksCreated to be 8, got %d", updatedStats.GetInt("tasksCreated"))
 	}
 }
 
@@ -505,7 +475,7 @@ func testPermissionChecks(t *testing.T) {
 	username := "testuser"
 
 	// Create test stats
-	stats := user.NewStats(userID, username)
+	stats := user.NewStatsDocument(userID, username)
 	mockRepo.CreateStats(stats)
 
 	// Test contexts

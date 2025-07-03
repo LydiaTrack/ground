@@ -95,6 +95,7 @@ func initializeRoutes(r *gin.Engine, services service_initializer.Services) {
 
 	api.InitAuth(r, services)
 	api.InitUser(r, services)
+	api.InitUserStats(r)
 	api.InitRole(r, services)
 	api.InitResetPassword(r, services)
 	api.InitFeedback(r, services)

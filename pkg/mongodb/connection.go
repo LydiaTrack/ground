@@ -24,6 +24,7 @@ var (
 	mongodbContainerInstance *mongodbContainer
 	connected                = false
 	connectionType           string
+	client                   *mongo.Client = nil
 )
 
 const (
@@ -110,15 +111,18 @@ func GetCollection(collectionName string) (*mongo.Collection, error) {
 		fmt.Println("Connected to local mongodb container with host: " + host + ", port: " + port.Port() + "and DB name: " + os.Getenv("DB_NAME"))
 		return client.Database(os.Getenv("DB_NAME")).Collection(collectionName), nil
 	} else if connectionType == RemoteConnection {
-		serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-		opts := options.Client().ApplyURI(os.Getenv("DB_URI")).SetServerAPIOptions(serverAPI)
-		// Create a new client and connect to the server
-		client, err := mongo.Connect(context.TODO(), opts)
-		if err != nil {
-			return nil, err
-		}
+		if client == nil {
+			serverAPI := options.ServerAPI(options.ServerAPIVersion1)
+			opts := options.Client().ApplyURI(os.Getenv("DB_URI")).SetServerAPIOptions(serverAPI)
+			// Create a new client and connect to the server
+			clientTemp, err := mongo.Connect(context.TODO(), opts)
+			if err != nil {
+				return nil, err
+			}
+			client = clientTemp
 
-		fmt.Println("Connected to remote mongodb container with URI: " + os.Getenv("DB_URI") + "and DB name: " + os.Getenv("DB_NAME"))
+			fmt.Println("Connected to remote mongodb container with URI: " + os.Getenv("DB_URI") + "and DB name: " + os.Getenv("DB_NAME"))
+		}
 		return client.Database(os.Getenv("DB_NAME")).Collection(collectionName), nil
 	}
 	log.LogFatal("Invalid connection type for mongodb container: " + connectionType)

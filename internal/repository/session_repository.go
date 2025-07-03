@@ -82,3 +82,10 @@ func (s SessionMongoRepository) GetSessionByRefreshToken(refreshToken string) (s
 	}
 	return sessionModel, nil
 }
+
+// DeleteExpiredSessions deletes all sessions that have expired before the given time
+func (s SessionMongoRepository) DeleteExpiredSessions(currentTime int64) error {
+	filter := primitive.M{"expireTime": primitive.M{"$lt": currentTime}}
+	_, err := s.collection.DeleteMany(context.Background(), filter)
+	return err
+}

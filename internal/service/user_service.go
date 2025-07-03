@@ -90,10 +90,11 @@ func (s UserService) Create(command user.CreateUserCommand, authContext auth.Per
 
 	// Create stats for the user
 	if s.userStatsService != nil {
-		if err := s.userStatsService.CreateUserStats(insertedId, userModel.Username); err != nil {
-			log.Log("Warning: Failed to create stats for user %s: %v", insertedId.Hex(), err)
-			// Continue even if stats creation fails
-		}
+		go func() {
+			if err := s.userStatsService.CreateUserStats(insertedId, userModel.Username); err != nil {
+				log.Log("Warning: Failed to create stats for user %s: %v", insertedId.Hex(), err)
+			}
+		}()
 	}
 
 	savedUser, err := s.userRepository.GetByID(context.Background(), insertedId)

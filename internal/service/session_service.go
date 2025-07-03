@@ -1,8 +1,9 @@
 package service
 
 import (
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/LydiaTrack/ground/pkg/constants"
 	"github.com/LydiaTrack/ground/pkg/domain/session"
@@ -26,6 +27,8 @@ type SessionRepository interface {
 	DeleteSessionByID(sessionID primitive.ObjectID) error
 	// GetSessionByRefreshToken is a function that gets a session by refresh token
 	GetSessionByRefreshToken(refreshToken string) (session.InfoModel, error)
+	// DeleteExpiredSessions is a function that deletes expired sessions from the database
+	DeleteExpiredSessions(currentTime int64) error
 }
 
 func NewSessionService(sessionRepository SessionRepository, userService UserService) *SessionService {
@@ -111,4 +114,10 @@ func (s SessionService) IsUserHasActiveSession(userID string) bool {
 // GetSessionByRefreshToken is a function that gets a session by refresh token
 func (s SessionService) GetSessionByRefreshToken(refreshToken string) (session.InfoModel, error) {
 	return s.sessionRepository.GetSessionByRefreshToken(refreshToken)
+}
+
+// CleanupExpiredSessions removes all expired sessions from the database
+func (s SessionService) CleanupExpiredSessions() error {
+	currentTime := time.Now().Unix()
+	return s.sessionRepository.DeleteExpiredSessions(currentTime)
 }
