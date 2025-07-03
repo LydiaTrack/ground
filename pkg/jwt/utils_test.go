@@ -13,7 +13,7 @@ func TestGenerateTokenPair(t *testing.T) {
 	t.Run("Success with valid environment variables", func(t *testing.T) {
 		// Set required environment variables
 		os.Setenv(JwtSecretKey, "test_secret_key")
-		os.Setenv(JwtExpirationKey, "24")
+		os.Setenv(JwtExpirationKey, "5")
 		defer func() {
 			os.Unsetenv(JwtSecretKey)
 			os.Unsetenv(JwtExpirationKey)
@@ -39,7 +39,7 @@ func TestGenerateTokenPair(t *testing.T) {
 
 	t.Run("Fail with missing JWT_SECRET", func(t *testing.T) {
 		os.Unsetenv(JwtSecretKey)
-		os.Setenv(JwtExpirationKey, "24")
+		os.Setenv(JwtExpirationKey, "5")
 		defer os.Unsetenv(JwtExpirationKey)
 
 		_, err := GenerateTokenPair(userID)
@@ -53,23 +53,23 @@ func TestGenerateTokenPair(t *testing.T) {
 		}
 	})
 
-	t.Run("Fail with missing JWT_EXPIRES_IN_HOUR", func(t *testing.T) {
+	t.Run("Fail with missing JWT_EXPIRES_IN_MINUTES", func(t *testing.T) {
 		os.Setenv(JwtSecretKey, "test_secret_key")
 		os.Unsetenv(JwtExpirationKey)
 		defer os.Unsetenv(JwtSecretKey)
 
 		_, err := GenerateTokenPair(userID)
 		if err == nil {
-			t.Error("Expected error when JWT_EXPIRES_IN_HOUR is missing")
+			t.Error("Expected error when JWT_EXPIRES_IN_MINUTES is missing")
 		}
 
-		expectedError := "JWT_EXPIRES_IN_HOUR environment variable not set"
+		expectedError := "JWT_EXPIRES_IN_MINUTES environment variable not set"
 		if err.Error() != expectedError {
 			t.Errorf("Expected error message '%s', got '%s'", expectedError, err.Error())
 		}
 	})
 
-	t.Run("Fail with invalid JWT_EXPIRES_IN_HOUR", func(t *testing.T) {
+	t.Run("Fail with invalid JWT_EXPIRES_IN_MINUTES", func(t *testing.T) {
 		os.Setenv(JwtSecretKey, "test_secret_key")
 		os.Setenv(JwtExpirationKey, "invalid")
 		defer func() {
@@ -79,15 +79,15 @@ func TestGenerateTokenPair(t *testing.T) {
 
 		_, err := GenerateTokenPair(userID)
 		if err == nil {
-			t.Error("Expected error when JWT_EXPIRES_IN_HOUR is invalid")
+			t.Error("Expected error when JWT_EXPIRES_IN_MINUTES is invalid")
 		}
 
-		if !containsString(err.Error(), "invalid JWT_EXPIRES_IN_HOUR value") {
-			t.Errorf("Expected error about invalid JWT_EXPIRES_IN_HOUR value, got '%s'", err.Error())
+		if !containsString(err.Error(), "invalid JWT_EXPIRES_IN_MINUTES value") {
+			t.Errorf("Expected error about invalid JWT_EXPIRES_IN_MINUTES value, got '%s'", err.Error())
 		}
 	})
 
-	t.Run("Fail with negative JWT_EXPIRES_IN_HOUR", func(t *testing.T) {
+	t.Run("Fail with negative JWT_EXPIRES_IN_MINUTES", func(t *testing.T) {
 		os.Setenv(JwtSecretKey, "test_secret_key")
 		os.Setenv(JwtExpirationKey, "-1")
 		defer func() {
@@ -97,16 +97,16 @@ func TestGenerateTokenPair(t *testing.T) {
 
 		_, err := GenerateTokenPair(userID)
 		if err == nil {
-			t.Error("Expected error when JWT_EXPIRES_IN_HOUR is negative")
+			t.Error("Expected error when JWT_EXPIRES_IN_MINUTES is negative")
 		}
 
-		expectedError := "JWT_EXPIRES_IN_HOUR must be a positive number"
+		expectedError := "JWT_EXPIRES_IN_MINUTES must be a positive number"
 		if err.Error() != expectedError {
 			t.Errorf("Expected error message '%s', got '%s'", expectedError, err.Error())
 		}
 	})
 
-	t.Run("Fail with zero JWT_EXPIRES_IN_HOUR", func(t *testing.T) {
+	t.Run("Fail with zero JWT_EXPIRES_IN_MINUTES", func(t *testing.T) {
 		os.Setenv(JwtSecretKey, "test_secret_key")
 		os.Setenv(JwtExpirationKey, "0")
 		defer func() {
@@ -116,10 +116,10 @@ func TestGenerateTokenPair(t *testing.T) {
 
 		_, err := GenerateTokenPair(userID)
 		if err == nil {
-			t.Error("Expected error when JWT_EXPIRES_IN_HOUR is zero")
+			t.Error("Expected error when JWT_EXPIRES_IN_MINUTES is zero")
 		}
 
-		expectedError := "JWT_EXPIRES_IN_HOUR must be a positive number"
+		expectedError := "JWT_EXPIRES_IN_MINUTES must be a positive number"
 		if err.Error() != expectedError {
 			t.Errorf("Expected error message '%s', got '%s'", expectedError, err.Error())
 		}
@@ -132,7 +132,7 @@ func TestIsTokenValid(t *testing.T) {
 	t.Run("Success with valid token", func(t *testing.T) {
 		// Set up environment
 		os.Setenv(JwtSecretKey, "test_secret_key")
-		os.Setenv(JwtExpirationKey, "24")
+		os.Setenv(JwtExpirationKey, "5")
 		defer func() {
 			os.Unsetenv(JwtSecretKey)
 			os.Unsetenv(JwtExpirationKey)
@@ -193,7 +193,7 @@ func TestTokenPairIntegration(t *testing.T) {
 
 	// Set up environment
 	os.Setenv(JwtSecretKey, "test_secret_key")
-	os.Setenv(JwtExpirationKey, "1") // 1 hour
+	os.Setenv(JwtExpirationKey, "2") // 2 minutes
 	defer func() {
 		os.Unsetenv(JwtSecretKey)
 		os.Unsetenv(JwtExpirationKey)
