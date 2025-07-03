@@ -16,7 +16,7 @@ const (
 	UserIDKey            = "sub"
 	AuthorizedKey        = "authorized"
 	ExpKey               = "exp"
-	JwtExpirationKey     = "JWT_EXPIRES_IN_HOUR"
+	JwtExpirationKey     = "JWT_EXPIRES_IN_MINUTES"
 	RefreshExpirationKey = "JWT_REFRESH_EXPIRES_IN_HOUR"
 	JwtSecretKey         = "JWT_SECRET"
 	AuthorizationHeader  = "Authorization"
@@ -33,16 +33,16 @@ func GenerateTokenPair(userID primitive.ObjectID) (TokenPair, error) {
 
 	tokenLifespanStr := os.Getenv(JwtExpirationKey)
 	if tokenLifespanStr == "" {
-		return TokenPair{}, fmt.Errorf("JWT_EXPIRES_IN_HOUR environment variable not set")
+		return TokenPair{}, fmt.Errorf("JWT_EXPIRES_IN_MINUTES environment variable not set")
 	}
 
 	tokenLifespan, err := strconv.Atoi(tokenLifespanStr)
 	if err != nil {
-		return TokenPair{}, fmt.Errorf("invalid JWT_EXPIRES_IN_HOUR value: %v", err)
+		return TokenPair{}, fmt.Errorf("invalid JWT_EXPIRES_IN_MINUTES value: %v", err)
 	}
 
 	if tokenLifespan <= 0 {
-		return TokenPair{}, fmt.Errorf("JWT_EXPIRES_IN_HOUR must be a positive number")
+		return TokenPair{}, fmt.Errorf("JWT_EXPIRES_IN_MINUTES must be a positive number")
 	}
 
 	jwtSecret := os.Getenv(JwtSecretKey)
@@ -53,7 +53,7 @@ func GenerateTokenPair(userID primitive.ObjectID) (TokenPair, error) {
 	claims := jwt.MapClaims{}
 	claims[AuthorizedKey] = true
 	claims[UserIDKey] = userID.Hex()
-	claims[ExpKey] = time.Now().Add(time.Hour * time.Duration(tokenLifespan)).Unix()
+	claims[ExpKey] = time.Now().Add(time.Minute * time.Duration(tokenLifespan)).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	tokenStr, err := token.SignedString([]byte(jwtSecret))

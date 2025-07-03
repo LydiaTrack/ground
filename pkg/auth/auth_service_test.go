@@ -75,7 +75,7 @@ func (m *mockSessionService) CleanupExpiredSessions() error {
 func TestRefreshTokenPairSessionExpiration(t *testing.T) {
 	// Set up environment variables
 	os.Setenv(jwt.JwtSecretKey, "test_secret")
-	os.Setenv(jwt.JwtExpirationKey, "24")
+	os.Setenv(jwt.JwtExpirationKey, "5")
 	os.Setenv(jwt.RefreshExpirationKey, "168")
 	defer func() {
 		os.Unsetenv(jwt.JwtSecretKey)
