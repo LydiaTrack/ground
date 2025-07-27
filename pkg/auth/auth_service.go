@@ -233,7 +233,6 @@ func (s Service) RefreshTokenPair(c *gin.Context) (jwt.TokenPair, error) {
 		return jwt.TokenPair{}, constants.ErrorUnauthorized
 	}
 
-	// ✅ ADD SESSION EXPIRATION VALIDATION
 	// Check if the session has expired
 	currentTime := time.Now().Unix()
 	if sessionInfo.ExpireTime < currentTime {
@@ -360,9 +359,8 @@ func (s Service) OAuthLogin(provider string, token string) (Response, error) {
 			return Response{}, err
 		}
 		// Update OAuth provider info
-		if userModel.OAuthInfo == nil {
-			userModel.OAuthInfo = &oauthInfo
-		}
+		// TODO: If user tries to login with a different OAuth provider, we should handle that case
+		userModel.OAuthInfo = &oauthInfo
 	}
 
 	// Update user with OAuth info
@@ -372,7 +370,8 @@ func (s Service) OAuthLogin(provider string, token string) (Response, error) {
 		userModel.ContactInfo.Email != userInfo.Email
 	if anyPropChanged {
 		updateCmd := user.UpdateUserCommand{
-			Avatar: userInfo.Picture,
+			Username: userModel.Username,
+			Avatar:   userInfo.Picture,
 			PersonInfo: &user.PersonInfo{
 				FirstName: userInfo.FirstName,
 				LastName:  userInfo.LastName,
@@ -380,6 +379,8 @@ func (s Service) OAuthLogin(provider string, token string) (Response, error) {
 			ContactInfo: &user.ContactInfo{
 				Email: userInfo.Email,
 			},
+			Properties:               userModel.Properties,
+			LastSeenChangelogVersion: userModel.LastSeenChangelogVersion,
 		}
 		_, err = s.userService.Update(userModel.ID.Hex(), updateCmd, CreateAdminAuthContext())
 		if err != nil {
