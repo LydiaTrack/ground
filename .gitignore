@@ -27,3 +27,26 @@ go.work
 *.log
 
 dist/
+
+# Environment files - CRITICAL: Never commit these
+.env
+.env.*
+!.env.example
+
+# Secrets and credentials
+secrets/
+credentials/
+*.pem
+*.key
+*.p12
+*.pfx
+
+# IDE files
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
