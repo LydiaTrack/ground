@@ -93,6 +93,9 @@ func initializeRoutes(r *gin.Engine, services service_initializer.Services) {
 	r.Use(globalInterceptors...)
 	r.Use(middlewares.IPBlockMiddleware())
 
+	// Add request logging middleware
+	r.Use(middlewares.RequestLoggingMiddleware(*services.AuthService, services.UserService))
+
 	api.InitAuth(r, services)
 	api.InitUser(r, services)
 	api.InitUserStats(r)

@@ -52,3 +52,8 @@ func LogWarning(message string) {
 func LogDebug(message string) {
 	logger.Println("[DEBUG] " + message)
 }
+
+// LogRequest with severity INFO specifically for request logging
+func LogRequest(message string, args ...interface{}) {
+	logger.Printf("[REQUEST] "+message, args...)
+}
