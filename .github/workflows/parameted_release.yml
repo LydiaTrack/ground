@@ -36,10 +36,16 @@ jobs:
           current_version: ${{ steps.get-latest-tag.outputs.tag }}
           level: ${{ github.event.inputs.level || 'minor' }}
 
-      - uses: actions-ecosystem/action-push-tag@v1
-        with:
-          tag: ${{ steps.bump-semver.outputs.new_version }}
-          message: "${{ steps.bump-semver.outputs.new_version }}: PR #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}"
+      - name: Delete existing tag if it exists
+        run: |
+          git tag -d ${{ steps.bump-semver.outputs.new_version }} 2>/dev/null || true
+          git push --delete origin ${{ steps.bump-semver.outputs.new_version }} 2>/dev/null || true
+        continue-on-error: true
+
+      - name: Create and push new tag
+        run: |
+          git tag ${{ steps.bump-semver.outputs.new_version }} -m "${{ steps.bump-semver.outputs.new_version }}: PR #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}"
+          git push origin ${{ steps.bump-semver.outputs.new_version }}
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
